@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #08070a;
+  --color-ink-soft: #110f12;
+  --color-ink-elevated: #181519;
+  --color-ink-line: #221e22;
+
+  --color-cream: #f4ecdc;
+  --color-cream-dim: #b8aea0;
+  --color-cream-muted: #7d756a;
+
+  --color-gold: #c9a063;
+  --color-gold-soft: #dcbb83;
+  --color-gold-deep: #8a6b3a;
+
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-playfair);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-cream);
+}
+
+body {
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-display {
+  font-family: var(--font-display), "Playfair Display", "Cormorant Garamond", serif;
+  font-feature-settings: "ss01", "liga";
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+.gold-divider {
+  height: 1px;
+  width: 64px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-gold) 50%,
+    transparent
+  );
+}
+
+@keyframes float-down {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+.animate-float-down {
+  animation: float-down 2.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.text-gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-gold-deep) 0%,
+    var(--color-gold-soft) 25%,
+    var(--color-gold) 50%,
+    var(--color-gold-soft) 75%,
+    var(--color-gold-deep) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}

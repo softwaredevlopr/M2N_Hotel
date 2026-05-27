@@ -1,0 +1,25 @@
+DO $$
+BEGIN
+   IF NOT EXISTS (
+      SELECT FROM pg_catalog.pg_roles WHERE rolname = 'm2n_user'
+   ) THEN
+      CREATE ROLE m2n_user LOGIN PASSWORD 'M2NHotel@123';
+   ELSE
+      ALTER ROLE m2n_user WITH LOGIN PASSWORD 'M2NHotel@123';
+   END IF;
+END
+$$;
+
+SELECT 'CREATE DATABASE m2n_hotel OWNER m2n_user'
+WHERE NOT EXISTS (
+   SELECT FROM pg_database WHERE datname = 'm2n_hotel'
+)\gexec
+
+\c m2n_hotel
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+GRANT ALL PRIVILEGES ON DATABASE m2n_hotel TO m2n_user;
+GRANT ALL ON SCHEMA public TO m2n_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO m2n_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO m2n_user;

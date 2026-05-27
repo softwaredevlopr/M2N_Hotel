@@ -1,0 +1,23 @@
+{
+  "name": "m2n-hotel-backend",
+  "version": "1.0.0",
+  "description": "M2N Hotel production backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "migrate": "node scripts/runMigrations.js",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": ["hotel", "api", "express", "postgresql"],
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.3"
+  }
+}
