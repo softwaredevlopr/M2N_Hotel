@@ -5,11 +5,16 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
+    "dev": "nodemon server.js",
     "migrate": "node scripts/runMigrations.js",
     "seed": "node scripts/seed.js"
   },
-  "keywords": ["hotel", "api", "express", "postgresql"],
+  "keywords": [
+    "hotel",
+    "api",
+    "express",
+    "postgresql"
+  ],
   "license": "ISC",
   "engines": {
     "node": ">=18.0.0"
@@ -19,5 +24,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
