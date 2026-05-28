@@ -15,9 +15,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: "M2N Hotel Jaipur — Royal Stays in the Pink City",
+  title: "M2N Hotel — Boutique Luxury Stays",
   description:
-    "A boutique luxury hotel on MI Road, Jaipur. Heritage interiors, rooftop dining, curated experiences and warm Rajasthani hospitality.",
+    "A boutique luxury hotel pairing heritage interiors with modern hospitality — rooftop dining, curated experiences and warm welcomes for every guest.",
 };
 
 export default function RootLayout({ children }) {

@@ -43,7 +43,7 @@ function buildChannels(hotel) {
 
 export default function ContactCTA({ hotel }) {
   const channels = buildChannels(hotel);
-  const address = formatAddress(hotel) || "MI Road, Panch Batti, Jaipur 302001";
+  const address = formatAddress(hotel);
   const checkIn = formatTimeOfDay(hotel?.check_in_time) || "2:00 PM";
   const checkOut = formatTimeOfDay(hotel?.check_out_time) || "11:00 AM";
 
@@ -68,8 +68,8 @@ export default function ContactCTA({ hotel }) {
             <span className="italic text-gold">journey with us.</span>
           </h2>
           <p className="mt-6 text-base leading-relaxed text-cream-dim">
-            Our concierge team curates bespoke itineraries — from sunrise at
-            Amber Fort to private block-print sessions in Bagru. Tell us your
+            Our concierge team curates bespoke itineraries — from quiet sunrise
+            walks to private craft workshops with master makers. Tell us your
             dates and we&apos;ll craft the rest.
           </p>
         </div>
@@ -95,11 +95,15 @@ export default function ContactCTA({ hotel }) {
         </div>
 
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-xs tracking-[0.25em] uppercase text-cream-muted text-center">
-          <span className="inline-flex items-center gap-2">
-            <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
-            {address}
-          </span>
-          <span className="hidden sm:block h-3 w-px bg-gold/30" />
+          {address && (
+            <>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+                {address}
+              </span>
+              <span className="hidden sm:block h-3 w-px bg-gold/30" />
+            </>
+          )}
           <span>
             Check-in {checkIn} · Check-out {checkOut}
           </span>

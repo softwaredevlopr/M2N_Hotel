@@ -14,7 +14,7 @@ const FALLBACK_CAPTIONS = [
   "Heritage Lobby",
   "Rooftop Dining",
   "Pool Deck",
-  "Pink City Skyline",
+  "Evening Skyline",
 ];
 
 function pickGalleryItems(media) {

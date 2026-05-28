@@ -19,7 +19,7 @@ function deriveBrandTitle(hotelName) {
 
 function deriveCityLabel(hotel) {
   const city = hotel?.city?.toUpperCase?.();
-  return city ? `${city} · EST 2018` : "JAIPUR · EST 2018";
+  return city ? `${city} · EST 2018` : "BOUTIQUE LUXURY · EST 2018";
 }
 
 export default function Navbar({ hotel, phone }) {

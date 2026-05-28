@@ -65,7 +65,7 @@ const SOCIALS = [
 ];
 
 const FALLBACK_TAGLINE =
-  "A boutique luxury hotel on MI Road, Jaipur — pairing Rajasthani craft with quiet modern hospitality.";
+  "A boutique luxury hotel — pairing heritage craft with quiet modern hospitality.";
 
 export default function Footer({ hotel }) {
   const brand = hotel?.name?.toUpperCase?.() || "M2N HOTEL";
@@ -73,7 +73,8 @@ export default function Footer({ hotel }) {
   const phone = hotel?.phone || "+91 141 355 8899";
   const phoneHref = `tel:${phone.replace(/\s+/g, "")}`;
   const email = hotel?.email || "reservations@m2nhotel.in";
-  const address = formatAddress(hotel) || "MI Road, Panch Batti, Jaipur 302001";
+  const address = formatAddress(hotel);
+  const craftedLocation = hotel?.city || "every detail";
 
   return (
     <footer className="bg-ink border-t border-ink-line">
@@ -146,13 +147,15 @@ export default function Footer({ hotel }) {
               Reach Us
             </h3>
             <ul className="mt-6 space-y-4 text-sm text-cream-dim">
-              <li className="flex items-start gap-3">
-                <MapPin
-                  className="mt-0.5 h-4 w-4 text-gold flex-shrink-0"
-                  strokeWidth={1.5}
-                />
-                <span>{address}</span>
-              </li>
+              {address && (
+                <li className="flex items-start gap-3">
+                  <MapPin
+                    className="mt-0.5 h-4 w-4 text-gold flex-shrink-0"
+                    strokeWidth={1.5}
+                  />
+                  <span>{address}</span>
+                </li>
+              )}
               <li className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-gold" strokeWidth={1.5} />
                 <a
@@ -182,7 +185,7 @@ export default function Footer({ hotel }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="h-px w-8 bg-gold/40" />
-            Crafted with care in {hotel?.city || "Jaipur"}
+            Crafted with care in {craftedLocation}
             <span className="h-px w-8 bg-gold/40" />
           </div>
         </div>

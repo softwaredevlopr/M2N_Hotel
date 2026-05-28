@@ -7,17 +7,26 @@ import Gallery from "@/components/Gallery";
 import ContactCTA from "@/components/ContactCTA";
 import Footer from "@/components/Footer";
 import BackendOfflineBanner from "@/components/BackendOfflineBanner";
-import { getHotelBySlug, getRoomTypes } from "@/lib/api";
-
-const PRIMARY_HOTEL_SLUG = process.env.NEXT_PUBLIC_HOTEL_SLUG || "m2n-hotel-jaipur";
+import { getHotels, getHotelBySlug, getRoomTypes } from "@/lib/api";
 
 export const revalidate = 60;
 
+async function resolvePrimaryHotelSlug() {
+  const envSlug = process.env.NEXT_PUBLIC_HOTEL_SLUG;
+  if (typeof envSlug === "string" && envSlug.trim().length > 0) {
+    return envSlug.trim();
+  }
+
+  const hotels = await getHotels();
+  return hotels[0]?.slug ?? null;
+}
+
 export default async function Home() {
-  const [hotel, roomTypes] = await Promise.all([
-    getHotelBySlug(PRIMARY_HOTEL_SLUG),
-    getRoomTypes(PRIMARY_HOTEL_SLUG),
-  ]);
+  const slug = await resolvePrimaryHotelSlug();
+
+  const [hotel, roomTypes] = slug
+    ? await Promise.all([getHotelBySlug(slug), getRoomTypes(slug)])
+    : [null, []];
 
   const isOffline = hotel === null && roomTypes.length === 0;
   const amenities = hotel?.amenities ?? [];

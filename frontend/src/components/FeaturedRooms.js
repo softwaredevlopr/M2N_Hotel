@@ -7,7 +7,7 @@ const FALLBACK_ROOM_TYPES = [
     slug: "standard-room",
     name: "Standard Room",
     description:
-      "A serene retreat with queen bedding, soft linen, and warm Jaipur light through carved arches.",
+      "A serene retreat with queen bedding, soft linen, and warm afternoon light through carved arches.",
     base_price: 3499,
     max_occupancy: 2,
     bed_type: "Queen Bed",
@@ -17,7 +17,7 @@ const FALLBACK_ROOM_TYPES = [
     slug: "deluxe-room",
     name: "Deluxe Room",
     description:
-      "Spacious king-bedded room with a city-facing jharokha, work desk, and curated minibar.",
+      "Spacious king-bedded room with a city-facing balcony, work desk, and curated minibar.",
     base_price: 5499,
     max_occupancy: 3,
     bed_type: "King Bed",
@@ -27,7 +27,7 @@ const FALLBACK_ROOM_TYPES = [
     slug: "royal-suite",
     name: "Royal Suite",
     description:
-      "Private living room, jacuzzi bath, butler call, and panoramic views towards Nahargarh Fort.",
+      "Private living room, jacuzzi bath, butler call, and panoramic views towards the horizon.",
     base_price: 12499,
     max_occupancy: 4,
     bed_type: "King + Sofa Bed",
@@ -80,7 +80,7 @@ export default function FeaturedRooms({ roomTypes = [], currencyCode = "INR" }) 
             </h2>
           </div>
           <p className="max-w-md text-base leading-relaxed text-cream-dim">
-            Each room is dressed in hand-loomed cottons, lit by Jaipur&apos;s
+            Each room is dressed in hand-loomed cottons, lit by skilled
             artisans, and tuned for an unhurried stay. Rates include breakfast
             for two.
           </p>

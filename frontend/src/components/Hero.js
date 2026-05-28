@@ -5,7 +5,7 @@ import { formatShortAddress } from "@/lib/format";
 const DEFAULT_HEADLINE_MAIN = "Royal Stays Beyond";
 const DEFAULT_HEADLINE_ACCENT = "Walls of Time";
 const DEFAULT_DESCRIPTION =
-  "On the heritage spine of MI Road, M2N Hotel pairs Rajasthani craft with quiet modern luxury — rooftop dining under Jaipur's sky, curated city journeys, and warm thali welcomes at every arrival.";
+  "M2N Hotel pairs heritage craft with quiet modern luxury — rooftop dining beneath open skies, curated journeys, and warm welcomes at every arrival.";
 
 function splitTagline(tagline) {
   if (!tagline || typeof tagline !== "string") {
@@ -21,14 +21,18 @@ function splitTagline(tagline) {
   return { main: DEFAULT_HEADLINE_MAIN, accent: tagline.trim() };
 }
 
+function buildEyebrow(hotel) {
+  if (!hotel) return "M2N Hotel · Boutique Luxury";
+  if (hotel.city) return `${hotel.name} · ${hotel.city}`;
+  return hotel.name;
+}
+
 export default function Hero({ hotel }) {
   const heroImage = resolveHeroImage(hotel);
   const { main, accent } = splitTagline(hotel?.tagline);
   const description = hotel?.description || DEFAULT_DESCRIPTION;
-  const eyebrow = hotel
-    ? `${hotel.name} · ${hotel.city || "Jaipur"}`
-    : "M2N Hotel · Jaipur";
-  const address = formatShortAddress(hotel) || "MI Road, Panch Batti · Jaipur 302001";
+  const eyebrow = buildEyebrow(hotel);
+  const address = formatShortAddress(hotel);
 
   return (
     <section
@@ -80,10 +84,12 @@ export default function Hero({ hotel }) {
           </a>
         </div>
 
-        <div className="mt-10 flex items-center justify-center gap-2 text-xs tracking-[0.3em] uppercase text-cream-muted text-center">
-          <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
-          <span>{address}</span>
-        </div>
+        {address && (
+          <div className="mt-10 flex items-center justify-center gap-2 text-xs tracking-[0.3em] uppercase text-cream-muted text-center">
+            <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+            <span>{address}</span>
+          </div>
+        )}
       </div>
 
       <a

@@ -7,7 +7,7 @@ const PILLARS = [
     icon: Crown,
     title: "Boutique Heritage",
     description:
-      "A restored haveli aesthetic with hand-carved jharokhas and frescoed ceilings.",
+      "A restored haveli aesthetic with hand-carved details and frescoed ceilings.",
   },
   {
     icon: Sparkles,
@@ -19,15 +19,15 @@ const PILLARS = [
     icon: Award,
     title: "Awarded Hospitality",
     description:
-      "Recognised by Condé Nast Traveller India and Outlook Traveller for craft and warmth.",
+      "Recognised by leading travel publications for craft and warmth.",
   },
 ];
 
 const FALLBACK_DESCRIPTION_PRIMARY =
-  "M2N Hotel began as a single haveli on MI Road in 2018, opened by a family of Rajasthani hoteliers who wanted to slow time for their guests. Today it remains intimate by design — forty-two rooms, one rooftop, and a team that remembers your tea.";
+  "M2N Hotel was opened by a family of hoteliers who wanted to slow time for their guests. Today it remains intimate by design — a curated set of rooms, a quiet rooftop, and a team that remembers your tea.";
 
 const FALLBACK_DESCRIPTION_SECONDARY =
-  "We work with local artisans for our textiles, source produce from farms within 80 kilometres of the property, and curate every experience — from a private Amber Fort sunrise to a block-print workshop with Bagru masters.";
+  "We work with local artisans for our textiles, source produce from farms nearby, and curate every experience — from private sunrise walks to craft workshops with master makers.";
 
 function deriveStats({ hotel, roomTypeCount }) {
   const established = 2018;
@@ -60,6 +60,25 @@ function splitDescription(text) {
   return [sentences.slice(0, mid).join(" "), sentences.slice(mid).join(" ")];
 }
 
+function buildHeadline(hotel) {
+  if (hotel?.city) {
+    return (
+      <>
+        Where Old {hotel.city}
+        <br />
+        <span className="italic text-gold">whispers</span> to the new.
+      </>
+    );
+  }
+  return (
+    <>
+      Where heritage
+      <br />
+      <span className="italic text-gold">whispers</span> to the new.
+    </>
+  );
+}
+
 export default function About({ hotel, roomTypes = [] }) {
   const stats = deriveStats({ hotel, roomTypeCount: roomTypes.length });
   const [primaryDescription, secondaryDescription] = splitDescription(
@@ -71,7 +90,7 @@ export default function About({ hotel, roomTypes = [] }) {
 
   const gmQuote =
     hotel?.metadata?.gm_quote ||
-    "If you can imagine it in Jaipur, we'll arrange it.";
+    "If you can imagine it, we'll arrange it.";
   const gmName = hotel?.metadata?.gm_name || "Aarav Singh, General Manager";
 
   return (
@@ -84,9 +103,7 @@ export default function About({ hotel, roomTypes = [] }) {
             </span>
             <div className="gold-divider mt-5" />
             <h2 className="mt-8 font-display text-4xl sm:text-5xl lg:text-6xl leading-tight text-cream">
-              Where Old {hotel?.city || "Jaipur"}
-              <br />
-              <span className="italic text-gold">whispers</span> to the new.
+              {buildHeadline(hotel)}
             </h2>
             <p className="mt-8 text-base sm:text-lg leading-relaxed text-cream-dim">
               {primaryDescription}
