@@ -82,7 +82,7 @@ export default function Footer({ hotel }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 text-gold font-display text-lg">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/60 text-accent font-display text-lg">
                 M
               </span>
               <span className="font-display text-lg tracking-[0.25em] text-cream">
@@ -184,9 +184,9 @@ export default function Footer({ hotel }) {
             reserved.
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-px w-8 bg-gold/40" />
+            <span className="h-px w-8 bg-accent/50" />
             Crafted with care in {craftedLocation}
-            <span className="h-px w-8 bg-gold/40" />
+            <span className="h-px w-8 bg-accent/50" />
           </div>
         </div>
       </div>

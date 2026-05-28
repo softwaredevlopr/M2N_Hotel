@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #08070a;
-  --color-ink-soft: #110f12;
-  --color-ink-elevated: #181519;
-  --color-ink-line: #221e22;
+  --color-ink: #0F0F0F;
+  --color-ink-soft: #1C1C1C;
+  --color-ink-elevated: #232323;
+  --color-ink-line: #2A2A2A;
 
-  --color-cream: #f4ecdc;
-  --color-cream-dim: #b8aea0;
-  --color-cream-muted: #7d756a;
+  --color-cream: #FFFFFF;
+  --color-cream-dim: #F8F6F2;
+  --color-cream-muted: #D9D9D9;
 
-  --color-gold: #c9a063;
-  --color-gold-soft: #dcbb83;
-  --color-gold-deep: #8a6b3a;
+  --color-gold: #D71920;
+  --color-gold-soft: #E63B40;
+  --color-gold-deep: #A50F15;
+
+  --color-accent: #B89B5E;
 
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-playfair);
@@ -42,7 +44,7 @@ body {
 
 ::selection {
   background: var(--color-gold);
-  color: var(--color-ink);
+  color: var(--color-cream);
 }
 
 .gold-divider {
@@ -63,25 +65,4 @@ body {
 
 .animate-float-down {
   animation: float-down 2.4s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.text-gold-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-gold-deep) 0%,
-    var(--color-gold-soft) 25%,
-    var(--color-gold) 50%,
-    var(--color-gold-soft) 75%,
-    var(--color-gold-deep) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shimmer 6s linear infinite;
 }

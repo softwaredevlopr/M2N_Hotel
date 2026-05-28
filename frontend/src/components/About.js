@@ -138,8 +138,8 @@ export default function About({ hotel, roomTypes = [] }) {
               />
               <div className="absolute inset-0 ring-1 ring-gold/30" />
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden md:block border border-gold/40 bg-ink p-6 max-w-xs">
-              <div className="text-xs tracking-[0.3em] uppercase text-gold">
+            <div className="absolute -bottom-6 -left-6 hidden md:block border border-accent/50 bg-ink p-6 max-w-xs">
+              <div className="text-xs tracking-[0.3em] uppercase text-accent">
                 Concierge Promise
               </div>
               <p className="mt-3 font-display text-xl leading-snug text-cream">

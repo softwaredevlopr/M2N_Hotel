@@ -48,14 +48,14 @@ export default function Navbar({ hotel, phone }) {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
         <a href="#home" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 text-gold font-display text-lg">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/60 text-accent font-display text-lg">
             M
           </span>
           <span className="flex flex-col leading-tight">
             <span className="font-display text-lg tracking-[0.25em] text-cream">
               {brand}
             </span>
-            <span className="text-[10px] tracking-[0.4em] text-gold/80">
+            <span className="text-[10px] tracking-[0.4em] text-cream-muted">
               {city}
             </span>
           </span>
