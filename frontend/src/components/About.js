@@ -24,7 +24,7 @@ const PILLARS = [
 ];
 
 const FALLBACK_DESCRIPTION_PRIMARY =
-  "M2N Hotel was opened by a family of hoteliers who wanted to slow time for their guests. Today it remains intimate by design — a curated set of rooms, a quiet rooftop, and a team that remembers your tea.";
+  "M2N Hotels began with a family of hoteliers who wanted to slow time for their guests. Every stay remains intimate by design — a curated set of rooms, a quiet rooftop, and a team that remembers your tea.";
 
 const FALLBACK_DESCRIPTION_SECONDARY =
   "We work with local artisans for our textiles, source produce from farms nearby, and curate every experience — from private sunrise walks to craft workshops with master makers.";
@@ -133,7 +133,7 @@ export default function About({ hotel, roomTypes = [] }) {
             <div className="relative aspect-[4/5] overflow-hidden">
               <img
                 src={aboutImage}
-                alt={`${hotel?.name || "M2N Hotel"} interior`}
+                alt={`${hotel?.name || "M2N Hotels"} interior`}
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 ring-1 ring-gold/30" />

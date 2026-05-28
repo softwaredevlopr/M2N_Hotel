@@ -14,7 +14,7 @@ const NAV_LINKS = [
 ];
 
 function deriveBrandTitle(hotelName) {
-  if (!hotelName || typeof hotelName !== "string") return "M2N HOTEL";
+  if (!hotelName || typeof hotelName !== "string") return "M2N HOTELS";
   return hotelName.trim().toUpperCase();
 }
 

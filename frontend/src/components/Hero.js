@@ -5,7 +5,7 @@ import { formatShortAddress } from "@/lib/format";
 const DEFAULT_HEADLINE_MAIN = "Royal Stays Beyond";
 const DEFAULT_HEADLINE_ACCENT = "Walls of Time";
 const DEFAULT_DESCRIPTION =
-  "M2N Hotel pairs heritage craft with quiet modern luxury — rooftop dining beneath open skies, curated journeys, and warm welcomes at every arrival.";
+  "At M2N Hotels, heritage craft meets quiet modern luxury — rooftop dining beneath open skies, curated journeys, and warm welcomes at every arrival.";
 
 function splitTagline(tagline) {
   if (!tagline || typeof tagline !== "string") {
@@ -22,7 +22,7 @@ function splitTagline(tagline) {
 }
 
 function buildEyebrow(hotel) {
-  if (!hotel) return "M2N Hotel · Boutique Luxury";
+  if (!hotel) return "M2N Hotels · Boutique Luxury";
   if (hotel.city) return `${hotel.name} · ${hotel.city}`;
   return hotel.name;
 }

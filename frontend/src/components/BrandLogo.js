@@ -11,7 +11,7 @@ const SIZE_MAP = {
 
 export default function BrandLogo({
   size = "md",
-  brandText = "M2N HOTEL",
+  brandText = "M2N HOTELS",
   subText,
   priority = false,
 }) {

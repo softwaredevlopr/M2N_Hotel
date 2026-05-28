@@ -69,7 +69,7 @@ const FALLBACK_TAGLINE =
   "A boutique luxury hotel — pairing heritage craft with quiet modern hospitality.";
 
 export default function Footer({ hotel }) {
-  const brand = hotel?.name?.toUpperCase?.() || "M2N HOTEL";
+  const brand = hotel?.name?.toUpperCase?.() || "M2N HOTELS";
   const tagline = hotel?.tagline || FALLBACK_TAGLINE;
   const phone = hotel?.phone || "+91 141 355 8899";
   const phoneHref = `tel:${phone.replace(/\s+/g, "")}`;
