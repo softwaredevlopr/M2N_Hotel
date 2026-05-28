@@ -15,9 +15,14 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: "M2N Hotel — Boutique Luxury Stays",
+  title: "M2N Hotels — Morning to Night Hospitality",
   description:
     "A boutique luxury hotel pairing heritage interiors with modern hospitality — rooftop dining, curated experiences and warm welcomes for every guest.",
+  icons: {
+    icon: [{ url: "/m2n-logo.png", type: "image/png" }],
+    apple: [{ url: "/m2n-logo.png", type: "image/png" }],
+    shortcut: "/m2n-logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {

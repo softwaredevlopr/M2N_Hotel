@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Menu, X, Phone } from "lucide-react";
+import BrandLogo from "./BrandLogo";
 
 const NAV_LINKS = [
   { label: "Home", href: "#home" },
@@ -47,18 +48,12 @@ export default function Navbar({ hotel, phone }) {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
-        <a href="#home" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/60 text-accent font-display text-lg">
-            M
-          </span>
-          <span className="flex flex-col leading-tight">
-            <span className="font-display text-lg tracking-[0.25em] text-cream">
-              {brand}
-            </span>
-            <span className="text-[10px] tracking-[0.4em] text-cream-muted">
-              {city}
-            </span>
-          </span>
+        <a
+          href="#home"
+          className="inline-flex items-center"
+          aria-label="M2N Hotels home"
+        >
+          <BrandLogo size="md" brandText={brand} subText={city} priority />
         </a>
 
         <nav className="hidden lg:flex items-center gap-10">

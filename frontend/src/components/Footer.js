@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin } from "lucide-react";
 import { formatAddress } from "@/lib/format";
+import BrandLogo from "./BrandLogo";
 
 function InstagramIcon(props) {
   return (
@@ -81,13 +82,8 @@ export default function Footer({ hotel }) {
       <div className="mx-auto max-w-7xl px-6 lg:px-10 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div>
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/60 text-accent font-display text-lg">
-                M
-              </span>
-              <span className="font-display text-lg tracking-[0.25em] text-cream">
-                {brand}
-              </span>
+            <div className="flex items-center">
+              <BrandLogo size="lg" brandText={brand} />
             </div>
             <p className="mt-6 text-sm leading-relaxed text-cream-dim max-w-xs">
               {tagline}
