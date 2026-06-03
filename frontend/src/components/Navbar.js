@@ -49,7 +49,7 @@ export default function Navbar({ hotel, phone }) {
             <a
               key={link.href}
               href={link.href}
-              className="relative text-xs font-semibold tracking-[0.10em] uppercase text-[#111111] transition-colors hover:text-[#D71920] after:absolute after:-bottom-1.5 after:left-0 after:h-[2px] after:w-0 after:bg-[#D71920] after:transition-all after:duration-300 hover:after:w-full"
+              className="relative text-xs font-semibold tracking-[0.12em] uppercase text-[#111111] transition-colors hover:text-[#D71920] after:absolute after:-bottom-1.5 after:left-0 after:h-[2px] after:w-0 after:bg-[#D71920] after:transition-all after:duration-300 hover:after:w-full"
             >
               {link.label}
             </a>
@@ -60,7 +60,7 @@ export default function Navbar({ hotel, phone }) {
           {phoneNumber && (
             <a
               href={phoneHref}
-              className="flex items-center gap-2 text-xs font-semibold tracking-[0.10em] uppercase text-[#111111] transition-colors hover:text-[#D71920]"
+              className="flex items-center gap-2 text-xs font-semibold tracking-[0.12em] uppercase text-[#111111] transition-colors hover:text-[#D71920]"
             >
               <Phone className="h-4 w-4" />
               {phoneNumber}
@@ -92,7 +92,7 @@ export default function Navbar({ hotel, phone }) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="border-b border-black/10 py-2 text-xs font-semibold tracking-[0.10em] uppercase text-[#111111] transition-colors hover:text-[#D71920]"
+                className="border-b border-black/10 py-2 text-xs font-semibold tracking-[0.12em] uppercase text-[#111111] transition-colors hover:text-[#D71920]"
               >
                 {link.label}
               </a>
@@ -101,7 +101,7 @@ export default function Navbar({ hotel, phone }) {
               <a
                 href={phoneHref}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 py-1 text-xs font-semibold tracking-[0.10em] uppercase text-[#111111] transition-colors hover:text-[#D71920]"
+                className="flex items-center gap-2 py-1 text-xs font-semibold tracking-[0.12em] uppercase text-[#111111] transition-colors hover:text-[#D71920]"
               >
                 <Phone className="h-4 w-4" />
                 {phoneNumber}

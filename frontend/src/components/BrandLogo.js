@@ -49,7 +49,7 @@ export default function BrandLogo({ variant = "navbar", priority = false }) {
   }
 
   return (
-    <span className="inline-flex h-[46px] w-[136px] shrink-0 items-center justify-center lg:h-[58px] lg:w-[148px]">
+    <span className="inline-flex h-[46px] w-[140px] shrink-0 items-center justify-center lg:h-[58px] lg:w-[142px]">
       <Image
         src={NAV_LOGO}
         alt="M2N Hotels"

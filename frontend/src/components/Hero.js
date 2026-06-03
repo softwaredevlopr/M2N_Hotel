@@ -62,7 +62,7 @@ export default function Hero({ hotel }) {
         <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] text-cream">
           {main}
           <br />
-          <span className="text-[#D71920]">{accent}</span>
+          <span className="text-[#E94A57]">{accent}</span>
         </h1>
 
         <p className="mx-auto mt-8 max-w-2xl text-base sm:text-lg leading-relaxed text-cream-dim">
