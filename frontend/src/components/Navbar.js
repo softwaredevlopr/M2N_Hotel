@@ -13,11 +13,6 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-function deriveCityLabel(hotel) {
-  const city = hotel?.city?.toUpperCase?.();
-  return city ? `${city} · EST 2018` : "BOUTIQUE LUXURY · EST 2018";
-}
-
 export default function Navbar({ hotel, phone }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -29,25 +24,24 @@ export default function Navbar({ hotel, phone }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const city = deriveCityLabel(hotel);
   const phoneNumber = phone || hotel?.phone || "";
   const phoneHref = phoneNumber ? `tel:${phoneNumber.replace(/\s+/g, "")}` : "#";
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-colors duration-300 ${
+      className={`sticky top-0 z-50 border-b bg-[#FFF8F5]/95 backdrop-blur-md transition-shadow duration-300 ${
         scrolled
-          ? "bg-ink/90 backdrop-blur-lg border-b border-gold/15"
-          : "bg-transparent border-b border-transparent"
+          ? "border-[#111111]/10 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.45)]"
+          : "border-[#111111]/5 shadow-[0_4px_18px_-14px_rgba(0,0,0,0.35)]"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5 lg:px-10">
         <a
           href="#home"
           className="inline-flex items-center"
           aria-label="M2N Hotels home"
         >
-          <BrandLogo variant="navbar" subText={city} priority />
+          <BrandLogo variant="navbar" priority />
         </a>
 
         <nav className="hidden lg:flex items-center gap-10">
@@ -55,18 +49,18 @@ export default function Navbar({ hotel, phone }) {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm tracking-[0.18em] uppercase text-cream-dim hover:text-gold transition-colors"
+              className="relative text-sm tracking-[0.18em] uppercase text-[#111111] transition-colors hover:text-gold after:absolute after:-bottom-1.5 after:left-0 after:h-[2px] after:w-0 after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-5">
           {phoneNumber && (
             <a
               href={phoneHref}
-              className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-cream-dim hover:text-gold transition-colors"
+              className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-[#111111]/70 transition-colors hover:text-gold"
             >
               <Phone className="h-4 w-4" />
               {phoneNumber}
@@ -74,7 +68,7 @@ export default function Navbar({ hotel, phone }) {
           )}
           <a
             href="#contact"
-            className="border border-gold/60 px-5 py-2.5 text-xs tracking-[0.25em] uppercase text-gold hover:bg-gold hover:text-cream hover:shadow-[0_6px_18px_-6px_rgba(215,25,32,0.6)] transition-all"
+            className="rounded-sm bg-gold px-6 py-2.5 text-xs font-medium tracking-[0.25em] uppercase text-cream shadow-[0_8px_22px_-8px_rgba(215,25,32,0.6)] transition-all hover:bg-gold-deep hover:shadow-[0_10px_26px_-8px_rgba(215,25,32,0.75)]"
           >
             Reserve
           </a>
@@ -83,7 +77,7 @@ export default function Navbar({ hotel, phone }) {
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="lg:hidden text-cream hover:text-gold transition-colors"
+          className="lg:hidden text-[#111111] transition-colors hover:text-gold"
           aria-label={open ? "Close menu" : "Open menu"}
         >
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -91,22 +85,32 @@ export default function Navbar({ hotel, phone }) {
       </div>
 
       {open && (
-        <div className="lg:hidden bg-ink/95 backdrop-blur-lg border-t border-gold/15">
+        <div className="lg:hidden border-t border-[#111111]/10 bg-[#FFF8F5]">
           <nav className="flex flex-col px-6 py-6 gap-4">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="text-sm tracking-[0.2em] uppercase text-cream-dim hover:text-gold transition-colors py-2 border-b border-ink-line"
+                className="border-b border-[#111111]/10 py-2 text-sm tracking-[0.2em] uppercase text-[#111111] transition-colors hover:text-gold"
               >
                 {link.label}
               </a>
             ))}
+            {phoneNumber && (
+              <a
+                href={phoneHref}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 py-1 text-xs tracking-[0.2em] uppercase text-[#111111]/70 transition-colors hover:text-gold"
+              >
+                <Phone className="h-4 w-4" />
+                {phoneNumber}
+              </a>
+            )}
             <a
               href="#contact"
               onClick={() => setOpen(false)}
-              className="mt-3 text-center border border-gold/60 px-5 py-3 text-xs tracking-[0.25em] uppercase text-gold hover:bg-gold hover:text-cream transition-colors"
+              className="mt-3 rounded-sm bg-gold px-5 py-3 text-center text-xs font-medium tracking-[0.25em] uppercase text-cream shadow-[0_8px_22px_-8px_rgba(215,25,32,0.6)] transition-colors hover:bg-gold-deep"
             >
               Reserve a Stay
             </a>
