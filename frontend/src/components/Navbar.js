@@ -13,11 +13,6 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-function deriveBrandTitle(hotelName) {
-  if (!hotelName || typeof hotelName !== "string") return "M2N HOTELS";
-  return hotelName.trim().toUpperCase();
-}
-
 function deriveCityLabel(hotel) {
   const city = hotel?.city?.toUpperCase?.();
   return city ? `${city} · EST 2018` : "BOUTIQUE LUXURY · EST 2018";
@@ -34,7 +29,6 @@ export default function Navbar({ hotel, phone }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const brand = deriveBrandTitle(hotel?.name);
   const city = deriveCityLabel(hotel);
   const phoneNumber = phone || hotel?.phone || "";
   const phoneHref = phoneNumber ? `tel:${phoneNumber.replace(/\s+/g, "")}` : "#";
@@ -53,7 +47,7 @@ export default function Navbar({ hotel, phone }) {
           className="inline-flex items-center"
           aria-label="M2N Hotels home"
         >
-          <BrandLogo variant="navbar" brandText={brand} subText={city} priority />
+          <BrandLogo variant="navbar" subText={city} priority />
         </a>
 
         <nav className="hidden lg:flex items-center gap-10">

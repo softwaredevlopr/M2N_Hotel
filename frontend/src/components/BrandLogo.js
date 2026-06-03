@@ -3,72 +3,68 @@
 import Image from "next/image";
 import { useState } from "react";
 
-const LOGO_SRC = "/m2n-logo.png";
-const LOGO_ALT = "M2N Hotels";
+const MARK_SRC = "/m2n-mark.png";
+const MARK_W = 187;
+const MARK_H = 212;
+const BRAND = "M2N HOTELS";
 
 const VARIANTS = {
   navbar: {
-    width: 118,
-    height: 42,
-    fallbackBox: "h-9 w-9 text-base",
-    fallbackText: "text-base",
+    tile: "p-1.5",
+    mark: "h-8",
+    wordmark: "text-base sm:text-[1.05rem]",
+    showSub: true,
   },
   footer: {
-    width: 152,
-    height: 54,
-    fallbackBox: "h-11 w-11 text-lg",
-    fallbackText: "text-lg",
+    tile: "p-2",
+    mark: "h-10",
+    wordmark: "text-lg",
+    showSub: false,
   },
 };
 
-export default function BrandLogo({
-  variant = "navbar",
-  brandText = "M2N HOTELS",
-  subText,
-  priority = false,
-}) {
+export default function BrandLogo({ variant = "navbar", subText, priority = false }) {
   const [errored, setErrored] = useState(false);
   const config = VARIANTS[variant] || VARIANTS.navbar;
 
-  if (errored) {
-    return (
-      <span className="inline-flex items-center gap-3">
-        <span
-          className={`flex ${config.fallbackBox} items-center justify-center rounded-full border border-accent/60 text-accent font-display`}
-        >
-          M
-        </span>
-        <span className="flex flex-col leading-tight">
-          <span
-            className={`font-display ${config.fallbackText} tracking-[0.25em] text-cream`}
-          >
-            {brandText}
-          </span>
-          {subText && (
-            <span className="text-[10px] tracking-[0.4em] text-cream-muted">
-              {subText}
-            </span>
-          )}
-        </span>
-      </span>
-    );
-  }
-
   return (
-    <span
-      className="relative inline-flex overflow-hidden rounded-lg bg-gradient-to-b from-white to-cream-dim ring-1 ring-accent/25 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)]"
-      style={{ width: config.width, height: config.height }}
-    >
-      <Image
-        src={LOGO_SRC}
-        alt={LOGO_ALT}
-        fill
-        sizes="160px"
-        priority={priority}
-        onError={() => setErrored(true)}
-        className="object-cover"
-        style={{ objectPosition: "center 46%", transform: "scale(1.08)" }}
-      />
+    <span className="inline-flex items-center gap-3">
+      {errored ? (
+        <span
+          className={`flex ${
+            variant === "footer" ? "h-11 w-11" : "h-9 w-9"
+          } items-center justify-center rounded-lg bg-gold font-display text-xs tracking-tight text-cream shadow-[0_6px_18px_-6px_rgba(215,25,32,0.7)]`}
+        >
+          M2N
+        </span>
+      ) : (
+        <span
+          className={`inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 ${config.tile} backdrop-blur-sm shadow-[0_6px_18px_-8px_rgba(0,0,0,0.65)]`}
+        >
+          <Image
+            src={MARK_SRC}
+            alt="M2N Hotels"
+            width={MARK_W}
+            height={MARK_H}
+            priority={priority}
+            onError={() => setErrored(true)}
+            className={`${config.mark} w-auto rounded-[4px] object-contain`}
+          />
+        </span>
+      )}
+
+      <span className="flex flex-col leading-tight">
+        <span
+          className={`font-display ${config.wordmark} tracking-[0.22em] text-cream`}
+        >
+          {BRAND}
+        </span>
+        {config.showSub && subText && (
+          <span className="text-[9px] tracking-[0.4em] text-cream-muted">
+            {subText}
+          </span>
+        )}
+      </span>
     </span>
   );
 }

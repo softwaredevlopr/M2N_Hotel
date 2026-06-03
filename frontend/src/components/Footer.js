@@ -69,7 +69,7 @@ const FALLBACK_TAGLINE =
   "A boutique luxury hotel — pairing heritage craft with quiet modern hospitality.";
 
 export default function Footer({ hotel }) {
-  const brand = hotel?.name?.toUpperCase?.() || "M2N HOTELS";
+  const brand = "M2N Hotels";
   const tagline = hotel?.tagline || FALLBACK_TAGLINE;
   const phone = hotel?.phone || "+91 141 355 8899";
   const phoneHref = `tel:${phone.replace(/\s+/g, "")}`;
@@ -83,7 +83,7 @@ export default function Footer({ hotel }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div>
             <div className="flex items-center">
-              <BrandLogo variant="footer" brandText={brand} />
+              <BrandLogo variant="footer" />
             </div>
             <p className="mt-6 text-sm leading-relaxed text-cream-dim max-w-xs">
               {tagline}
