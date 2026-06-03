@@ -3,9 +3,9 @@
 import Image from "next/image";
 import { useState } from "react";
 
-const NAV_LOGO = "/m2n-logo-nav.png";
-const NAV_LOGO_W = 645;
-const NAV_LOGO_H = 293;
+const NAV_LOGO = "/m2n-logo-tagline.png";
+const NAV_LOGO_W = 649;
+const NAV_LOGO_H = 373;
 
 const MARK_SRC = "/m2n-mark.png";
 const MARK_W = 187;
@@ -56,7 +56,7 @@ export default function BrandLogo({ variant = "navbar", priority = false }) {
       height={NAV_LOGO_H}
       priority={priority}
       onError={() => setErrored(true)}
-      className="h-10 w-auto object-contain lg:h-[54px]"
+      className="h-[46px] w-auto object-contain lg:h-[58px]"
     />
   );
 }
