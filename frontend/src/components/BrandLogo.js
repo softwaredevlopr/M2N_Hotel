@@ -49,14 +49,16 @@ export default function BrandLogo({ variant = "navbar", priority = false }) {
   }
 
   return (
-    <Image
-      src={NAV_LOGO}
-      alt="M2N Hotels"
-      width={NAV_LOGO_W}
-      height={NAV_LOGO_H}
-      priority={priority}
-      onError={() => setErrored(true)}
-      className="h-[46px] w-auto object-contain lg:h-[58px]"
-    />
+    <span className="inline-flex h-[46px] w-[142px] shrink-0 items-center justify-center lg:h-[58px] lg:w-[155px]">
+      <Image
+        src={NAV_LOGO}
+        alt="M2N Hotels"
+        width={NAV_LOGO_W}
+        height={NAV_LOGO_H}
+        priority={priority}
+        onError={() => setErrored(true)}
+        className="max-h-full max-w-full object-contain"
+      />
+    </span>
   );
 }
