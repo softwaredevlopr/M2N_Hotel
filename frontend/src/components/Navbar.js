@@ -53,7 +53,7 @@ export default function Navbar({ hotel, phone }) {
           className="inline-flex items-center"
           aria-label="M2N Hotels home"
         >
-          <BrandLogo size="md" brandText={brand} subText={city} priority />
+          <BrandLogo variant="navbar" brandText={brand} subText={city} priority />
         </a>
 
         <nav className="hidden lg:flex items-center gap-10">
@@ -80,7 +80,7 @@ export default function Navbar({ hotel, phone }) {
           )}
           <a
             href="#contact"
-            className="border border-gold/60 px-5 py-2.5 text-xs tracking-[0.25em] uppercase text-gold hover:bg-gold hover:text-ink transition-colors"
+            className="border border-gold/60 px-5 py-2.5 text-xs tracking-[0.25em] uppercase text-gold hover:bg-gold hover:text-cream hover:shadow-[0_6px_18px_-6px_rgba(215,25,32,0.6)] transition-all"
           >
             Reserve
           </a>
@@ -112,7 +112,7 @@ export default function Navbar({ hotel, phone }) {
             <a
               href="#contact"
               onClick={() => setOpen(false)}
-              className="mt-3 text-center border border-gold/60 px-5 py-3 text-xs tracking-[0.25em] uppercase text-gold hover:bg-gold hover:text-ink transition-colors"
+              className="mt-3 text-center border border-gold/60 px-5 py-3 text-xs tracking-[0.25em] uppercase text-gold hover:bg-gold hover:text-cream transition-colors"
             >
               Reserve a Stay
             </a>

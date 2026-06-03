@@ -83,7 +83,7 @@ export default function Footer({ hotel }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div>
             <div className="flex items-center">
-              <BrandLogo size="lg" brandText={brand} />
+              <BrandLogo variant="footer" brandText={brand} />
             </div>
             <p className="mt-6 text-sm leading-relaxed text-cream-dim max-w-xs">
               {tagline}

@@ -3,31 +3,45 @@
 import Image from "next/image";
 import { useState } from "react";
 
-const SIZE_MAP = {
-  sm: { box: "h-9 w-9", padding: "p-1", fallback: "h-9 w-9 text-base" },
-  md: { box: "h-10 w-10", padding: "p-1.5", fallback: "h-10 w-10 text-lg" },
-  lg: { box: "h-12 w-12", padding: "p-2", fallback: "h-12 w-12 text-xl" },
+const LOGO_SRC = "/m2n-logo.png";
+const LOGO_ALT = "M2N Hotels";
+
+const VARIANTS = {
+  navbar: {
+    width: 118,
+    height: 42,
+    fallbackBox: "h-9 w-9 text-base",
+    fallbackText: "text-base",
+  },
+  footer: {
+    width: 152,
+    height: 54,
+    fallbackBox: "h-11 w-11 text-lg",
+    fallbackText: "text-lg",
+  },
 };
 
 export default function BrandLogo({
-  size = "md",
+  variant = "navbar",
   brandText = "M2N HOTELS",
   subText,
   priority = false,
 }) {
   const [errored, setErrored] = useState(false);
-  const config = SIZE_MAP[size] || SIZE_MAP.md;
+  const config = VARIANTS[variant] || VARIANTS.navbar;
 
   if (errored) {
     return (
       <span className="inline-flex items-center gap-3">
         <span
-          className={`flex ${config.fallback} items-center justify-center rounded-full border border-accent/60 text-accent font-display`}
+          className={`flex ${config.fallbackBox} items-center justify-center rounded-full border border-accent/60 text-accent font-display`}
         >
           M
         </span>
         <span className="flex flex-col leading-tight">
-          <span className="font-display text-lg tracking-[0.25em] text-cream">
+          <span
+            className={`font-display ${config.fallbackText} tracking-[0.25em] text-cream`}
+          >
             {brandText}
           </span>
           {subText && (
@@ -42,16 +56,18 @@ export default function BrandLogo({
 
   return (
     <span
-      className={`inline-flex items-center justify-center bg-white rounded-md ${config.padding} ring-1 ring-accent/40 shadow-[0_2px_12px_rgba(0,0,0,0.25)]`}
+      className="relative inline-flex overflow-hidden rounded-lg bg-gradient-to-b from-white to-cream-dim ring-1 ring-accent/25 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)]"
+      style={{ width: config.width, height: config.height }}
     >
       <Image
-        src="/m2n-logo.png"
-        alt="M2N Hotels"
-        width={160}
-        height={160}
+        src={LOGO_SRC}
+        alt={LOGO_ALT}
+        fill
+        sizes="160px"
         priority={priority}
         onError={() => setErrored(true)}
-        className={`${config.box} object-contain`}
+        className="object-cover"
+        style={{ objectPosition: "center 46%", transform: "scale(1.08)" }}
       />
     </span>
   );
