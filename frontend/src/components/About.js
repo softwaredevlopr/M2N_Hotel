@@ -2,79 +2,86 @@ import { Award, Sparkles, Crown } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/images";
 import { padNumber } from "@/lib/format";
 
+import {
+  BRAND_NAME,
+  BRAND_TAGLINE,
+  BRAND_DESCRIPTION,
+} from "@/lib/brand";
+
 const PILLARS = [
   {
     icon: Crown,
-    title: "Boutique Heritage",
+    title: "Thoughtful Comfort",
     description:
-      "A restored haveli aesthetic with hand-carved details and frescoed ceilings.",
+      "Well-appointed rooms and calm interiors designed for restful, modern stays.",
   },
   {
     icon: Sparkles,
-    title: "Quiet Modern Luxury",
+    title: "Attentive Service",
     description:
-      "Calm interiors, layered lighting, and butler-led service that disappears when you need privacy.",
+      "A dedicated team focused on smooth arrivals, responsive care, and guest comfort.",
   },
   {
     icon: Award,
-    title: "Awarded Hospitality",
+    title: "Reliable Hospitality",
     description:
-      "Recognised by leading travel publications for craft and warmth.",
+      "Consistent standards and warm welcomes across every M2N Hotels stay.",
   },
 ];
 
-const FALLBACK_DESCRIPTION_PRIMARY =
-  "M2N Hotels began with a family of hoteliers who wanted to slow time for their guests. Every stay remains intimate by design — a curated set of rooms, a quiet rooftop, and a team that remembers your tea.";
-
-const FALLBACK_DESCRIPTION_SECONDARY =
-  "We work with local artisans for our textiles, source produce from farms nearby, and curate every experience — from private sunrise walks to craft workshops with master makers.";
-
 function deriveStats({ hotel, roomTypeCount }) {
-  const established = 2018;
-  const currentYear = new Date().getFullYear();
-  const years = Math.max(currentYear - established, 1);
+  const stats = [];
 
-  const starRating = hotel?.star_rating ? padNumber(hotel.star_rating) : "04";
-  const amenitiesCount =
-    Array.isArray(hotel?.amenities) && hotel.amenities.length > 0
-      ? padNumber(hotel.amenities.length)
-      : "08";
+  if (hotel?.star_rating) {
+    stats.push({
+      label: "Star Rated",
+      value: padNumber(hotel.star_rating),
+      suffix: "★",
+    });
+  }
+  if (roomTypeCount > 0) {
+    stats.push({
+      label: "Room Categories",
+      value: padNumber(roomTypeCount),
+    });
+  }
+  if (Array.isArray(hotel?.amenities) && hotel.amenities.length > 0) {
+    stats.push({
+      label: "Amenities",
+      value: padNumber(hotel.amenities.length),
+    });
+  }
 
-  const categories = roomTypeCount > 0 ? padNumber(roomTypeCount) : "03";
-
-  return [
-    { label: "Years of Heritage", value: padNumber(years) },
-    { label: "Room Categories", value: categories },
-    { label: "Star Rated", value: starRating, suffix: "★" },
-    { label: "Curated Amenities", value: amenitiesCount },
-  ].slice(0, 3);
+  return stats.slice(0, 3);
 }
 
 function splitDescription(text) {
   if (!text || typeof text !== "string") {
-    return [FALLBACK_DESCRIPTION_PRIMARY, FALLBACK_DESCRIPTION_SECONDARY];
+    return [BRAND_DESCRIPTION, ""];
   }
   const sentences = text.split(/(?<=\.)\s+/).filter(Boolean);
-  if (sentences.length <= 1) return [text, FALLBACK_DESCRIPTION_SECONDARY];
+  if (sentences.length <= 1) return [text, ""];
   const mid = Math.ceil(sentences.length / 2);
   return [sentences.slice(0, mid).join(" "), sentences.slice(mid).join(" ")];
 }
 
 function buildHeadline(hotel) {
-  if (hotel?.city) {
+  if (hotel?.name) {
     return (
       <>
-        Where Old {hotel.city}
+        {hotel.name}
         <br />
-        <span className="italic text-gold">whispers</span> to the new.
+        <span className="italic text-gold">
+          {hotel.tagline || BRAND_TAGLINE}
+        </span>
       </>
     );
   }
   return (
     <>
-      Where heritage
+      {BRAND_NAME}
       <br />
-      <span className="italic text-gold">whispers</span> to the new.
+      <span className="italic text-gold">{BRAND_TAGLINE}</span>
     </>
   );
 }
@@ -88,10 +95,8 @@ export default function About({ hotel, roomTypes = [] }) {
   const coverMedia = hotel?.media?.[1] ?? hotel?.media?.[0];
   const aboutImage = resolveMediaUrl(coverMedia, 1);
 
-  const gmQuote =
-    hotel?.metadata?.gm_quote ||
-    "If you can imagine it, we'll arrange it.";
-  const gmName = hotel?.metadata?.gm_name || "Aarav Singh, General Manager";
+  const gmQuote = hotel?.metadata?.gm_quote;
+  const gmName = hotel?.metadata?.gm_name;
 
   return (
     <section id="about" className="relative bg-ink py-28 sm:py-36">
@@ -108,47 +113,55 @@ export default function About({ hotel, roomTypes = [] }) {
             <p className="mt-8 text-base sm:text-lg leading-relaxed text-cream-dim">
               {primaryDescription}
             </p>
-            <p className="mt-5 text-base sm:text-lg leading-relaxed text-cream-dim">
-              {secondaryDescription}
-            </p>
+            {secondaryDescription && (
+              <p className="mt-5 text-base sm:text-lg leading-relaxed text-cream-dim">
+                {secondaryDescription}
+              </p>
+            )}
 
-            <div className="mt-12 grid grid-cols-3 gap-6 border-y border-ink-line py-8">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <div className="font-display text-3xl sm:text-4xl text-gold">
-                    {stat.value}
-                    {stat.suffix && (
-                      <span className="ml-1 text-xl">{stat.suffix}</span>
-                    )}
+            {stats.length > 0 && (
+              <div className="mt-12 grid grid-cols-3 gap-6 border-y border-ink-line py-8">
+                {stats.map((stat) => (
+                  <div key={stat.label}>
+                    <div className="font-display text-3xl sm:text-4xl text-gold">
+                      {stat.value}
+                      {stat.suffix && (
+                        <span className="ml-1 text-xl">{stat.suffix}</span>
+                      )}
+                    </div>
+                    <div className="mt-2 text-[11px] tracking-[0.25em] uppercase text-cream-muted">
+                      {stat.label}
+                    </div>
                   </div>
-                  <div className="mt-2 text-[11px] tracking-[0.25em] uppercase text-cream-muted">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative">
             <div className="relative aspect-[4/5] overflow-hidden">
               <img
                 src={aboutImage}
-                alt={`${hotel?.name || "M2N Hotels"} interior`}
+                alt={`${hotel?.name || BRAND_NAME} interior`}
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 ring-1 ring-gold/30" />
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden md:block border border-accent/50 bg-ink p-6 max-w-xs">
-              <div className="text-xs tracking-[0.3em] uppercase text-accent">
-                Concierge Promise
+            {gmQuote && (
+              <div className="absolute -bottom-6 -left-6 hidden md:block border border-accent/50 bg-ink p-6 max-w-xs">
+                <div className="text-xs tracking-[0.3em] uppercase text-accent">
+                  Concierge Promise
+                </div>
+                <p className="mt-3 font-display text-xl leading-snug text-cream">
+                  &ldquo;{gmQuote}&rdquo;
+                </p>
+                {gmName && (
+                  <div className="mt-3 text-xs tracking-[0.2em] uppercase text-cream-muted">
+                    — {gmName}
+                  </div>
+                )}
               </div>
-              <p className="mt-3 font-display text-xl leading-snug text-cream">
-                &ldquo;{gmQuote}&rdquo;
-              </p>
-              <div className="mt-3 text-xs tracking-[0.2em] uppercase text-cream-muted">
-                — {gmName}
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

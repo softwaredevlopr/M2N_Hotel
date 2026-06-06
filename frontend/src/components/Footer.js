@@ -1,6 +1,7 @@
 import { Phone, Mail, MapPin } from "lucide-react";
 import { formatAddress } from "@/lib/format";
 import BrandLogo from "./BrandLogo";
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 
 function InstagramIcon(props) {
   return (
@@ -65,17 +66,12 @@ const SOCIALS = [
   { icon: TwitterIcon, href: "#", label: "Twitter" },
 ];
 
-const FALLBACK_TAGLINE =
-  "A boutique luxury hotel — pairing heritage craft with quiet modern hospitality.";
-
 export default function Footer({ hotel }) {
-  const brand = "M2N Hotels";
-  const tagline = hotel?.tagline || FALLBACK_TAGLINE;
-  const phone = hotel?.phone || "+91 141 355 8899";
-  const phoneHref = `tel:${phone.replace(/\s+/g, "")}`;
-  const email = hotel?.email || "reservations@m2nhotel.in";
+  const tagline = hotel?.tagline || BRAND_TAGLINE;
+  const phone = hotel?.phone;
+  const phoneHref = phone ? `tel:${phone.replace(/\s+/g, "")}` : null;
+  const email = hotel?.email;
   const address = formatAddress(hotel);
-  const craftedLocation = hotel?.city || "every detail";
 
   return (
     <footer className="bg-ink border-t border-ink-line">
@@ -152,36 +148,40 @@ export default function Footer({ hotel }) {
                   <span>{address}</span>
                 </li>
               )}
-              <li className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-gold" strokeWidth={1.5} />
-                <a
-                  href={phoneHref}
-                  className="hover:text-gold transition-colors"
-                >
-                  {phone}
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-gold" strokeWidth={1.5} />
-                <a
-                  href={`mailto:${email}`}
-                  className="hover:text-gold transition-colors break-all"
-                >
-                  {email}
-                </a>
-              </li>
+              {phone && phoneHref && (
+                <li className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-gold" strokeWidth={1.5} />
+                  <a
+                    href={phoneHref}
+                    className="hover:text-gold transition-colors"
+                  >
+                    {phone}
+                  </a>
+                </li>
+              )}
+              {email && (
+                <li className="flex items-center gap-3">
+                  <Mail className="h-4 w-4 text-gold" strokeWidth={1.5} />
+                  <a
+                    href={`mailto:${email}`}
+                    className="hover:text-gold transition-colors break-all"
+                  >
+                    {email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-ink-line flex flex-col sm:flex-row items-center justify-between gap-4 text-xs tracking-[0.2em] uppercase text-cream-muted">
           <div>
-            © {new Date().getFullYear()} {brand} Pvt. Ltd. · All rights
+            © {new Date().getFullYear()} {BRAND_NAME} Pvt. Ltd. · All rights
             reserved.
           </div>
           <div className="flex items-center gap-2">
             <span className="h-px w-8 bg-accent/50" />
-            Crafted with care in {craftedLocation}
+            Crafted with care by {BRAND_NAME}
             <span className="h-px w-8 bg-accent/50" />
           </div>
         </div>

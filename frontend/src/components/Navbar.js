@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
-const NAV_LINKS = [
+const HOTEL_NAV_LINKS = [
   { label: "Home", href: "#home" },
   { label: "About", href: "#about" },
   { label: "Rooms", href: "#rooms" },
@@ -13,9 +13,18 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-export default function Navbar({ hotel, phone }) {
+const BRAND_NAV_LINKS = [
+  { label: "Home", href: "/#home" },
+  { label: "Our Hotels", href: "/#hotels" },
+  { label: "About", href: "/#about" },
+  { label: "Contact", href: "/#contact" },
+];
+
+export default function Navbar({ variant = "hotel", hotel, phone }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isBrand = variant === "brand";
+  const navLinks = isBrand ? BRAND_NAV_LINKS : HOTEL_NAV_LINKS;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -26,6 +35,8 @@ export default function Navbar({ hotel, phone }) {
 
   const phoneNumber = phone || hotel?.phone || "";
   const phoneHref = phoneNumber ? `tel:${phoneNumber.replace(/\s+/g, "")}` : "#";
+  const reserveHref = isBrand ? "/#hotels" : "#contact";
+  const reserveLabel = isBrand ? "Explore Hotels" : "Reserve";
 
   return (
     <header
@@ -37,7 +48,7 @@ export default function Navbar({ hotel, phone }) {
     >
       <div className="mx-auto flex min-h-[68px] max-w-7xl items-center justify-between px-6 py-2.5 lg:min-h-[74px] lg:px-10 lg:py-2">
         <a
-          href="#home"
+          href="/"
           className="inline-flex items-center"
           aria-label="M2N Hotels home"
         >
@@ -45,7 +56,7 @@ export default function Navbar({ hotel, phone }) {
         </a>
 
         <nav className="hidden lg:flex items-center gap-10">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
@@ -67,10 +78,10 @@ export default function Navbar({ hotel, phone }) {
             </a>
           )}
           <a
-            href="#contact"
+            href={reserveHref}
             className="rounded-sm bg-[#D71920] px-6 py-2.5 text-xs font-semibold tracking-[0.16em] uppercase text-white shadow-[0_6px_18px_-8px_rgba(215,25,32,0.55)] transition-all hover:bg-[#B51218]"
           >
-            Reserve
+            {reserveLabel}
           </a>
         </div>
 
@@ -87,7 +98,7 @@ export default function Navbar({ hotel, phone }) {
       {open && (
         <div className="lg:hidden border-t border-black/[0.08] bg-[#FFFDF8]">
           <nav className="flex flex-col px-6 py-6 gap-4">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
@@ -108,11 +119,11 @@ export default function Navbar({ hotel, phone }) {
               </a>
             )}
             <a
-              href="#contact"
+              href={reserveHref}
               onClick={() => setOpen(false)}
               className="mt-3 rounded-sm bg-[#D71920] px-5 py-3 text-center text-xs font-semibold tracking-[0.16em] uppercase text-white shadow-[0_6px_18px_-8px_rgba(215,25,32,0.55)] transition-colors hover:bg-[#B51218]"
             >
-              Reserve a Stay
+              {isBrand ? "Explore Our Hotels" : "Reserve a Stay"}
             </a>
           </nav>
         </div>

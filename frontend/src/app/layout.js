@@ -1,5 +1,6 @@
 import { Geist, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { BRAND_NAME, BRAND_TAGLINE, BRAND_DESCRIPTION } from "@/lib/brand";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +16,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: "M2N Hotels — Morning to Night Hospitality",
-  description:
-    "A boutique luxury hotel pairing heritage interiors with modern hospitality — rooftop dining, curated experiences and warm welcomes for every guest.",
+  title: `${BRAND_NAME} — ${BRAND_TAGLINE}`,
+  description: BRAND_DESCRIPTION,
   icons: {
     icon: [{ url: "/m2n-logo.png", type: "image/png" }],
     apple: [{ url: "/m2n-logo.png", type: "image/png" }],

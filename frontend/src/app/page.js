@@ -7,28 +7,49 @@ import Gallery from "@/components/Gallery";
 import ContactCTA from "@/components/ContactCTA";
 import Footer from "@/components/Footer";
 import BackendOfflineBanner from "@/components/BackendOfflineBanner";
-import { getHotels, getHotelBySlug, getRoomTypes } from "@/lib/api";
+import OurHotels from "@/components/OurHotels";
+import { getHotelBySlug, getHotelsWithDetails, getRoomTypes } from "@/lib/api";
+import {
+  BRAND_NAME,
+  BRAND_TAGLINE,
+  BRAND_DESCRIPTION,
+} from "@/lib/brand";
 
 export const revalidate = 60;
 
-async function resolvePrimaryHotelSlug() {
+function resolvePrimaryHotelSlug() {
   const envSlug = process.env.NEXT_PUBLIC_HOTEL_SLUG;
   if (typeof envSlug === "string" && envSlug.trim().length > 0) {
     return envSlug.trim();
   }
+  return null;
+}
 
-  const hotels = await getHotels();
-  return hotels[0]?.slug ?? null;
+export async function generateMetadata() {
+  const slug = resolvePrimaryHotelSlug();
+  const hotel = slug ? await getHotelBySlug(slug) : null;
+
+  const title = hotel?.name
+    ? `${hotel.name} | ${BRAND_NAME}`
+    : `${BRAND_NAME} — ${BRAND_TAGLINE}`;
+  const description = hotel?.description || BRAND_DESCRIPTION;
+
+  return {
+    title,
+    description,
+  };
 }
 
 export default async function Home() {
-  const slug = await resolvePrimaryHotelSlug();
+  const slug = resolvePrimaryHotelSlug();
 
-  const [hotel, roomTypes] = slug
-    ? await Promise.all([getHotelBySlug(slug), getRoomTypes(slug)])
-    : [null, []];
+  const [hotel, roomTypes, allHotels] = await Promise.all([
+    slug ? getHotelBySlug(slug) : Promise.resolve(null),
+    slug ? getRoomTypes(slug) : Promise.resolve([]),
+    getHotelsWithDetails(),
+  ]);
 
-  const isOffline = hotel === null && roomTypes.length === 0;
+  const isOffline = hotel === null;
   const amenities = hotel?.amenities ?? [];
   const media = hotel?.media ?? [];
   const currencyCode = hotel?.currency_code || "INR";
@@ -36,14 +57,19 @@ export default async function Home() {
   return (
     <>
       {isOffline && <BackendOfflineBanner />}
-      <Navbar hotel={hotel} />
+      <Navbar variant="hotel" hotel={hotel} />
       <main>
         <Hero hotel={hotel} />
         <About hotel={hotel} roomTypes={roomTypes} />
-        <Amenities amenities={amenities} />
-        <FeaturedRooms roomTypes={roomTypes} currencyCode={currencyCode} />
-        <Gallery media={media} />
+        <Amenities hotel={hotel} amenities={amenities} />
+        <FeaturedRooms
+          hotel={hotel}
+          roomTypes={roomTypes}
+          currencyCode={currencyCode}
+        />
+        <Gallery hotel={hotel} media={media} />
         <ContactCTA hotel={hotel} />
+        <OurHotels hotels={allHotels} />
       </main>
       <Footer hotel={hotel} />
     </>

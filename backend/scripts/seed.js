@@ -2,8 +2,6 @@ require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") }
 
 const { pool, query } = require("../config/db");
 
-const HOTEL_SLUG = "m2n-hotel-jaipur";
-
 function log(message) {
   console.log(`[Seed] ${message}`);
 }
@@ -12,7 +10,7 @@ function logError(message) {
   console.error(`[Seed] ${message}`);
 }
 
-async function upsertHotel() {
+async function upsertHotel(hotel) {
   const result = await query(
     `
     INSERT INTO hotels (
@@ -66,32 +64,27 @@ async function upsertHotel() {
     RETURNING id, slug
     `,
     [
-      HOTEL_SLUG,
-      "M2N Hotel Jaipur",
-      "Rajasthani warmth, modern comfort near Hawa Mahal",
-      "M2N Hotel Jaipur offers boutique stays on MI Road with rooftop dining, curated local experiences, and easy access to Old City bazaars, Amber Fort, and Jaipur Junction (2.5 km). Ideal for families, wedding guests, and business travellers.",
-      "reservations@m2nhotel.in",
-      "+91-141-3558899",
-      "https://www.m2nhotel.in",
-      "MI Road, Panch Batti",
-      "Opposite Rajmandir Cinema",
-      "Jaipur",
-      "Rajasthan",
-      "India",
-      "302001",
-      "Asia/Kolkata",
-      "14:00",
-      "11:00",
-      "INR",
-      4,
-      "active",
-      true,
-      JSON.stringify({
-        brand: "M2N Hotels",
-        property_code: "M2N-JPR-01",
-        languages: ["hi", "en"],
-        gstin: "08AABCM1234A1Z5",
-      }),
+      hotel.slug,
+      hotel.name,
+      hotel.tagline,
+      hotel.description,
+      hotel.email,
+      hotel.phone,
+      hotel.website_url,
+      hotel.address_line1,
+      hotel.address_line2,
+      hotel.city,
+      hotel.state,
+      hotel.country,
+      hotel.postal_code,
+      hotel.timezone,
+      hotel.check_in_time,
+      hotel.check_out_time,
+      hotel.currency_code,
+      hotel.star_rating,
+      hotel.status,
+      hotel.is_featured,
+      JSON.stringify(hotel.metadata || {}),
     ]
   );
 
@@ -112,6 +105,13 @@ async function upsertAmenities() {
       slug: "rooftop-restaurant",
       name: "Rooftop Restaurant",
       description: "Multi-cuisine dining with city views.",
+      category: "dining",
+      icon: "restaurant",
+    },
+    {
+      slug: "restaurant-kitchen",
+      name: "Restaurant Kitchen",
+      description: "On-site kitchen serving fresh meals for guests.",
       category: "dining",
       icon: "restaurant",
     },
@@ -153,7 +153,7 @@ async function upsertAmenities() {
     {
       slug: "airport-pickup",
       name: "Airport Pickup",
-      description: "Paid pickup from Jaipur International Airport (JAI).",
+      description: "Paid pickup from nearby airports on request.",
       category: "transport",
       icon: "car",
     },
@@ -184,15 +184,14 @@ async function upsertAmenities() {
   return amenityIds;
 }
 
-async function linkHotelAmenities(hotelId, amenityIds) {
-  const highlights = new Set([
-    "rooftop-restaurant",
-    "swimming-pool",
-    "complimentary-wifi",
-    "airport-pickup",
-  ]);
+async function linkHotelAmenities(hotelId, amenityIds, links) {
+  for (const link of links) {
+    const amenityId = amenityIds[link.slug];
+    if (!amenityId) {
+      log(`Skipping unknown amenity slug: ${link.slug}`);
+      continue;
+    }
 
-  for (const [slug, amenityId] of Object.entries(amenityIds)) {
     await query(
       `
       INSERT INTO hotel_amenities (hotel_id, amenity_id, is_highlighted, notes)
@@ -201,57 +200,14 @@ async function linkHotelAmenities(hotelId, amenityIds) {
         is_highlighted = EXCLUDED.is_highlighted,
         notes = EXCLUDED.notes
       `,
-      [
-        hotelId,
-        amenityId,
-        highlights.has(slug),
-        slug === "airport-pickup" ? "Advance booking recommended; charges apply." : null,
-      ]
+      [hotelId, amenityId, link.is_highlighted, link.notes || null]
     );
   }
 
-  log(`Linked ${Object.keys(amenityIds).length} amenities to hotel`);
+  log(`Linked ${links.length} amenities to hotel ${hotelId}`);
 }
 
-async function upsertHotelMedia(hotelId) {
-  const mediaItems = [
-    {
-      url: "https://images.m2nhotel.in/jaipur/facade-evening.jpg",
-      alt_text: "M2N Hotel Jaipur facade at sunset",
-      caption: "Heritage-pink facade on MI Road",
-      sort_order: 1,
-      is_cover: true,
-    },
-    {
-      url: "https://images.m2nhotel.in/jaipur/lobby.jpg",
-      alt_text: "Marble lobby with jharokha artwork",
-      caption: "Lobby with Rajasthani jharokha motifs",
-      sort_order: 2,
-      is_cover: false,
-    },
-    {
-      url: "https://images.m2nhotel.in/jaipur/rooftop-restaurant.jpg",
-      alt_text: "Rooftop restaurant overlooking Jaipur skyline",
-      caption: "Skyline views from Chokhi Dhani Rooftop",
-      sort_order: 3,
-      is_cover: false,
-    },
-    {
-      url: "https://images.m2nhotel.in/jaipur/pool.jpg",
-      alt_text: "Outdoor swimming pool with lounge chairs",
-      caption: "Pool open October to March, 7 AM – 7 PM",
-      sort_order: 4,
-      is_cover: false,
-    },
-    {
-      url: "https://images.m2nhotel.in/jaipur/deluxe-room.jpg",
-      alt_text: "Deluxe room with king bed and city view",
-      caption: "Deluxe room — warm tones and city-facing balcony",
-      sort_order: 5,
-      is_cover: false,
-    },
-  ];
-
+async function upsertHotelMedia(hotelId, mediaItems) {
   for (const item of mediaItems) {
     const existing = await query(
       `SELECT id FROM hotel_media WHERE hotel_id = $1 AND url = $2`,
@@ -290,46 +246,7 @@ async function upsertHotelMedia(hotelId) {
   }
 }
 
-async function upsertRoomTypes(hotelId) {
-  const roomTypes = [
-    {
-      slug: "standard-room",
-      name: "Standard Room",
-      description:
-        "Compact AC room with queen bed, LED TV, geyser, and daily housekeeping. Perfect for solo travellers and short Jaipur stops.",
-      base_price: 3499.0,
-      max_occupancy: 2,
-      bed_type: "Queen",
-      room_size_sqft: 180,
-      status: "active",
-      sort_order: 1,
-    },
-    {
-      slug: "deluxe-room",
-      name: "Deluxe Room",
-      description:
-        "Spacious room with king bed, work desk, mini-fridge, tea/coffee kit, and partial city view. Popular with couples and small families.",
-      base_price: 5499.0,
-      max_occupancy: 3,
-      bed_type: "King",
-      room_size_sqft: 260,
-      status: "active",
-      sort_order: 2,
-    },
-    {
-      slug: "royal-suite",
-      name: "Royal Suite",
-      description:
-        "Premium suite with living area, jacuzzi bath, butler call, and panoramic views towards Nahargarh. Includes welcome thali on arrival.",
-      base_price: 12499.0,
-      max_occupancy: 4,
-      bed_type: "King + Sofa Bed",
-      room_size_sqft: 520,
-      status: "active",
-      sort_order: 3,
-    },
-  ];
-
+async function upsertRoomTypes(hotelId, roomTypes) {
   const roomTypeIds = {};
 
   for (const item of roomTypes) {
@@ -363,7 +280,7 @@ async function upsertRoomTypes(hotelId) {
         item.room_size_sqft,
         item.status,
         item.sort_order,
-        JSON.stringify({ gst_inclusive: false, breakfast_addon_inr: 299 }),
+        JSON.stringify(item.metadata || {}),
       ]
     );
 
@@ -374,17 +291,7 @@ async function upsertRoomTypes(hotelId) {
   return roomTypeIds;
 }
 
-async function upsertRooms(hotelId, roomTypeIds) {
-  const rooms = [
-    { room_number: "101", room_type_slug: "standard-room", floor_label: "1st Floor", status: "available" },
-    { room_number: "102", room_type_slug: "standard-room", floor_label: "1st Floor", status: "available" },
-    { room_number: "103", room_type_slug: "standard-room", floor_label: "1st Floor", status: "occupied" },
-    { room_number: "201", room_type_slug: "deluxe-room", floor_label: "2nd Floor", status: "available" },
-    { room_number: "202", room_type_slug: "deluxe-room", floor_label: "2nd Floor", status: "maintenance" },
-    { room_number: "301", room_type_slug: "royal-suite", floor_label: "3rd Floor", status: "available" },
-    { room_number: "302", room_type_slug: "royal-suite", floor_label: "3rd Floor", status: "blocked", notes: "Reserved for wedding group — 12–15 Nov" },
-  ];
-
+async function upsertRooms(hotelId, roomTypeIds, rooms) {
   for (const item of rooms) {
     const roomTypeId = roomTypeIds[item.room_type_slug];
 
@@ -405,15 +312,269 @@ async function upsertRooms(hotelId, roomTypeIds) {
   }
 }
 
+const ZAARANG_HOTEL = {
+  slug: "hotel-zaarang-inn",
+  name: "Hotel Zaarang Inn",
+  tagline: "Comfortable stay near Chinhat, Lucknow",
+  description:
+    "Hotel Zaarang Inn offers comfortable rooms, warm hospitality, and convenient access near Deva Road, Chinhat, Lucknow. Ideal for families, business guests, and short city stays.",
+  email: "reservations@m2nhotel.com",
+  phone: "+91 XXXXX XXXXX",
+  website_url: null,
+  address_line1: "Ganeshpur Rahmanpur, Shivpuri Chauraha, Deva Rd",
+  address_line2: "Opposite Kapda Kothi, Next to HP Petrol Pump, Chinhat",
+  city: "Lucknow",
+  state: "Uttar Pradesh",
+  country: "India",
+  postal_code: "226028",
+  timezone: "Asia/Kolkata",
+  check_in_time: "12:00",
+  check_out_time: "11:00",
+  currency_code: "INR",
+  star_rating: null,
+  status: "active",
+  is_featured: true,
+  metadata: {
+    brand: "M2N Hotels",
+    property_code: "M2N-ZI-01",
+    languages: ["hi", "en"],
+  },
+};
+
+const ZAARANG_AMENITY_LINKS = [
+  { slug: "complimentary-wifi", is_highlighted: true },
+  { slug: "free-parking", is_highlighted: true },
+  { slug: "restaurant-kitchen", is_highlighted: true },
+  { slug: "air-conditioned-rooms", is_highlighted: true },
+  { slug: "24x7-room-service", is_highlighted: false },
+  { slug: "laundry-service", is_highlighted: false },
+];
+
+const ZAARANG_MEDIA = [
+  {
+    url: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1800&q=80",
+    alt_text: "Hotel Zaarang Inn exterior",
+    caption: "Comfortable stays with warm hospitality",
+    sort_order: 1,
+    is_cover: true,
+  },
+  {
+    url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1400&q=80",
+    alt_text: "Hotel lobby and reception",
+    caption: "Welcoming lobby and reception area",
+    sort_order: 2,
+    is_cover: false,
+  },
+  {
+    url: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1400&q=80",
+    alt_text: "Standard hotel room",
+    caption: "Comfortable guest rooms",
+    sort_order: 3,
+    is_cover: false,
+  },
+  {
+    url: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1400&q=80",
+    alt_text: "Hotel dining area",
+    caption: "On-site dining for guests",
+    sort_order: 4,
+    is_cover: false,
+  },
+];
+
+const ZAARANG_ROOM_TYPES = [
+  {
+    slug: "standard",
+    name: "Standard",
+    description:
+      "Comfortable standard room with essential amenities for short and extended stays.",
+    base_price: 0,
+    max_occupancy: 2,
+    bed_type: "Queen",
+    room_size_sqft: null,
+    status: "active",
+    sort_order: 1,
+    metadata: {},
+  },
+  {
+    slug: "deluxe",
+    name: "Deluxe",
+    description:
+      "Spacious deluxe room with added comfort for families and business guests.",
+    base_price: 0,
+    max_occupancy: 3,
+    bed_type: "King",
+    room_size_sqft: null,
+    status: "active",
+    sort_order: 2,
+    metadata: {},
+  },
+  {
+    slug: "suite",
+    name: "Suite",
+    description:
+      "Premium suite with extra space for longer stays and special occasions.",
+    base_price: 0,
+    max_occupancy: 4,
+    bed_type: "King + Sofa Bed",
+    room_size_sqft: null,
+    status: "active",
+    sort_order: 3,
+    metadata: {},
+  },
+];
+
+const ZAARANG_ROOMS = [
+  { room_number: "101", room_type_slug: "standard", floor_label: "1st Floor", status: "available" },
+  { room_number: "102", room_type_slug: "standard", floor_label: "1st Floor", status: "available" },
+  { room_number: "201", room_type_slug: "deluxe", floor_label: "2nd Floor", status: "available" },
+  { room_number: "301", room_type_slug: "suite", floor_label: "3rd Floor", status: "available" },
+];
+
+const RETIRED_HOTEL_SLUGS = ["m2n-hotel-jaipur"];
+
+const AURELIA_HOTEL = {
+  slug: "m2n-hotel-aurelia-grand",
+  name: "M2N Hotel : AURELIA GRAND",
+  tagline: "Boutique comfort near city center",
+  description:
+    "M2N Hotel Aurelia Grand brings boutique comfort, warm hospitality, and convenient access in Lucknow. Designed for family stays, business guests, and short city visits, the hotel offers essential modern amenities with a professional M2N Hotels experience.",
+  email: "reservations@m2nhotel.in",
+  phone: "TODO_BOOKING_NUMBER",
+  website_url: null,
+  address_line1: "Plot No. 76",
+  address_line2:
+    "Malhaur Railway Station Road, Near Urmila Hospital, Awadh Vihar Colony, Gomti Nagar",
+  city: "Lucknow",
+  state: "Uttar Pradesh",
+  country: "India",
+  postal_code: "226010",
+  timezone: "Asia/Kolkata",
+  check_in_time: "12:00",
+  check_out_time: "11:00",
+  currency_code: "INR",
+  star_rating: null,
+  status: "active",
+  is_featured: true,
+  metadata: {
+    brand: "M2N Hotels",
+    property_code: "M2N-LKO-01",
+    languages: ["hi", "en"],
+  },
+};
+
+const AURELIA_AMENITY_LINKS = [
+  { slug: "complimentary-wifi", is_highlighted: true },
+  { slug: "free-parking", is_highlighted: true },
+  { slug: "restaurant-kitchen", is_highlighted: true },
+  { slug: "air-conditioned-rooms", is_highlighted: true },
+];
+
+const AURELIA_ROOM_TYPES = [
+  {
+    slug: "standard",
+    name: "Standard",
+    description:
+      "Comfortable standard room with essential amenities for short and extended stays.",
+    base_price: 0,
+    max_occupancy: 2,
+    bed_type: "Queen",
+    room_size_sqft: null,
+    status: "active",
+    sort_order: 1,
+    metadata: {},
+  },
+  {
+    slug: "deluxe",
+    name: "Deluxe",
+    description:
+      "Spacious deluxe room with added comfort for families and business guests.",
+    base_price: 0,
+    max_occupancy: 3,
+    bed_type: "King",
+    room_size_sqft: null,
+    status: "active",
+    sort_order: 2,
+    metadata: {},
+  },
+  {
+    slug: "suite",
+    name: "Suite",
+    description:
+      "Premium suite with extra space for longer stays and special occasions.",
+    base_price: 0,
+    max_occupancy: 4,
+    bed_type: "King + Sofa Bed",
+    room_size_sqft: null,
+    status: "active",
+    sort_order: 3,
+    metadata: {},
+  },
+];
+
+const AURELIA_ROOMS = [
+  { room_number: "101", room_type_slug: "standard", floor_label: "1st Floor", status: "available" },
+  { room_number: "102", room_type_slug: "standard", floor_label: "1st Floor", status: "available" },
+  { room_number: "201", room_type_slug: "deluxe", floor_label: "2nd Floor", status: "available" },
+  { room_number: "301", room_type_slug: "suite", floor_label: "3rd Floor", status: "available" },
+];
+
+async function deactivateRetiredHotels(slugs) {
+  for (const slug of slugs) {
+    const result = await query(
+      `
+      UPDATE hotels
+      SET status = 'inactive'
+      WHERE slug = $1 AND status <> 'inactive'
+      RETURNING id
+      `,
+      [slug]
+    );
+
+    if (result.rows.length > 0) {
+      log(`Retired hotel deactivated: ${slug}`);
+    }
+  }
+}
+
+async function seedProperty({ hotel, amenityIds, amenityLinks, media, roomTypes, rooms }) {
+  log(`--- Seeding property: ${hotel.slug} ---`);
+  const hotelId = await upsertHotel(hotel);
+  await linkHotelAmenities(hotelId, amenityIds, amenityLinks);
+
+  if (Array.isArray(media) && media.length > 0) {
+    await upsertHotelMedia(hotelId, media);
+  } else {
+    log(`No media seeded for ${hotel.slug}`);
+  }
+
+  const roomTypeIds = await upsertRoomTypes(hotelId, roomTypes);
+  await upsertRooms(hotelId, roomTypeIds, rooms);
+}
+
 async function runSeed() {
   log("Starting Phase 1 seed...");
 
-  const hotelId = await upsertHotel();
   const amenityIds = await upsertAmenities();
-  await linkHotelAmenities(hotelId, amenityIds);
-  await upsertHotelMedia(hotelId);
-  const roomTypeIds = await upsertRoomTypes(hotelId);
-  await upsertRooms(hotelId, roomTypeIds);
+
+  await deactivateRetiredHotels(RETIRED_HOTEL_SLUGS);
+
+  await seedProperty({
+    hotel: ZAARANG_HOTEL,
+    amenityIds,
+    amenityLinks: ZAARANG_AMENITY_LINKS,
+    media: ZAARANG_MEDIA,
+    roomTypes: ZAARANG_ROOM_TYPES,
+    rooms: ZAARANG_ROOMS,
+  });
+
+  await seedProperty({
+    hotel: AURELIA_HOTEL,
+    amenityIds,
+    amenityLinks: AURELIA_AMENITY_LINKS,
+    media: [],
+    roomTypes: AURELIA_ROOM_TYPES,
+    rooms: AURELIA_ROOMS,
+  });
 
   log("Phase 1 seed completed successfully (idempotent).");
 }

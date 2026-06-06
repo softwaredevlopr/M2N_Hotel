@@ -46,3 +46,17 @@ export async function getRoomTypes(hotelSlug) {
   const result = await safeFetch(`/api/rooms/types${params}`);
   return result?.data ?? [];
 }
+
+export async function getHotelsWithDetails() {
+  const hotels = await getHotels();
+  if (hotels.length === 0) return [];
+
+  const detailed = await Promise.all(
+    hotels.map(async (hotel) => {
+      const full = await getHotelBySlug(hotel.slug);
+      return full || hotel;
+    })
+  );
+
+  return detailed;
+}

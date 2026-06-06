@@ -1,57 +1,66 @@
-import { Phone, Mail, Calendar, MapPin } from "lucide-react";
+import { Phone, Mail, Calendar, MapPin, Globe } from "lucide-react";
 import { formatAddress, formatTimeOfDay } from "@/lib/format";
+import { resolveHeroImage } from "@/lib/images";
 
-const CONTACT_BG =
-  "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2000&q=80";
+import {
+  BRAND_NAME,
+  BRAND_TAGLINE,
+  BRAND_DESCRIPTION,
+} from "@/lib/brand";
 
 function buildChannels(hotel) {
-  return [
-    hotel?.phone
-      ? {
-          icon: Phone,
-          label: "Reservations",
-          value: hotel.phone,
-          href: `tel:${hotel.phone.replace(/\s+/g, "")}`,
-        }
-      : {
-          icon: Phone,
-          label: "Reservations",
-          value: "+91 141 355 8899",
-          href: "tel:+911413558899",
-        },
-    hotel?.email
-      ? {
-          icon: Mail,
-          label: "Concierge",
-          value: hotel.email,
-          href: `mailto:${hotel.email}`,
-        }
-      : {
-          icon: Mail,
-          label: "Concierge",
-          value: "reservations@m2nhotel.in",
-          href: "mailto:reservations@m2nhotel.in",
-        },
-    {
-      icon: Calendar,
-      label: "Book Online",
-      value: "Real-time rates",
-      href: "#rooms",
-    },
-  ];
+  const channels = [];
+
+  if (hotel?.phone) {
+    channels.push({
+      icon: Phone,
+      label: "Reservations",
+      value: hotel.phone,
+      href: `tel:${hotel.phone.replace(/\s+/g, "")}`,
+    });
+  }
+
+  if (hotel?.email) {
+    channels.push({
+      icon: Mail,
+      label: "Concierge",
+      value: hotel.email,
+      href: `mailto:${hotel.email}`,
+    });
+  }
+
+  if (hotel?.website_url) {
+    channels.push({
+      icon: Globe,
+      label: "Website",
+      value: hotel.website_url.replace(/^https?:\/\//, ""),
+      href: hotel.website_url,
+    });
+  }
+
+  channels.push({
+    icon: Calendar,
+    label: "Book Online",
+    value: "View room rates",
+    href: "#rooms",
+  });
+
+  return channels;
 }
 
 export default function ContactCTA({ hotel }) {
   const channels = buildChannels(hotel);
   const address = formatAddress(hotel);
-  const checkIn = formatTimeOfDay(hotel?.check_in_time) || "2:00 PM";
-  const checkOut = formatTimeOfDay(hotel?.check_out_time) || "11:00 AM";
+  const checkIn = formatTimeOfDay(hotel?.check_in_time);
+  const checkOut = formatTimeOfDay(hotel?.check_out_time);
+  const contactBg = resolveHeroImage(hotel);
+  const intro = hotel?.description || BRAND_DESCRIPTION;
 
   return (
     <section id="contact" className="relative isolate overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${CONTACT_BG})` }}
+        style={{ backgroundImage: `url(${contactBg})` }}
         aria-hidden
       />
       <div className="absolute inset-0 bg-ink/85" aria-hidden />
@@ -63,15 +72,20 @@ export default function ContactCTA({ hotel }) {
           </span>
           <div className="gold-divider mx-auto mt-5" />
           <h2 className="mt-8 font-display text-4xl sm:text-5xl lg:text-6xl leading-tight text-cream">
-            Begin your royal
+            Plan your stay
             <br />
-            <span className="italic text-gold">journey with us.</span>
+            <span className="italic text-gold">
+              with {hotel?.name || BRAND_NAME}.
+            </span>
           </h2>
           <p className="mt-6 text-base leading-relaxed text-cream-dim">
-            Our concierge team curates bespoke itineraries — from quiet sunrise
-            walks to private craft workshops with master makers. Tell us your
-            dates and we&apos;ll craft the rest.
+            {intro}
           </p>
+          {!hotel && (
+            <p className="mt-3 text-sm tracking-[0.2em] uppercase text-cream-muted">
+              {BRAND_TAGLINE}
+            </p>
+          )}
         </div>
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-px bg-gold/20 border border-gold/20 max-w-4xl mx-auto">
@@ -94,20 +108,26 @@ export default function ContactCTA({ hotel }) {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-xs tracking-[0.25em] uppercase text-cream-muted text-center">
-          {address && (
-            <>
-              <span className="inline-flex items-center gap-2">
-                <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
-                {address}
+        {(address || (checkIn && checkOut)) && (
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-xs tracking-[0.25em] uppercase text-cream-muted text-center">
+            {address && (
+              <>
+                <span className="inline-flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+                  {address}
+                </span>
+                {checkIn && checkOut && (
+                  <span className="hidden sm:block h-3 w-px bg-gold/30" />
+                )}
+              </>
+            )}
+            {checkIn && checkOut && (
+              <span>
+                Check-in {checkIn} · Check-out {checkOut}
               </span>
-              <span className="hidden sm:block h-3 w-px bg-gold/30" />
-            </>
-          )}
-          <span>
-            Check-in {checkIn} · Check-out {checkOut}
-          </span>
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

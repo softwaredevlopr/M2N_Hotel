@@ -37,13 +37,26 @@ export function formatAddress(hotel) {
     hotel.city,
     hotel.state,
     hotel.postal_code,
+    hotel.country,
   ].filter((part) => typeof part === "string" && part.trim().length > 0);
   return parts.join(", ");
 }
 
 export function formatShortAddress(hotel) {
   if (!hotel) return "";
-  const parts = [hotel.address_line1, hotel.city, hotel.postal_code].filter(
+  const parts = [
+    hotel.address_line1,
+    hotel.city,
+    hotel.state,
+    hotel.postal_code,
+    hotel.country,
+  ].filter((part) => typeof part === "string" && part.trim().length > 0);
+  return parts.join(", ");
+}
+
+export function formatLocation(hotel) {
+  if (!hotel) return "";
+  const parts = [hotel.city, hotel.state, hotel.country].filter(
     (part) => typeof part === "string" && part.trim().length > 0
   );
   return parts.join(", ");
