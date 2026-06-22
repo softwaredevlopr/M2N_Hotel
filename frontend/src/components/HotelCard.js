@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowUpRight, MapPin, Star } from "lucide-react";
-import { resolveHeroImage } from "@/lib/images";
+import { resolveCardImage } from "@/lib/images";
 import { formatLocation } from "@/lib/format";
 import { BRAND_DESCRIPTION } from "@/lib/brand";
 
 export default function HotelCard({ hotel }) {
-  const image = resolveHeroImage(hotel);
+  const image = resolveCardImage(hotel);
   const location = formatLocation(hotel);
   const description = hotel.description || BRAND_DESCRIPTION;
   const tagline = hotel.tagline || "";
