@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import BrandLogo from "./BrandLogo";
+import { formatPhoneDisplay, phoneHref } from "@/lib/format";
 
 const HOTEL_NAV_LINKS = [
   { label: "Home", href: "#home" },
@@ -33,8 +34,9 @@ export default function Navbar({ variant = "hotel", hotel, phone }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const phoneNumber = phone || hotel?.phone || "";
-  const phoneHref = phoneNumber ? `tel:${phoneNumber.replace(/\s+/g, "")}` : "#";
+  const rawPhone = phone || hotel?.phone || "";
+  const phoneNumber = rawPhone ? formatPhoneDisplay(rawPhone) : "";
+  const telHref = phoneHref(rawPhone) || "#contact";
   const reserveHref = isBrand ? "/#hotels" : "#contact";
   const reserveLabel = isBrand ? "Explore Hotels" : "Reserve";
 
@@ -70,7 +72,7 @@ export default function Navbar({ variant = "hotel", hotel, phone }) {
         <div className="hidden lg:flex items-center gap-5">
           {phoneNumber && (
             <a
-              href={phoneHref}
+              href={telHref}
               className="flex items-center gap-2 text-xs font-semibold tracking-[0.12em] uppercase text-[#222222] transition-colors hover:text-[#D71920]"
             >
               <Phone className="h-4 w-4" />
@@ -110,7 +112,7 @@ export default function Navbar({ variant = "hotel", hotel, phone }) {
             ))}
             {phoneNumber && (
               <a
-                href={phoneHref}
+                href={telHref}
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 py-1 text-xs font-semibold tracking-[0.12em] uppercase text-[#222222] transition-colors hover:text-[#D71920]"
               >

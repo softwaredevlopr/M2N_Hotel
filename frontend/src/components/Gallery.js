@@ -60,7 +60,7 @@ export default function Gallery({ hotel, media = [] }) {
             Gallery images will appear here once available.
           </p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-3 sm:gap-4 auto-rows-[200px] sm:auto-rows-[240px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[200px] sm:auto-rows-[240px]">
             {items.map((item, index) => {
               const layoutClass = GALLERY_LAYOUT[index] || "";
               const imageUrl = resolveMediaUrl(item, index);

@@ -21,10 +21,10 @@ const LOCAL_GALLERY_IMAGES = [
 ];
 
 // Room fallbacks by sort order: Standard, Deluxe, Suite.
-// Only /room.jpg is a true guest-room photo; dedicated Deluxe/Suite shots
-// (/room-2.jpg, /room-3.jpg) are not in public yet. Suite must avoid banquet
-// photos, so it falls back to a neutral interior shot.
-const LOCAL_ROOM_IMAGES = ["/room.jpg", "/room.jpg", "/reception-2.jpg"];
+// Only /room.jpg is a true guest-room photo, so all room cards use it for now.
+// Non-room imagery (banquet/reception/lobby/exterior/bathroom) must never be
+// used as a room card cover. Add /room-2.jpg, /room-3.jpg here once available.
+const LOCAL_ROOM_IMAGES = ["/room.jpg", "/room.jpg", "/room.jpg"];
 
 const DEFAULT_HERO_IMAGE = "/hotel-exterior-2.jpg";
 const DEFAULT_CARD_IMAGE = "/hotel-exterior.jpg";
