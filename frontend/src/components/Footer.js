@@ -1,5 +1,5 @@
 import { Phone, Mail, MapPin } from "lucide-react";
-import { formatAddress } from "@/lib/format";
+import { formatAddress, formatPhoneDisplay, phoneHref } from "@/lib/format";
 import BrandLogo from "./BrandLogo";
 import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 
@@ -68,8 +68,8 @@ const SOCIALS = [
 
 export default function Footer({ hotel }) {
   const tagline = hotel?.tagline || BRAND_TAGLINE;
-  const phone = hotel?.phone;
-  const phoneHref = phone ? `tel:${phone.replace(/\s+/g, "")}` : null;
+  const phone = hotel?.phone ? formatPhoneDisplay(hotel.phone) : null;
+  const phoneLink = phoneHref(hotel?.phone);
   const email = hotel?.email;
   const address = formatAddress(hotel);
 
@@ -148,15 +148,19 @@ export default function Footer({ hotel }) {
                   <span>{address}</span>
                 </li>
               )}
-              {phone && phoneHref && (
+              {phone && (
                 <li className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-gold" strokeWidth={1.5} />
-                  <a
-                    href={phoneHref}
-                    className="hover:text-gold transition-colors"
-                  >
-                    {phone}
-                  </a>
+                  {phoneLink ? (
+                    <a
+                      href={phoneLink}
+                      className="hover:text-gold transition-colors"
+                    >
+                      {phone}
+                    </a>
+                  ) : (
+                    <span>{phone}</span>
+                  )}
                 </li>
               )}
               {email && (

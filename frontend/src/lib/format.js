@@ -62,6 +62,26 @@ export function formatLocation(hotel) {
   return parts.join(", ");
 }
 
+const PHONE_PLACEHOLDER = "+91 XXXX XXXXX";
+
+export function isPlaceholderPhone(phone) {
+  if (!phone || typeof phone !== "string") return true;
+  const value = phone.trim();
+  if (value.length === 0) return true;
+  if (/todo/i.test(value)) return true;
+  if (/x{3,}/i.test(value)) return true;
+  return false;
+}
+
+export function formatPhoneDisplay(phone) {
+  return isPlaceholderPhone(phone) ? PHONE_PLACEHOLDER : phone.trim();
+}
+
+export function phoneHref(phone) {
+  if (isPlaceholderPhone(phone)) return null;
+  return `tel:${phone.replace(/\s+/g, "")}`;
+}
+
 export function padNumber(value, width = 2) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return String(value ?? "");

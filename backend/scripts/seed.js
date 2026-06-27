@@ -544,7 +544,7 @@ const AURELIA_HOTEL = {
   description:
     "M2N Hotel Aurelia Grand brings boutique comfort, warm hospitality, and convenient access in Lucknow. Designed for family stays, business guests, and short city visits, the hotel offers essential modern amenities with a professional M2N Hotels experience.",
   email: "reservations@m2nhotel.in",
-  phone: "TODO_BOOKING_NUMBER",
+  phone: "+91 XXXX XXXXX",
   website_url: null,
   address_line1: "Plot No. 76",
   address_line2:

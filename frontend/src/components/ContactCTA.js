@@ -1,5 +1,10 @@
 import { Phone, Mail, Calendar, MapPin, Globe } from "lucide-react";
-import { formatAddress, formatTimeOfDay } from "@/lib/format";
+import {
+  formatAddress,
+  formatTimeOfDay,
+  formatPhoneDisplay,
+  phoneHref,
+} from "@/lib/format";
 import { resolveHeroImage } from "@/lib/images";
 
 import {
@@ -15,8 +20,8 @@ function buildChannels(hotel) {
     channels.push({
       icon: Phone,
       label: "Reservations",
-      value: hotel.phone,
-      href: `tel:${hotel.phone.replace(/\s+/g, "")}`,
+      value: formatPhoneDisplay(hotel.phone),
+      href: phoneHref(hotel.phone) || "#rooms",
     });
   }
 

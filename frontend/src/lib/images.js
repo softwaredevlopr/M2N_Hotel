@@ -21,9 +21,10 @@ const LOCAL_GALLERY_IMAGES = [
 ];
 
 // Room fallbacks by sort order: Standard, Deluxe, Suite.
-// Dedicated room photos (/room-2.jpg, /room-3.jpg) are not in public yet,
-// so we temporarily reuse representative interior photos.
-const LOCAL_ROOM_IMAGES = ["/room.jpg", "/reception.jpg", "/banquet-7.jpg"];
+// Only /room.jpg is a true guest-room photo; dedicated Deluxe/Suite shots
+// (/room-2.jpg, /room-3.jpg) are not in public yet. Suite must avoid banquet
+// photos, so it falls back to a neutral interior shot.
+const LOCAL_ROOM_IMAGES = ["/room.jpg", "/room.jpg", "/reception-2.jpg"];
 
 const DEFAULT_HERO_IMAGE = "/hotel-exterior-2.jpg";
 const DEFAULT_CARD_IMAGE = "/hotel-exterior.jpg";
