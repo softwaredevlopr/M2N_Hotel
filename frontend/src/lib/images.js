@@ -20,6 +20,19 @@ const LOCAL_GALLERY_IMAGES = [
   "/banquet-8.jpg",
 ];
 
+// Captioned fallback gallery used when the API returns no hotel_media rows,
+// so the gallery section always renders real local photos instead of an
+// empty placeholder.
+const GALLERY_FALLBACK_ITEMS = [
+  { url: "/hotel-exterior-2.jpg", caption: "Exterior" },
+  { url: "/hotel-exterior.jpg", caption: "Front view" },
+  { url: "/lobby.jpg", caption: "Lobby" },
+  { url: "/reception.jpg", caption: "Reception" },
+  { url: "/banquet.jpg", caption: "Banquet hall" },
+  { url: "/hotel-exterior-3.jpg", caption: "Exterior" },
+  { url: "/hotel-entrance.jpg", caption: "Entrance" },
+];
+
 // Room fallbacks by sort order: Standard, Deluxe, Suite.
 // Only /room.jpg is a true guest-room photo, so all room cards use it for now.
 // Non-room imagery (banquet/reception/lobby/exterior/bathroom) must never be
@@ -62,4 +75,15 @@ export function resolveCardImage(hotel) {
   // Prefer the secondary front-view shot for cards so it differs from the hero.
   const candidate = hotel.media[1] ?? hotel.media[0];
   return resolveMediaUrl(candidate, 1);
+}
+
+export function getFallbackGalleryItems(limit = GALLERY_FALLBACK_ITEMS.length) {
+  return GALLERY_FALLBACK_ITEMS.slice(0, limit).map((item, index) => ({
+    id: `gallery-fallback-${index}`,
+    url: item.url,
+    alt_text: item.caption,
+    caption: item.caption,
+    sort_order: index + 1,
+    is_cover: index === 0,
+  }));
 }

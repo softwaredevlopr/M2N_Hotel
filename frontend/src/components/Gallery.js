@@ -1,5 +1,5 @@
 import { Camera, ArrowUpRight } from "lucide-react";
-import { resolveMediaUrl } from "@/lib/images";
+import { resolveMediaUrl, getFallbackGalleryItems } from "@/lib/images";
 
 import { BRAND_NAME } from "@/lib/brand";
 
@@ -24,7 +24,11 @@ function pickGalleryItems(media) {
 }
 
 export default function Gallery({ hotel, media = [] }) {
-  const items = pickGalleryItems(media);
+  const apiItems = pickGalleryItems(media);
+  const items =
+    apiItems.length > 0
+      ? apiItems
+      : getFallbackGalleryItems(GALLERY_LAYOUT.length);
   const galleryTitle = hotel?.name || BRAND_NAME;
 
   return (
