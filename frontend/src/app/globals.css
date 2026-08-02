@@ -24,10 +24,43 @@
   color-scheme: dark;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   background: var(--color-ink);
   color: var(--color-cream);
+}
+
+/* Offset in-page anchors so sticky-navbar doesn't cover section headings. */
+section[id],
+[id].scroll-anchor {
+  scroll-margin-top: 90px;
+}
+
+/* Visible, on-brand focus ring for keyboard users (accessibility). */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
@@ -65,4 +98,16 @@ body {
 
 .animate-float-down {
   animation: float-down 2.4s ease-in-out infinite;
+}
+
+/* Very slow cinematic Ken Burns zoom for the brand hero background. */
+@keyframes hero-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+
+.animate-hero-zoom {
+  animation: hero-zoom 28s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
 }

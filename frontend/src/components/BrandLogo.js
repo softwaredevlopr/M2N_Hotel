@@ -7,35 +7,31 @@ const NAV_LOGO = "/m2n-logo-tagline.png";
 const NAV_LOGO_W = 649;
 const NAV_LOGO_H = 373;
 
-const MARK_SRC = "/m2n-mark.png";
-const MARK_W = 187;
-const MARK_H = 212;
+const MARK_SRC = "/m2n-logo.png";
+const MARK_W = 812;
+const MARK_H = 508;
 
 export default function BrandLogo({ variant = "navbar", priority = false }) {
   const [errored, setErrored] = useState(false);
 
   if (variant === "footer") {
-    return (
-      <span className="inline-flex items-center gap-3">
-        {errored ? (
-          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-gold font-display text-xs tracking-tight text-cream shadow-[0_6px_18px_-6px_rgba(215,25,32,0.7)]">
-            M2N
-          </span>
-        ) : (
-          <span className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 backdrop-blur-sm shadow-[0_6px_18px_-8px_rgba(0,0,0,0.65)]">
-            <Image
-              src={MARK_SRC}
-              alt="M2N Hotels"
-              width={MARK_W}
-              height={MARK_H}
-              onError={() => setErrored(true)}
-              className="h-10 w-auto rounded-[4px] object-contain"
-            />
-          </span>
-        )}
-        <span className="font-display text-lg tracking-[0.22em] text-cream">
-          M2N HOTELS
+    if (errored) {
+      return (
+        <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-gold font-display text-sm tracking-tight text-cream shadow-[0_6px_18px_-6px_rgba(215,25,32,0.7)]">
+          M2N
         </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2.5 backdrop-blur-sm shadow-[0_6px_18px_-8px_rgba(0,0,0,0.65)]">
+        <Image
+          src={MARK_SRC}
+          alt="M2N Hotels"
+          width={MARK_W}
+          height={MARK_H}
+          onError={() => setErrored(true)}
+          className="h-16 w-auto rounded-[4px] object-contain"
+        />
       </span>
     );
   }

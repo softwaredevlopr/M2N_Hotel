@@ -1,5 +1,4 @@
 import HotelCard from "./HotelCard";
-import { BRAND_NAME } from "@/lib/brand";
 
 export default function OurHotels({ hotels = [] }) {
   return (
@@ -14,9 +13,7 @@ export default function OurHotels({ hotels = [] }) {
           </span>
           <div className="gold-divider mx-auto mt-5" />
           <h2 className="mt-8 font-display text-4xl sm:text-5xl lg:text-6xl leading-tight text-cream">
-            Discover
-            <br />
-            <span className="italic text-gold">{BRAND_NAME} properties.</span>
+            Explore Our Hotels
           </h2>
           <p className="mt-6 text-base leading-relaxed text-cream-dim">
             Explore our growing collection of hotels, each offering comfortable

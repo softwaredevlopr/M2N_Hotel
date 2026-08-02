@@ -1,5 +1,5 @@
 import { Award, Sparkles, Crown } from "lucide-react";
-import { resolveMediaUrl } from "@/lib/images";
+import { resolveAboutImage } from "@/lib/images";
 import { padNumber } from "@/lib/format";
 
 import {
@@ -92,8 +92,7 @@ export default function About({ hotel, roomTypes = [] }) {
     hotel?.description
   );
 
-  const coverMedia = hotel?.media?.[1] ?? hotel?.media?.[0];
-  const aboutImage = resolveMediaUrl(coverMedia, 1);
+  const aboutImage = resolveAboutImage(hotel);
 
   const gmQuote = hotel?.metadata?.gm_quote;
   const gmName = hotel?.metadata?.gm_name;
@@ -143,6 +142,8 @@ export default function About({ hotel, roomTypes = [] }) {
               <img
                 src={aboutImage}
                 alt={`${hotel?.name || BRAND_NAME} interior`}
+                loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 ring-1 ring-gold/30" />

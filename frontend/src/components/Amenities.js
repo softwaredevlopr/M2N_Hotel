@@ -1,81 +1,47 @@
-import { Sparkles } from "lucide-react";
-import { getAmenityIcon } from "@/lib/amenityIcons";
-import {
-  BRAND_NAME,
-  BRAND_TAGLINE,
-  BRAND_DESCRIPTION,
-} from "@/lib/brand";
+import Reveal from "@/components/Reveal";
+import { getHotelFacilities } from "@/lib/facilities";
 
-function pickAmenities(amenities) {
-  if (!Array.isArray(amenities) || amenities.length === 0) {
-    return [];
-  }
-  const highlighted = amenities.filter((item) => item.is_highlighted);
-  const others = amenities.filter((item) => !item.is_highlighted);
-  const ordered = [...highlighted, ...others];
-  return ordered.slice(0, 8);
-}
-
-export default function Amenities({ hotel, amenities = [] }) {
-  const items = pickAmenities(amenities);
-  const sectionTitle = hotel?.name || BRAND_NAME;
-  const sectionIntro = hotel?.description || BRAND_DESCRIPTION;
+export default function Amenities({ hotel, facilities = null }) {
+  const items =
+    Array.isArray(facilities) && facilities.length > 0
+      ? facilities
+      : getHotelFacilities(hotel);
 
   return (
     <section
-      id="amenities"
-      className="relative bg-ink-soft py-28 sm:py-36 border-y border-ink-line"
+      id="facilities"
+      className="relative bg-ink py-28 sm:py-36 border-t border-ink-line"
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-xs tracking-[0.45em] uppercase text-gold">
-            Hotel Amenities
+            Facilities
           </span>
           <div className="gold-divider mx-auto mt-5" />
           <h2 className="mt-8 font-display text-4xl sm:text-5xl lg:text-6xl leading-tight text-cream">
-            {sectionTitle}
-            <br />
-            <span className="italic text-gold">
-              {hotel?.tagline || BRAND_TAGLINE}
-            </span>
+            Facilities &amp; Amenities
           </h2>
           <p className="mt-6 text-base leading-relaxed text-cream-dim">
-            {sectionIntro}
+            Thoughtful facilities curated for a calm, reliable stay
+            {hotel?.name ? ` at ${hotel.name}` : ""}.
           </p>
         </div>
 
-        {items.length === 0 ? (
-          <div className="mt-20 flex flex-col items-center text-cream-muted">
-            <Sparkles className="h-8 w-8 text-gold/60" strokeWidth={1.5} />
-            <p className="mt-4 text-sm tracking-[0.25em] uppercase">
-              Amenities will appear here once available
-            </p>
-          </div>
-        ) : (
-          <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-ink-line">
-            {items.map((item) => {
-              const Icon = getAmenityIcon(item);
-              return (
-                <div
-                  key={item.slug || item.name}
-                  className="group bg-ink-soft p-8 hover:bg-ink transition-colors duration-300"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center border border-gold/30 text-gold group-hover:bg-gold group-hover:text-ink transition-colors">
-                    <Icon className="h-5 w-5" strokeWidth={1.5} />
-                  </div>
-                  <h3 className="mt-6 font-display text-xl text-cream">
-                    {item.name}
-                  </h3>
-                  {item.description && (
-                    <p className="mt-3 text-sm leading-relaxed text-cream-dim">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <Reveal className="mt-16 grid grid-cols-2 gap-px border border-ink-line bg-ink-line sm:grid-cols-3 lg:grid-cols-5">
+          {items.map(({ id, name, Icon }) => (
+            <div
+              key={id || name}
+              className="group flex flex-col items-center gap-4 bg-ink p-8 text-center transition-colors duration-300 hover:bg-ink-soft"
+            >
+              <div className="flex h-14 w-14 items-center justify-center border border-gold/30 text-gold transition-all duration-300 group-hover:bg-gold group-hover:text-cream group-hover:scale-105">
+                <Icon className="h-6 w-6" strokeWidth={1.5} />
+              </div>
+              <h3 className="font-display text-base sm:text-lg text-cream leading-snug">
+                {name}
+              </h3>
+            </div>
+          ))}
+        </Reveal>
       </div>
     </section>
   );

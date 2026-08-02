@@ -4,18 +4,27 @@ import { resolveCardImage } from "@/lib/images";
 import { formatLocation } from "@/lib/format";
 import { BRAND_DESCRIPTION } from "@/lib/brand";
 
-export default function HotelCard({ hotel }) {
+export default function HotelCard({
+  hotel,
+  href,
+  ctaLabel = "View Hotel",
+}) {
   const image = resolveCardImage(hotel);
   const location = formatLocation(hotel);
   const description = hotel.description || BRAND_DESCRIPTION;
   const tagline = hotel.tagline || "";
+  // Default: hotel detail page. Booking flow can pass a different next-step URL
+  // (e.g. /hotels/{slug}#contact today, /book/{slug} for rooms later).
+  const targetHref = href || `/hotels/${hotel.slug}`;
 
   return (
     <article className="group flex flex-col border border-ink-line bg-ink-soft overflow-hidden hover:border-gold/50 transition-colors">
-      <Link href={`/hotels/${hotel.slug}`} className="relative aspect-[16/10] overflow-hidden">
+      <Link href={targetHref} className="relative aspect-[16/10] overflow-hidden">
         <img
           src={image}
-          alt={hotel.name}
+          alt={`${hotel.name}${location ? ` — ${location}` : ""}`}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
@@ -54,10 +63,10 @@ export default function HotelCard({ hotel }) {
         </p>
 
         <Link
-          href={`/hotels/${hotel.slug}`}
+          href={targetHref}
           className="mt-7 inline-flex items-center justify-between border-t border-ink-line pt-5 text-xs tracking-[0.25em] uppercase text-cream hover:text-gold transition-colors"
         >
-          View Hotel
+          {ctaLabel}
           <ArrowUpRight className="h-4 w-4" strokeWidth={1.5} />
         </Link>
       </div>

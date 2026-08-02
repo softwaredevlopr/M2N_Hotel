@@ -1,30 +1,34 @@
 import { ChevronDown } from "lucide-react";
-import { resolveHeroImage } from "@/lib/images";
-import {
-  BRAND_NAME,
-  BRAND_TAGLINE,
-  BRAND_DESCRIPTION,
-} from "@/lib/brand";
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 
-export default function BrandHero() {
-  const heroImage = resolveHeroImage(null);
+const HERO_SUBHEADING =
+  "Discover premium stays across our growing collection of hotels with thoughtfully designed hospitality for business and leisure travellers.";
 
+const BRAND_HERO_IMAGE = "/brand-hero.jpg";
+
+export default function BrandHero({ heroImage = BRAND_HERO_IMAGE }) {
   return (
     <section
       id="home"
       className="relative -mt-[68px] flex min-h-screen items-center justify-center overflow-hidden lg:-mt-[74px]"
     >
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center animate-hero-zoom"
         style={{ backgroundImage: `url(${heroImage})` }}
         aria-hidden
       />
+      {/* Warm golden luxury tint + balanced darkening for readability. */}
       <div
-        className="absolute inset-0 bg-gradient-to-b from-ink/85 via-ink/65 to-ink"
+        className="absolute inset-0 bg-gradient-to-t from-[#3a1e05]/40 via-transparent to-transparent mix-blend-multiply"
+        aria-hidden
+      />
+      <div className="absolute inset-0 bg-ink/60" aria-hidden />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/45 to-ink"
         aria-hidden
       />
       <div
-        className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink/90 to-transparent"
+        className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink/80 to-transparent"
         aria-hidden
       />
 
@@ -39,12 +43,10 @@ export default function BrandHero() {
 
         <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] text-cream">
           {BRAND_TAGLINE}
-          <br />
-          <span className="text-[#E94A57]">{BRAND_NAME}</span>
         </h1>
 
         <p className="mx-auto mt-8 max-w-2xl text-base sm:text-lg leading-relaxed text-cream-dim">
-          {BRAND_DESCRIPTION}
+          {HERO_SUBHEADING}
         </p>
 
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -52,13 +54,13 @@ export default function BrandHero() {
             href="#hotels"
             className="group inline-flex items-center justify-center bg-gold px-9 py-4 text-sm tracking-[0.25em] uppercase text-cream hover:bg-gold-soft transition-colors w-full sm:w-auto"
           >
-            Explore Our Hotels
+            Explore Hotels
           </a>
           <a
-            href="#about"
+            href="/book"
             className="inline-flex items-center justify-center border border-cream/30 px-9 py-4 text-sm tracking-[0.25em] uppercase text-cream hover:border-gold hover:text-gold transition-colors w-full sm:w-auto"
           >
-            About M2N
+            Book Your Stay
           </a>
         </div>
       </div>

@@ -1,7 +1,14 @@
 import { Phone, Mail, MapPin } from "lucide-react";
 import { formatAddress, formatPhoneDisplay, phoneHref } from "@/lib/format";
 import BrandLogo from "./BrandLogo";
-import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
+import {
+  BRAND_TAGLINE,
+  BRAND_LEGAL_NAME,
+  BRAND_EMAIL,
+  BRAND_PHONE,
+  BRAND_LOCATION,
+} from "@/lib/brand";
+import { getHotelPolicyLinks, getHotelSocialLinks } from "@/lib/policies";
 
 function InstagramIcon(props) {
   return (
@@ -53,14 +60,7 @@ const QUICK_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-const POLICIES = [
-  { label: "Cancellation Policy", href: "#" },
-  { label: "Privacy Notice", href: "#" },
-  { label: "Terms of Stay", href: "#" },
-  { label: "Careers", href: "#" },
-];
-
-const SOCIALS = [
+const DEFAULT_SOCIALS = [
   { icon: InstagramIcon, href: "#", label: "Instagram" },
   { icon: FacebookIcon, href: "#", label: "Facebook" },
   { icon: TwitterIcon, href: "#", label: "Twitter" },
@@ -68,10 +68,29 @@ const SOCIALS = [
 
 export default function Footer({ hotel }) {
   const tagline = hotel?.tagline || BRAND_TAGLINE;
-  const phone = hotel?.phone ? formatPhoneDisplay(hotel.phone) : null;
-  const phoneLink = phoneHref(hotel?.phone);
-  const email = hotel?.email;
-  const address = formatAddress(hotel);
+  // Fall back to brand-level contact details when no hotel-specific value is
+  // available (e.g. the homepage footer), so "Reach Us" is never empty.
+  const phoneRaw = hotel?.phone || BRAND_PHONE;
+  const phone = formatPhoneDisplay(phoneRaw);
+  const phoneLink = phoneHref(phoneRaw);
+  const email = hotel?.email || BRAND_EMAIL;
+  const address = formatAddress(hotel) || BRAND_LOCATION;
+  const policies = getHotelPolicyLinks(hotel);
+  const apiSocials = getHotelSocialLinks(hotel);
+  const socials =
+    apiSocials.length > 0
+      ? apiSocials.map((social) => ({
+          icon:
+            social.platform?.toLowerCase() === "facebook"
+              ? FacebookIcon
+              : social.platform?.toLowerCase() === "twitter" ||
+                  social.platform?.toLowerCase() === "x"
+                ? TwitterIcon
+                : InstagramIcon,
+          href: social.href,
+          label: social.label,
+        }))
+      : DEFAULT_SOCIALS;
 
   return (
     <footer className="bg-ink border-t border-ink-line">
@@ -85,7 +104,7 @@ export default function Footer({ hotel }) {
               {tagline}
             </p>
             <div className="mt-6 flex items-center gap-3">
-              {SOCIALS.map((social) => (
+              {socials.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
@@ -121,7 +140,7 @@ export default function Footer({ hotel }) {
               Hotel Info
             </h3>
             <ul className="mt-6 space-y-3">
-              {POLICIES.map((link) => (
+              {policies.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
@@ -145,7 +164,7 @@ export default function Footer({ hotel }) {
                     className="mt-0.5 h-4 w-4 text-gold flex-shrink-0"
                     strokeWidth={1.5}
                   />
-                  <span>{address}</span>
+                  <span className="whitespace-pre-line">{address}</span>
                 </li>
               )}
               {phone && (
@@ -180,12 +199,11 @@ export default function Footer({ hotel }) {
 
         <div className="mt-16 pt-8 border-t border-ink-line flex flex-col sm:flex-row items-center justify-between gap-4 text-xs tracking-[0.2em] uppercase text-cream-muted">
           <div>
-            © {new Date().getFullYear()} {BRAND_NAME} Pvt. Ltd. · All rights
-            reserved.
+            © {new Date().getFullYear()} {BRAND_LEGAL_NAME}. All Rights Reserved.
           </div>
           <div className="flex items-center gap-2">
             <span className="h-px w-8 bg-accent/50" />
-            Crafted with care by {BRAND_NAME}
+            Crafted with care by {BRAND_LEGAL_NAME}
             <span className="h-px w-8 bg-accent/50" />
           </div>
         </div>

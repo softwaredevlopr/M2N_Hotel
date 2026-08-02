@@ -244,6 +244,26 @@ async function upsertHotelMedia(hotelId, mediaItems) {
     );
     log(`Media inserted: ${item.url}`);
   }
+
+  // Non-destructive cleanup: any previously-seeded media for this hotel that is
+  // no longer in the desired set is set to 'inactive' (never deleted), so the
+  // public API (which only returns active media) reflects exactly this set.
+  const keepUrls = mediaItems.map((item) => item.url);
+  const deactivated = await query(
+    `
+    UPDATE hotel_media
+    SET status = 'inactive'
+    WHERE hotel_id = $1
+      AND status = 'active'
+      AND url <> ALL($2::text[])
+    RETURNING url
+    `,
+    [hotelId, keepUrls]
+  );
+
+  for (const row of deactivated.rows) {
+    log(`Media deactivated (stale): ${row.url}`);
+  }
 }
 
 async function upsertRoomTypes(hotelId, roomTypes) {
@@ -338,6 +358,14 @@ const ZAARANG_HOTEL = {
     brand: "M2N Hotels",
     property_code: "M2N-ZI-01",
     languages: ["hi", "en"],
+    tariff_settings: {
+      note:
+        "Rates are per room, per night and subject to availability. Meal inclusions and offers may vary. Please confirm while booking.",
+      extra_bed: 400,
+      gst: "5% Extra",
+      cancellation_policy:
+        "Cancellations made at least 24 hours before the scheduled check-in time are eligible for a full refund of the room charges. Cancellations made within 24 hours of check-in, or in the event of a no-show, may attract a charge equivalent to one night's stay.",
+    },
   },
 };
 
@@ -350,141 +378,50 @@ const ZAARANG_AMENITY_LINKS = [
   { slug: "laundry-service", is_highlighted: false },
 ];
 
-const ZAARANG_MEDIA = [
-  {
-    url: "/hotel-exterior-2.jpg",
-    alt_text: "Hotel Zaarang Inn exterior",
-    caption: "Hotel Zaarang Inn",
-    sort_order: 1,
-    is_cover: true,
-  },
-  {
-    url: "/hotel-exterior.jpg",
-    alt_text: "Hotel Zaarang Inn front view",
-    caption: "Front view",
-    sort_order: 2,
-    is_cover: false,
-  },
-  {
-    url: "/lobby.jpg",
-    alt_text: "Hotel lobby",
-    caption: "Lobby",
-    sort_order: 3,
-    is_cover: false,
-  },
-  {
-    url: "/reception.jpg",
-    alt_text: "Reception area",
-    caption: "Reception",
-    sort_order: 4,
-    is_cover: false,
-  },
-  {
-    url: "/banquet.jpg",
-    alt_text: "Banquet hall",
-    caption: "Banquet hall",
-    sort_order: 5,
-    is_cover: false,
-  },
-  {
-    url: "/hotel-exterior-3.jpg",
-    alt_text: "Hotel exterior view",
-    caption: "Exterior",
-    sort_order: 6,
-    is_cover: false,
-  },
-  {
-    url: "/hotel-outside.jpg",
-    alt_text: "Outside the hotel",
-    caption: "Hotel surroundings",
-    sort_order: 7,
-    is_cover: false,
-  },
-  {
-    url: "/hotel-entrance.jpg",
-    alt_text: "Hotel entrance",
-    caption: "Entrance",
-    sort_order: 8,
-    is_cover: false,
-  },
-  {
-    url: "/reception-2.jpg",
-    alt_text: "Reception desk",
-    caption: "Reception",
-    sort_order: 9,
-    is_cover: false,
-  },
-  {
-    url: "/reception-3.jpg",
-    alt_text: "Reception lounge",
-    caption: "Reception lounge",
-    sort_order: 10,
-    is_cover: false,
-  },
-  {
-    url: "/reception-4.jpg",
-    alt_text: "Reception seating",
-    caption: "Reception",
-    sort_order: 11,
-    is_cover: false,
-  },
-  {
-    url: "/reception-5.jpg",
-    alt_text: "Reception detail",
-    caption: "Reception",
-    sort_order: 12,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-2.jpg",
-    alt_text: "Banquet hall setup",
-    caption: "Banquet hall",
-    sort_order: 13,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-3.jpg",
-    alt_text: "Banquet hall seating",
-    caption: "Banquet hall",
-    sort_order: 14,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-4.jpg",
-    alt_text: "Banquet hall stage",
-    caption: "Banquet hall",
-    sort_order: 15,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-5.jpg",
-    alt_text: "Banquet hall decor",
-    caption: "Banquet hall",
-    sort_order: 16,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-6.jpg",
-    alt_text: "Banquet hall lighting",
-    caption: "Banquet hall",
-    sort_order: 17,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-7.jpg",
-    alt_text: "Banquet hall view",
-    caption: "Banquet hall",
-    sort_order: 18,
-    is_cover: false,
-  },
-  {
-    url: "/banquet-8.jpg",
-    alt_text: "Banquet hall arrangement",
-    caption: "Banquet hall",
-    sort_order: 19,
-    is_cover: false,
-  },
-];
+const PHOTO_CATEGORY_CAPTIONS = {
+  Hero: "Hotel",
+  Exterior: "Exterior",
+  Reception: "Reception",
+  Lobby: "Lobby",
+  Rooms: "Rooms",
+  Bathroom: "Bathroom",
+  Banquet: "Banquet hall",
+};
+
+// Builds hotel_media rows from a hotel's own /Photos/<folder> tree. The first
+// image of the first category becomes the single cover (hero); everything else
+// is ordered by the category order given in `counts`.
+function buildPhotoMedia(folder, hotelName, counts) {
+  const items = [];
+
+  for (const [category, count] of Object.entries(counts)) {
+    const caption = PHOTO_CATEGORY_CAPTIONS[category] || category;
+    for (let index = 1; index <= count; index += 1) {
+      items.push({
+        url: `/Photos/${folder}/${category}/${index}.jpg`,
+        alt_text: `${hotelName} — ${caption}`,
+        caption,
+        sort_order: items.length + 1,
+        is_cover: items.length === 0,
+      });
+    }
+  }
+
+  return items;
+}
+
+// Real Hotel Zaarang Inn photography shipped in
+// frontend/public/Photos/Zaarang-Inn/<Category>/<n>.jpg. The category folder in
+// the path is what drives hero / room / gallery placement on the public page, so
+// these URLs must stay slug-scoped to this hotel's own folder.
+const ZAARANG_MEDIA = buildPhotoMedia("Zaarang-Inn", "Hotel Zaarang Inn", {
+  Hero: 1,
+  Exterior: 6,
+  Reception: 2,
+  Lobby: 3,
+  Rooms: 3,
+  Bathroom: 2,
+});
 
 const ZAARANG_ROOM_TYPES = [
   {
@@ -564,6 +501,14 @@ const AURELIA_HOTEL = {
     brand: "M2N Hotels",
     property_code: "M2N-LKO-01",
     languages: ["hi", "en"],
+    tariff_settings: {
+      note:
+        "Rates are per room, per night and subject to availability. Meal inclusions and offers may vary. Please confirm while booking.",
+      extra_bed: 400,
+      gst: "5% Extra",
+      cancellation_policy:
+        "Cancellations made at least 24 hours before the scheduled check-in time are eligible for a full refund of the room charges. Cancellations made within 24 hours of check-in, or in the event of a no-show, may attract a charge equivalent to one night's stay.",
+    },
   },
 };
 
@@ -766,6 +711,93 @@ const AURELIA_MEDIA = [
   },
 ];
 
+async function seedTariffMatrix(hotelId, matrix) {
+  const countResult = await query(
+    `SELECT COUNT(*)::int AS count FROM tariff_rates WHERE hotel_id = $1`,
+    [hotelId]
+  );
+  if (countResult.rows[0].count > 0) {
+    log(`Tariff rates already present for hotel ${hotelId}, skipping matrix seed`);
+    return;
+  }
+
+  let sortOrder = 0;
+  for (const row of matrix) {
+    await query(
+      `INSERT INTO tariff_rates (
+         hotel_id, room_type_id, meal_plan, occupancy, price, display_note,
+         valid_from, valid_to, status, sort_order, metadata
+       )
+       VALUES ($1, NULL, $2, $3, $4, $5, NULL, NULL, 'active', $6, $7::jsonb)`,
+      [
+        hotelId,
+        row.meal_plan,
+        row.occupancy,
+        row.price,
+        row.display_note,
+        sortOrder,
+        JSON.stringify({ seed: true }),
+      ]
+    );
+    sortOrder += 1;
+  }
+
+  log(`Seeded ${matrix.length} tariff rate rows for hotel ${hotelId}`);
+}
+
+function buildMealMatrixRows(mealPlans) {
+  const rows = [];
+  for (const plan of mealPlans) {
+    rows.push({
+      meal_plan: plan.id,
+      occupancy: "single",
+      price: plan.single,
+      display_note: plan.singleNote || null,
+    });
+    rows.push({
+      meal_plan: plan.id,
+      occupancy: "double",
+      price: plan.double,
+      display_note: plan.doubleNote || null,
+    });
+  }
+  return rows;
+}
+
+const AURELIA_MEAL_MATRIX = buildMealMatrixRows([
+  { id: "no_meal", single: 1799, double: 2199 },
+  {
+    id: "breakfast",
+    single: null,
+    singleNote: "Available with room plan",
+    double: 2299,
+  },
+  { id: "breakfast_one_meal", single: 2199, double: 2599 },
+  {
+    id: "all_meals",
+    single: 2499,
+    double: null,
+    doubleNote: "Available with room plan",
+  },
+]);
+
+const ZAARANG_MEAL_MATRIX = buildMealMatrixRows([
+  { id: "no_meal", single: 1799, double: 2199 },
+  {
+    id: "breakfast",
+    single: null,
+    singleNote: "Available with room plan",
+    double: 2299,
+  },
+  { id: "breakfast_one_meal", single: 2199, double: 2599 },
+  {
+    id: "all_meals",
+    single: 2499,
+    double: null,
+    doubleNote: "Available with room plan",
+  },
+]);
+
 async function deactivateRetiredHotels(slugs) {
   for (const slug of slugs) {
     const result = await query(
@@ -797,6 +829,7 @@ async function seedProperty({ hotel, amenityIds, amenityLinks, media, roomTypes,
 
   const roomTypeIds = await upsertRoomTypes(hotelId, roomTypes);
   await upsertRooms(hotelId, roomTypeIds, rooms);
+  return hotelId;
 }
 
 async function runSeed() {
@@ -806,7 +839,7 @@ async function runSeed() {
 
   await deactivateRetiredHotels(RETIRED_HOTEL_SLUGS);
 
-  await seedProperty({
+  const zaarangHotelId = await seedProperty({
     hotel: ZAARANG_HOTEL,
     amenityIds,
     amenityLinks: ZAARANG_AMENITY_LINKS,
@@ -815,7 +848,7 @@ async function runSeed() {
     rooms: ZAARANG_ROOMS,
   });
 
-  await seedProperty({
+  const aureliaHotelId = await seedProperty({
     hotel: AURELIA_HOTEL,
     amenityIds,
     amenityLinks: AURELIA_AMENITY_LINKS,
@@ -823,6 +856,9 @@ async function runSeed() {
     roomTypes: AURELIA_ROOM_TYPES,
     rooms: AURELIA_ROOMS,
   });
+
+  await seedTariffMatrix(zaarangHotelId, ZAARANG_MEAL_MATRIX);
+  await seedTariffMatrix(aureliaHotelId, AURELIA_MEAL_MATRIX);
 
   log("Phase 1 seed completed successfully (idempotent).");
 }

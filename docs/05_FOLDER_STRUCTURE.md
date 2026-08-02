@@ -1,0 +1,87 @@
+# 05 — Folder Structure
+
+> **Status:** Living document · **Last updated:** 2026-07-14
+
+---
+
+## 1. Repository layout
+
+```
+M2N_Hotels/
+├── README.md                 ← Project entry
+├── AGENTS.md                 ← AI / contributor rules
+├── PROJECT_DOCS.md           ← Legacy master index (preserved)
+├── TODO.md                   ← Active tasks
+├── docs/                     ← Structured documentation
+│   ├── 00_PROJECT_OVERVIEW.md … 13_ROADMAP.md
+│   ├── CHANGELOG.md
+│   ├── history/              ← ADRs + release notes
+│   └── *.md aliases          ← ROADMAP, ARCHITECTURE, etc.
+├── frontend/                 ← Next.js (:3000)
+└── backend/                  ← Express API (:5001)
+```
+
+## 2. Frontend
+
+```
+frontend/
+├── public/
+│   └── Photos/
+│       ├── Aurelia-Grand/{Hero,Exterior,Lobby,Reception,Rooms,Bathroom,Banquet}/
+│       └── Zaarang-Inn/{…}/
+└── src/
+    ├── app/
+    │   ├── page.js, about/, book/, hotels/[slug]/
+    │   └── admin/
+    │       ├── login/
+    │       └── (protected)/
+    │           ├── dashboard/
+    │           ├── hotels/
+    │           ├── room-types/
+    │           ├── rooms/
+    │           └── media/
+    ├── components/           ← Public + admin UI
+    │   └── admin/            ← AdminGuard, forms, Toast, …
+    └── lib/
+        ├── api.js, images.js, tariffs.js, brand.js, …
+        ├── adminAuth.js
+        ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js
+```
+
+## 3. Backend
+
+```
+backend/
+├── server.js                 ← Helmet, CORS, rate limits, /uploads static
+├── config/db.js
+├── routes/
+│   ├── index.js              ← mounts public + admin routers
+│   ├── hotel.routes.js, room.routes.js, inquiry.routes.js
+│   ├── adminAuth.routes.js, adminHotel.routes.js
+│   ├── adminRoomType.routes.js, adminRoom.routes.js, adminMedia.routes.js
+│   ├── tariff.routes.js, adminTariff.routes.js
+│   ├── booking.routes.js, adminBooking.routes.js
+├── controllers/
+├── services/                 ← multi-step domain logic (booking availability)
+├── middleware/               ← validate, adminAuth, error
+├── validators/
+├── utils/                    ← apiResponse, mediaCategory, booking* …
+├── uploads/                  ← admin media files (gitignored contents)
+├── migrations/
+│   ├── 001_initial_schema.sql
+│   ├── 002_admin_users.sql
+│   ├── 003_tariff_rates.sql
+│   └── 004_bookings.sql
+└── scripts/
+    ├── seed.js, seedAdmin.js, runMigrations.js
+```
+
+## 4. Hotel image folders (public)
+
+Categories per hotel: `Hero`, `Exterior`, `Lobby`, `Reception`, `Rooms`,
+`Bathroom`, `Banquet`.
+
+**Rule:** Never mix photos between hotels — slug → folder mapping only.
+See [09 — Business Rules](09_BUSINESS_RULES.md).
+
+Admin uploads live separately under `backend/uploads/hotels/{hotelId}/{Category}/`.

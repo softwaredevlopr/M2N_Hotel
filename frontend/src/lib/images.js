@@ -1,89 +1,284 @@
-const LOCAL_GALLERY_IMAGES = [
-  "/hotel-exterior-2.jpg",
-  "/hotel-exterior.jpg",
-  "/lobby.jpg",
-  "/reception.jpg",
-  "/banquet.jpg",
-  "/hotel-exterior-3.jpg",
-  "/hotel-outside.jpg",
-  "/hotel-entrance.jpg",
-  "/reception-2.jpg",
-  "/reception-3.jpg",
-  "/reception-4.jpg",
-  "/reception-5.jpg",
-  "/banquet-2.jpg",
-  "/banquet-3.jpg",
-  "/banquet-4.jpg",
-  "/banquet-5.jpg",
-  "/banquet-6.jpg",
-  "/banquet-7.jpg",
-  "/banquet-8.jpg",
+import fs from "node:fs";
+import path from "node:path";
+import {
+  buildGalleryItemsFromMedia,
+  getActiveHotelMedia,
+  isPlaceholderMediaUrl,
+  isUsableImageUrl,
+  pickCoverMedia,
+  resolvePublicMediaUrl,
+} from "@/lib/media";
+
+const PHOTOS_PUBLIC_ROOT = "/Photos";
+const PHOTOS_FS_ROOT = path.join(process.cwd(), "public", "Photos");
+
+const HOTEL_PHOTO_FOLDERS = {
+  "m2n-hotel-aurelia-grand": "Aurelia-Grand",
+  "hotel-zaarang-inn": "Zaarang-Inn",
+};
+
+const GALLERY_CATEGORIES = [
+  "Exterior",
+  "Reception",
+  "Lobby",
+  "Rooms",
+  "Bathroom",
+  "Banquet",
 ];
 
-// Captioned fallback gallery used when the API returns no hotel_media rows,
-// so the gallery section always renders real local photos instead of an
-// empty placeholder.
-const GALLERY_FALLBACK_ITEMS = [
-  { url: "/hotel-exterior-2.jpg", caption: "Exterior" },
-  { url: "/hotel-exterior.jpg", caption: "Front view" },
-  { url: "/lobby.jpg", caption: "Lobby" },
-  { url: "/reception.jpg", caption: "Reception" },
-  { url: "/banquet.jpg", caption: "Banquet hall" },
-  { url: "/hotel-exterior-3.jpg", caption: "Exterior" },
-  { url: "/hotel-entrance.jpg", caption: "Entrance" },
-];
+const ALL_CATEGORIES = ["Hero", ...GALLERY_CATEGORIES];
 
-// Room fallbacks by sort order: Standard, Deluxe, Suite.
-// Only /room.jpg is a true guest-room photo, so all room cards use it for now.
-// Non-room imagery (banquet/reception/lobby/exterior/bathroom) must never be
-// used as a room card cover. Add /room-2.jpg, /room-3.jpg here once available.
-const LOCAL_ROOM_IMAGES = ["/room.jpg", "/room.jpg", "/room.jpg"];
+const CATEGORY_CAPTIONS = {
+  Hero: "Hotel",
+  Exterior: "Exterior",
+  Reception: "Reception",
+  Lobby: "Lobby",
+  Rooms: "Rooms",
+  Bathroom: "Bathroom",
+  Banquet: "Banquet hall",
+};
 
-const DEFAULT_HERO_IMAGE = "/hotel-exterior-2.jpg";
-const DEFAULT_CARD_IMAGE = "/hotel-exterior.jpg";
-const DEFAULT_ROOM_IMAGE = LOCAL_ROOM_IMAGES[0];
+const IMAGE_EXTENSIONS = new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".avif",
+  ".gif",
+]);
 
-// Remote backup used only if local assets are unavailable.
 const REMOTE_BACKUP_IMAGE =
   "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1800&q=80";
 
-function isUsableImageUrl(url) {
-  if (typeof url !== "string" || url.length === 0) return false;
-  return url.startsWith("http") || url.startsWith("/");
+const photoCache = new Map();
+
+function slugOf(hotelOrSlug) {
+  if (typeof hotelOrSlug === "string") return hotelOrSlug;
+  return hotelOrSlug?.slug ?? null;
 }
 
-export function resolveMediaUrl(media, index = 0) {
-  if (media && isUsableImageUrl(media.url)) return media.url;
-  return LOCAL_GALLERY_IMAGES[index % LOCAL_GALLERY_IMAGES.length] || REMOTE_BACKUP_IMAGE;
+function naturalCompare(a, b) {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 }
 
-export function resolveRoomTypeImage(roomType, index = 0) {
-  if (roomType && isUsableImageUrl(roomType.image_url)) {
-    return roomType.image_url;
+function listCategoryImages(folderName, category) {
+  const dir = path.join(PHOTOS_FS_ROOT, folderName, category);
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
   }
-  return LOCAL_ROOM_IMAGES[index % LOCAL_ROOM_IMAGES.length] || DEFAULT_ROOM_IMAGE;
+  return entries
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        IMAGE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())
+    )
+    .map((entry) => entry.name)
+    .sort(naturalCompare)
+    .map((name) => `${PHOTOS_PUBLIC_ROOT}/${folderName}/${category}/${name}`);
+}
+
+function getHotelPhotos(hotelOrSlug) {
+  const slug = slugOf(hotelOrSlug);
+  const folderName = slug ? HOTEL_PHOTO_FOLDERS[slug] : null;
+  if (!folderName) return null;
+
+  if (photoCache.has(slug)) return photoCache.get(slug);
+
+  const photos = {};
+  for (const category of ALL_CATEGORIES) {
+    photos[category] = listCategoryImages(folderName, category);
+  }
+  photoCache.set(slug, photos);
+  return photos;
+}
+
+function firstAvailableBrandImage() {
+  for (const slug of Object.keys(HOTEL_PHOTO_FOLDERS)) {
+    const photos = getHotelPhotos(slug);
+    if (photos?.Hero?.[0]) return photos.Hero[0];
+    if (photos?.Exterior?.[0]) return photos.Exterior[0];
+  }
+  return REMOTE_BACKUP_IMAGE;
+}
+
+export function resolveBrandHeroImage(hotels = []) {
+  const featured =
+    hotels.find((hotel) => hotel?.is_featured) || hotels[0] || null;
+  if (featured) {
+    const fromApi = resolveHeroImage(featured);
+    if (fromApi && fromApi !== REMOTE_BACKUP_IMAGE) return fromApi;
+  }
+
+  const preferredCategories = ["Lobby", "Reception", "Exterior"];
+  for (const category of preferredCategories) {
+    for (const slug of Object.keys(HOTEL_PHOTO_FOLDERS)) {
+      const photos = getHotelPhotos(slug);
+      if (photos?.[category]?.[0]) return photos[category][0];
+    }
+  }
+  return firstAvailableBrandImage();
+}
+
+function galleryItemsFromPhotos(hotel) {
+  const photos = getHotelPhotos(hotel);
+  if (!photos) return [];
+
+  const items = [];
+  let order = 0;
+  for (const category of GALLERY_CATEGORIES) {
+    const urls = photos[category];
+    if (!Array.isArray(urls) || urls.length === 0) continue;
+    for (const url of urls) {
+      const caption = CATEGORY_CAPTIONS[category] || category;
+      items.push({
+        id: `${category}-${order}`,
+        url,
+        alt_text: hotel?.name ? `${hotel.name} — ${caption}` : caption,
+        caption,
+        sort_order: order + 1,
+        is_cover: order === 0,
+      });
+      order += 1;
+    }
+  }
+  return items;
+}
+
+function heroFromPhotos(hotel) {
+  const photos = getHotelPhotos(hotel);
+  if (!photos) return null;
+  return photos.Hero[0] || photos.Exterior[0] || null;
+}
+
+function cardFromPhotos(hotel) {
+  const photos = getHotelPhotos(hotel);
+  if (!photos) return null;
+  return (
+    photos.Exterior[0] ||
+    photos.Hero[0] ||
+    photos.Lobby[0] ||
+    null
+  );
+}
+
+function aboutFromPhotos(hotel) {
+  const photos = getHotelPhotos(hotel);
+  if (!photos) return null;
+  return (
+    photos.Lobby[0] ||
+    photos.Reception[0] ||
+    photos.Rooms[0] ||
+    photos.Exterior[0] ||
+    photos.Hero[0] ||
+    null
+  );
+}
+
+function roomFromPhotos(hotel, index = 0) {
+  const photos = getHotelPhotos(hotel);
+  if (!photos?.Rooms?.length) return null;
+  return photos.Rooms[index % photos.Rooms.length];
+}
+
+function anyPhotoFromHotel(hotel) {
+  const photos = getHotelPhotos(hotel);
+  if (!photos) return null;
+  for (const category of ALL_CATEGORIES) {
+    if (photos[category]?.[0]) return photos[category][0];
+  }
+  return null;
+}
+
+// A property must never borrow another property's photography. Once a hotel is
+// known the fallback chain stays inside that hotel's own folder; the brand-wide
+// fallback is only for hotel-less contexts such as the homepage hero.
+function lastResortImage(hotel) {
+  if (!hotel) return firstAvailableBrandImage();
+  return anyPhotoFromHotel(hotel) || REMOTE_BACKUP_IMAGE;
+}
+
+export function resolveMediaUrl(media) {
+  const resolved = resolvePublicMediaUrl(media?.url);
+  if (resolved) return resolved;
+  return firstAvailableBrandImage();
 }
 
 export function resolveHeroImage(hotel) {
-  if (!hotel?.media || hotel.media.length === 0) return DEFAULT_HERO_IMAGE;
-  const cover = hotel.media.find((item) => item.is_cover) ?? hotel.media[0];
-  return resolveMediaUrl(cover, 0);
+  const cover = pickCoverMedia(hotel, ["Hero", "Exterior"]);
+  if (cover?.url) return cover.url;
+
+  const fromPhotos = heroFromPhotos(hotel);
+  if (fromPhotos) return fromPhotos;
+
+  if (!hotel) return firstAvailableBrandImage();
+
+  const media = getActiveHotelMedia(hotel);
+  if (media[0]?.url) return media[0].url;
+
+  return lastResortImage(hotel);
 }
 
 export function resolveCardImage(hotel) {
-  if (!hotel?.media || hotel.media.length === 0) return DEFAULT_CARD_IMAGE;
-  // Prefer the secondary front-view shot for cards so it differs from the hero.
-  const candidate = hotel.media[1] ?? hotel.media[0];
-  return resolveMediaUrl(candidate, 1);
+  const media = getActiveHotelMedia(hotel);
+  const exterior =
+    media.find((item) => item.category === "Exterior") ||
+    media.find((item) => item.category === "Hero") ||
+    media[0];
+  if (exterior?.url) return exterior.url;
+
+  const fromPhotos = cardFromPhotos(hotel);
+  if (fromPhotos) return fromPhotos;
+
+  return lastResortImage(hotel);
 }
 
-export function getFallbackGalleryItems(limit = GALLERY_FALLBACK_ITEMS.length) {
-  return GALLERY_FALLBACK_ITEMS.slice(0, limit).map((item, index) => ({
-    id: `gallery-fallback-${index}`,
-    url: item.url,
-    alt_text: item.caption,
-    caption: item.caption,
-    sort_order: index + 1,
-    is_cover: index === 0,
-  }));
+export function resolveAboutImage(hotel) {
+  const media = getActiveHotelMedia(hotel);
+  const interior =
+    media.find((item) => item.category === "Lobby") ||
+    media.find((item) => item.category === "Reception") ||
+    media.find((item) => item.category === "Rooms") ||
+    media[1] ||
+    media[0];
+  if (interior?.url) return interior.url;
+
+  const fromPhotos = aboutFromPhotos(hotel);
+  if (fromPhotos) return fromPhotos;
+
+  return resolveHeroImage(hotel);
 }
+
+export function resolveRoomTypeImage(roomType, index = 0, hotel) {
+  const media = getActiveHotelMedia(hotel);
+  const roomMedia = media.filter((item) => item.category === "Rooms");
+  if (roomMedia.length > 0) {
+    return roomMedia[index % roomMedia.length].url;
+  }
+
+  const fromPhotos = roomFromPhotos(hotel, index);
+  if (fromPhotos) return fromPhotos;
+
+  if (
+    isUsableImageUrl(roomType?.image_url) &&
+    !isPlaceholderMediaUrl(roomType.image_url)
+  ) {
+    return resolvePublicMediaUrl(roomType.image_url) || roomType.image_url;
+  }
+
+  return resolveHeroImage(hotel);
+}
+
+export function getGalleryItems(hotel) {
+  const fromApi = buildGalleryItemsFromMedia(hotel);
+  if (fromApi.length > 0) return fromApi;
+
+  const fromPhotos = galleryItemsFromPhotos(hotel);
+  if (fromPhotos.length > 0) return fromPhotos;
+
+  return [];
+}
+
+export { resolvePublicMediaUrl, getActiveHotelMedia };

@@ -1,27 +1,276 @@
-# M2N Hotel — Project Documentation
+# M2N Hotels — Project Documentation
 
-> **Last updated:** May 2026  
-> **Purpose:** Is file mein ab tak ka backend setup, architecture, aur server chalane ka tareeka likha hai — taaki aage kaam karte waqt context yaad rahe.
-
----
-
-## 1. Project Overview
-
-**M2N_Hotel** ek hotel management project hai. Abhi tak sirf **backend API** setup hua hai:
-
-- **Tech stack:** Node.js + Express.js + PostgreSQL
-- **Backend location:** `backend/` folder (project root ke andar alag folder — production-ready pattern)
-- **Default port:** `5000`
-- **Database:** PostgreSQL (`pg` package se connection)
-
-Frontend ya database tables abhi add nahi kiye gaye — ye documentation sirf **current backend base** ko cover karti hai.
+> **Last updated:** July 2026  
+> **Purpose:** Master index and long-form reference. For the current roadmap and
+> status, prefer [`README.md`](README.md), [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md),
+> and [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 ---
 
-## 2. Poora Folder Structure
+## Project Documentation Flow
+
+**`PROJECT_DOCS.md` is the master index and source of truth for the project.**
+Start here, then follow the flow downward — each layer adds more specific detail:
 
 ```
-M2N_Hotel/                          ← Project root
+README.md            ← Quick start & doc map
+      ↓
+PROJECT_DOCS.md      ← Master index & source of truth (start here for deep context)
+      ↓
+AGENTS.md            ← AI operating manual (rules & workflow)
+      ↓
+docs/                ← Structured documentation set (topic-wise)
+      ↓
+docs/history/        ← Decisions (ADR) & version-wise release notes
+```
+
+- **[`README.md`](README.md)** — quick start, status snapshot, links.
+- **[`PROJECT_DOCS.md`](PROJECT_DOCS.md)** — this file. Authoritative long-form entry:
+  project vision, tech stack, current status, image rules, and pending tasks.
+- **[`AGENTS.md`](AGENTS.md)** — permanent operating manual for any AI assistant
+  (rules, conventions, workflow, and things that must never change without approval).
+- **[`docs/`](docs/)** — detailed, topic-wise documentation (overview, architecture,
+  database, API, setup, coding rules, business rules, security, deployment, roadmap, etc.).
+- **[`docs/history/`](docs/history/)** — long-term history:
+  [`DECISIONS.md`](docs/history/DECISIONS.md) (architectural decisions) and
+  [`RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md) (version-wise release history).
+
+> Any AI or contributor should be able to continue this project by reading
+> `PROJECT_DOCS.md` → `AGENTS.md` → `docs/` → `docs/history/`.
+
+---
+
+## 1. Project Vision
+
+M2N Hotels started as a single-hotel website and is now a **multi-property platform**
+with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
+
+**Product roadmap (canonical):** [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
+
+| Phase | Name | Status |
+|-------|------|--------|
+| 1 | Public Website | ✅ |
+| 2 | Booking Inquiry | ✅ |
+| 3 | Admin Authentication | ✅ |
+| 4 | Hotel Management | ✅ |
+| 5 | Room Type Management | ✅ |
+| 6 | Rooms Management | ✅ |
+| 7 | Hotel Media Management | ✅ |
+| 8 | Public Website Dynamic Integration | ✅ |
+| 9 | Tariff & Rate Management | ✅ |
+| 10A | Booking engine backend (schema + APIs) | ✅ Complete |
+| 10B–14 | Booking UI, inventory rules, PMS, CRM, payments | ⬜ Next: Phase 10B |
+| 15 | Multi-Property SaaS | ⬜ |
+
+Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre hotel ka content ya photos share nahi karta.
+
+---
+
+## 2. Current Tech Stack
+
+| Layer | Technology | Port |
+|-------|------------|------|
+| Frontend | **Next.js** (React) | `3000` |
+| Backend | **Node.js + Express** | `5001` |
+| Database | **PostgreSQL** (`pg` driver) | `5432` |
+
+- **Frontend location:** `frontend/`
+- **Backend location:** `backend/`
+- **Frontend → Backend base URL:** `NEXT_PUBLIC_API_URL` (default `http://localhost:5001`)
+
+> Note: Purani docs mein backend port `5000` likha tha; **ab backend `5001`** par chalta hai (frontend isi ko default API base maanta hai). Neeche ke legacy sections mein jahan `5000` dikhe, use `5001` samjhein.
+
+---
+
+## 3. Current Status (Completed)
+
+**Phases 1–9 and 10A are complete.** Detail: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
+
+- ✅ **Public website** — multi-hotel Next.js; Aurelia Grand + Zaarang Inn; slug detail pages.
+- ✅ **Hotel-wise Photos folders** — gallery/room cards; empty categories skipped.
+- ✅ **Backend REST + `/health`** — PostgreSQL-backed public and admin APIs.
+- ✅ **Booking inquiry** — `InquiryForm` → `POST /api/inquiries`.
+- ✅ **Admin Authentication (JWT)** — `/admin/login`, `admin_users`, `requireAdminAuth`.
+- ✅ **Hotel Management** — `/admin/hotels` + `/api/admin/hotels`.
+- ✅ **Room Type Management** — `/admin/room-types` + `/api/admin/room-types`.
+- ✅ **Rooms Management** — `/admin/rooms` + `/api/admin/rooms`.
+- ✅ **Hotel Media Management** — `/admin/media` + `/api/admin/media` (upload).
+- ✅ **Production hardening** — SEO, Helmet/CORS/rate limits, a11y/performance baseline.
+- ✅ **Premium hotel detail UX** — rooms, tariff UI, facilities, lightbox, map, sticky CTA.
+- ✅ **Phase 8 — API-driven public site** — hotel pages load details, media, amenities,
+  room types, contact, and policies from existing public APIs; loading/error states added.
+
+- ✅ **Phase 9 — Tariff & rate management** — `tariff_rates` table, admin/public APIs,
+  `/admin/tariffs`, public meal-plan matrix from API.
+
+- ✅ **Phase 10A — Booking engine backend foundation** — `bookings` table
+  (migration `004`), availability derived from `rooms` + live reservations with
+  transaction/advisory-lock overbooking protection, public
+  `POST /api/bookings` + contact-verified `GET /api/bookings/:bookingNumber`, and
+  admin JWT `/api/admin/bookings` (list/filter/paginate, detail, create, update,
+  status transitions, room assignment). Backend only — no booking UI yet.
+
+**Next:** Phase 10B — Booking UI (admin module + guest flow) & inventory rules.
+
+---
+
+## 3b. Historical status bullets (preserved detail)
+
+Ye pehle ke detailed completion notes hain (roadmap renumbering ke baad bhi valid):
+
+- ✅ **Multi-hotel frontend working** — ek codebase se multiple hotels render hote hain.
+- ✅ **Aurelia Grand aur Zaarang Inn dono working** — dono hotels live hain.
+- ✅ **Hotel-wise image folders** — saare photos `frontend/public/Photos/<Hotel>/<Category>/` ke andar organized hain.
+- ✅ **Hotel detail pages slug-wise load** hoti hain — route `/hotels/[slug]`.
+- ✅ **Gallery images hotel-wise load** hoti hain — har hotel ki apni categories se (empty category skip ho jaati hai).
+- ✅ **Room cards hotel-wise load** hote hain — har hotel ke `Rooms/` folder se.
+- ✅ **Backend `/health` working** — server + database connection check.
+- ✅ **Booking inquiry feature working** — reusable `InquiryForm` frontend component
+  `POST /api/inquiries` par submit karta hai (backend endpoint + validation +
+  `inquiries` table pehle se the, waise hi reuse kiye).
+- ✅ **Production hardening done** — SEO (metadata, Open Graph, `robots.txt`,
+  `sitemap.xml`, web manifest, canonical URLs, aur JSON-LD structured data),
+  backend security (Helmet, tighter CORS, rate limiting, request-size limits),
+  accessibility (ARIA live regions, focus rings, alt text), aur performance (lazy
+  images, API request timeout). Booking inquiry form mein client-side validation +
+  inline field errors bhi add kiye. Schema change nahi kiya, existing APIs + `/` +
+  `/health` + localhost intact.
+- ✅ **Premium hotel detail redesign (sirf frontend UX/UI)** — dono hotel pages
+  ko luxury layout mein redesign kiya (brand palette/logo/header same). Rooms ab
+  bade alternating cards hain (Room Name, Starting Price, Occupancy, Bed Type,
+  Room Highlights, Amenities, **View Tariff** + **Book Now** buttons). `RoomTariff`
+  ab professional meal-plan matrix hai (No Meal / Breakfast / Breakfast + One Meal /
+  All Meals × Single / Double) + alag **Couple / Get Together Package** (**₹999 ·
+  3 Hours, dono hotels par**, official food inclusions) with prominent "Book Couple
+  Package" CTA + Extra Bed (₹400) / GST (5% Extra) / Check-in (12 PM) / Check-out
+  (11 AM) policy strip. Facilities curated premium icon grid (`lib/facilities.js`),
+  Gallery mein lightbox, Location map improve, sticky **Book Now** CTA, aur smooth
+  scroll-reveal animations (`Reveal`). Zaarang official room + meal-plan rates use
+  karta hai; Aurelia same structure but **"Contact for Tariff"** jab tak official
+  rates nahi aate (koi fake pricing nahi). Section order: Hero →
+  About → Rooms → Tariff → Facilities → Gallery → Location → Reviews → Contact.
+  Data `frontend/src/lib/tariffs.js` se aata hai — koi API/DB/schema change nahi.
+- ✅ **Tariff & Meal Plans section rework (dono hotels, shared source):** Tariff
+  section se **₹999 Couple / Get Together Package card hata di** (price, duration,
+  inclusions, "Book Couple Package" button) — ₹999 sirf Standard room card par
+  rehta hai. Dono hotels ab ek hi **shared official meal-plan matrix**
+  (`SHARED_MEAL_PLANS`) use karte hain: No Meal ₹1,799/₹2,199 · Breakfast
+  (Single = "Available with room plan", Double ₹2,299) · Breakfast + One Meal
+  ₹2,199/₹2,599 · All Meals Single ₹2,499 (Zaarang Double ₹3,199; Aurelia Double
+  "Available with room plan" via `AURELIA_MEAL_PLANS`). Aurelia ab yahan "Contact
+  for Tariff" nahi dikhata. Meal-plan cell ab price ki jagah text note bhi carry
+  kar sakta hai (`singleNote`/`doubleNote`). Tariff section mein koi bhi room-card
+  price (₹999/₹1,999/₹2,999) nahi dikhti; shared disclaimer add kiya; check-in/out
+  sirf policy strip mein (duplicate nahi). Koi backend/API/DB/schema change nahi.
+- ✅ **Aurelia targeted content:** Deluxe card highlights mein **Complimentary
+  Breakfast** add kiya; Aurelia tariff matrix (`AURELIA_MEAL_PLANS`) mein All Meals /
+  Double ab **"Available with room plan"** (₹3,199 sirf pehle SHARED matrix mein
+  tha). Koi layout/component change nahi.
+- ✅ **Zaarang Inn = Aurelia layout (shared components, Zaarang data):** Standard
+  room card ab ₹999 Couple / Get Together Package (3 Hours, Queen, choose-one food)
+  — Aurelia jaisa structure, Zaarang content/images. Deluxe ₹1,999 / Suite ₹2,999
+  approved Zaarang details. `ZAARANG_MEAL_PLANS` official rates; tariff section mein
+  Couple Package card nahi. Facilities labels `getHotelFacilities` se (Aurelia
+  wording same). Koi backend/API/DB change nahi.
+- ✅ **Aurelia room-card corrections (data-driven):** Deluxe aur Suite ab
+  **Duration: 1 Day** dikhate hain. Suite occupancy **2 Adults + 2 Children**,
+  bed type **King** (pehle "King + Sofa Bed" tha — ab naye `bedType` override se
+  King; DB row waise ka waisa, koi schema/API change nahi), aur official
+  **Food Plan: Complimentary Meals — 3 Times** section + note "Meal menu and items
+  are selected daily by hotel management" (koi dish invent nahi ki). `FeaturedRooms`
+  ab Room Size slot ko cleanly hata deta hai jab verified size nahi hoti (Aurelia
+  par dash-only field nahi); Zaarang cards unchanged. Naye optional fields:
+  `bedType`, structured `foodPlan` (`lib/tariffs.js`).
+
+Slug mapping (source of truth):
+
+| Hotel | Slug | Photo folder |
+|-------|------|--------------|
+| M2N Hotel : Aurelia Grand | `m2n-hotel-aurelia-grand` | `/Photos/Aurelia-Grand` |
+| Hotel Zaarang Inn | `hotel-zaarang-inn` | `/Photos/Zaarang-Inn` |
+
+---
+
+## 4. Image Folder Structure
+
+Har hotel ke photos apne dedicated folder mein rehte hain, category subfolders ke saath:
+
+```
+frontend/public/Photos/
+├── Aurelia-Grand/
+│   ├── Hero/
+│   ├── Exterior/
+│   ├── Lobby/
+│   ├── Reception/
+│   ├── Rooms/
+│   ├── Bathroom/
+│   └── Banquet/
+│
+└── Zaarang-Inn/
+    ├── Hero/
+    ├── Exterior/
+    ├── Lobby/
+    ├── Reception/
+    ├── Rooms/
+    ├── Bathroom/
+    └── Banquet/
+```
+
+Category usage:
+
+- **Hero/** → hotel hero (top banner) image.
+- **Exterior/** → hotel card cover + gallery.
+- **Lobby/**, **Reception/** → about/interior + gallery.
+- **Rooms/** → room card covers + gallery.
+- **Bathroom/**, **Banquet/** → gallery.
+
+Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein load hote hain. Agar koi category **empty** ho (jaise Zaarang ka `Banquet/`), to wo gallery mein **safely skip** ho jaati hai.
+
+---
+
+## 5. Image Rule (IMPORTANT)
+
+> **Kabhi bhi ek hotel ke photos doosre hotel mein mat mix karo.**
+
+- Har hotel ke images **sirf** uske apne slug/folder mapping se aate hain (`slug → /Photos/<Hotel>`).
+- Koi hardcoded cross-hotel image nahi (e.g. Aurelia ki photo Zaarang par kabhi nahi dikhni chahiye).
+- Naya hotel add karte waqt: pehle uska folder `frontend/public/Photos/<Hotel-Name>/` banao, category subfolders + images daalo, phir slug → folder mapping register karo.
+- Mapping single source of truth hai — display isi par depend karti hai, kisi flat/global image list par nahi.
+- **Stock/demo images (Unsplash, placehold.co, picsum, dummyimage …) valid hotel media nahi hain.**
+  `lib/media.js` inhe reject karta hai, chahe `hotel_media` row mein aise URL pade hon.
+- Seed media hamesha hotel ke apne `/Photos/<Folder>/<Category>/<n>.jpg` files ko point kare.
+  Path ka category segment hi hero / room card / gallery placement decide karta hai.
+- Hotel known ho to fallback usi hotel ke folder ke andar hi rahega — dusre hotel ki photo
+  fallback ke roop mein bhi kabhi nahi aayegi. Details: [ADR-0013](docs/history/DECISIONS.md).
+- Hero ke liye sirf **ek** cover select hota hai; baaki active images `sort_order` ke hisaab se gallery mein jaati hain.
+
+---
+
+## 6. Pending Tasks (Next Up)
+
+Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
+
+- ⬜ **Phase 10B** — Booking UI (admin module + guest flow) & inventory rules.
+- ⬜ Admin Inquiries CRUD UI.
+- ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
+- ⬜ Production contact details (replace placeholders).
+- ⬜ Phases **9–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).
+
+> Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older
+> pending bullets below this section in git history are obsolete.
+
+---
+
+## Appendix — Backend Reference (Legacy Detail)
+
+> Neeche ke sections purana **backend-only** reference hain. Yahan port `5000` likha ho to use `5001` samjhein (dekho Section 2). Ye detail file/architecture reference ke liye rakhi gayi hai.
+
+---
+
+## A1. Poora Folder Structure
+
+```
+M2N_Hotels/                         ← Project root
 │
 ├── PROJECT_DOCS.md                 ← Ye file (project ka reference guide)
 │
@@ -42,7 +291,7 @@ Jab frontend (React/Vue) add hoga, wo root ya `frontend/` mein rahega. Backend a
 
 ---
 
-## 3. Backend Architecture (Kaise Kaam Karta Hai)
+## A2. Backend Architecture (Kaise Kaam Karta Hai)
 
 ### 3.1 High-level flow
 
@@ -82,7 +331,7 @@ Client (Browser / Postman / Frontend)
 
 ---
 
-## 4. Har File Ka Kaam (Detail)
+## A3. Har File Ka Kaam (Detail)
 
 ### `backend/package.json`
 
@@ -156,7 +405,7 @@ Git se ignore: `node_modules/`, `.env`, log files.
 
 ---
 
-## 5. Environment Variables (`.env`)
+## A4. Environment Variables (`.env`)
 
 `.env.example` se copy karo aur values set karo:
 
@@ -187,7 +436,7 @@ CREATE DATABASE m2n_hotel;
 
 ---
 
-## 6. API Endpoints (Abhi Available)
+## A5. API Endpoints (Backend)
 
 | Method | URL | Status | Response |
 |--------|-----|--------|----------|
@@ -224,7 +473,7 @@ CREATE DATABASE m2n_hotel;
 
 ---
 
-## 7. Server Kaise Chalaye (Step-by-Step)
+## A6. Server Kaise Chalaye (Step-by-Step)
 
 ### Pehli baar setup
 
@@ -270,7 +519,7 @@ npm run dev
 
 ---
 
-## 8. Common Problems aur Fix
+## A7. Common Problems aur Fix
 
 | Problem | Possible fix |
 |---------|----------------|
@@ -282,38 +531,46 @@ npm run dev
 
 ---
 
-## 9. Aage Kya Add Hoga (Suggested Structure)
+## A8. Backend Extend Karne Ka Pattern (Suggested Structure)
 
 Jab features badhenge, backend ko aise extend karna natural hai:
 
 ```
 backend/
 ├── routes/           ← URL definitions (e.g. rooms, bookings)
-├── controllers/      ← Business logic
+├── controllers/      ← Business logic (public + admin* pairs)
+├── services/         ← Multi-step domain logic (e.g. booking availability)
 ├── models/           ← DB queries / schemas
 ├── middleware/       ← Auth, validation
-├── utils/            ← Helpers
+├── utils/            ← Helpers + domain constants
 └── migrations/       ← SQL schema files
 ```
 
 **Nayi route add karte waqt pattern:**
 
-1. `routes/` mein router file
+1. `routes/` mein router file (public aur admin ke liye alag, jaise
+   `booking.routes.js` + `adminBooking.routes.js`)
 2. `controllers/` mein logic
-3. SQL ke liye `const { query } = require("../config/db")`
-4. `server.js` mein `app.use("/api/rooms", roomsRouter)` jaisa mount
+3. Agar logic transaction/locking maangta hai to `services/` mein rakho
+   (reference: `services/booking.service.js`)
+4. SQL ke liye `const { query } = require("../config/db")`; transaction ke liye
+   `pool.connect()` + `BEGIN`/`COMMIT`
+5. `routes/index.js` mein `router.use("/api/rooms", roomsRouter)` jaisa mount
 
 ---
 
-## 10. Quick Reference (Ek Nazar Mein)
+## A9. Quick Reference (Ek Nazar Mein)
 
 | Cheez | Value / Path |
 |-------|----------------|
-| Project root | `c:\Projects\AKJM2M\M2N_Hotel` |
-| Backend code | `backend/` |
-| Start command | `npm start` (inside `backend/`) |
-| Dev command | `npm run dev` |
-| Default URL | `http://localhost:5000` |
+| Project root | `c:\Projects\AKJM2M\M2N_Hotels` |
+| Frontend code | `frontend/` (Next.js, port `3000`) |
+| Backend code | `backend/` (Express, port `5001`) |
+| Backend start | `npm start` (inside `backend/`) |
+| Frontend dev | `npm run dev` (inside `frontend/`) |
+| Backend URL | `http://localhost:5001` |
+| Frontend URL | `http://localhost:3000` |
+| Photos root | `frontend/public/Photos/<Hotel>/<Category>/` |
 | DB config file | `backend/config/db.js` |
 | Env sample | `backend/.env.example` |
 

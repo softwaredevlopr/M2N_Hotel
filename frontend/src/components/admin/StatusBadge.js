@@ -1,0 +1,25 @@
+const STYLES = {
+  active: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+  available: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+  draft: "border-cream/20 bg-ink text-cream-muted",
+  inactive: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  occupied: "border-sky-500/40 bg-sky-500/10 text-sky-200",
+  maintenance: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  blocked: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  out_of_service: "border-ink-line bg-ink-elevated text-cream-muted",
+  archived: "border-ink-line bg-ink-elevated text-cream-muted",
+};
+
+export default function StatusBadge({ status }) {
+  const key = String(status || "").toLowerCase();
+  const style = STYLES[key] || STYLES.draft;
+  const label = status ? String(status).replace(/_/g, " ") : "—";
+
+  return (
+    <span
+      className={`inline-flex border px-2.5 py-1 text-[10px] tracking-[0.2em] uppercase ${style}`}
+    >
+      {label}
+    </span>
+  );
+}

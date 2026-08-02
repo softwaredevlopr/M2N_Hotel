@@ -1,11 +1,11 @@
 import { Phone, Mail, Calendar, MapPin, Globe } from "lucide-react";
 import {
   formatAddress,
-  formatTimeOfDay,
   formatPhoneDisplay,
   phoneHref,
 } from "@/lib/format";
 import { resolveHeroImage } from "@/lib/images";
+import InquiryForm from "@/components/InquiryForm";
 
 import {
   BRAND_NAME,
@@ -47,17 +47,15 @@ function buildChannels(hotel) {
     icon: Calendar,
     label: "Book Online",
     value: "View room rates",
-    href: "#rooms",
+    href: "#tariff",
   });
 
   return channels;
 }
 
-export default function ContactCTA({ hotel }) {
+export default function ContactCTA({ hotel, roomTypes = [] }) {
   const channels = buildChannels(hotel);
   const address = formatAddress(hotel);
-  const checkIn = formatTimeOfDay(hotel?.check_in_time);
-  const checkOut = formatTimeOfDay(hotel?.check_out_time);
   const contactBg = resolveHeroImage(hotel);
   const intro = hotel?.description || BRAND_DESCRIPTION;
 
@@ -113,24 +111,31 @@ export default function ContactCTA({ hotel }) {
           ))}
         </div>
 
-        {(address || (checkIn && checkOut)) && (
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-xs tracking-[0.25em] uppercase text-cream-muted text-center">
-            {address && (
-              <>
-                <span className="inline-flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
-                  {address}
-                </span>
-                {checkIn && checkOut && (
-                  <span className="hidden sm:block h-3 w-px bg-gold/30" />
-                )}
-              </>
-            )}
-            {checkIn && checkOut && (
-              <span>
-                Check-in {checkIn} · Check-out {checkOut}
+        {hotel?.slug && (
+          <div className="mt-16 max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <span className="text-xs tracking-[0.45em] uppercase text-gold">
+                Booking Inquiry
               </span>
-            )}
+              <p className="mt-3 text-sm leading-relaxed text-cream-dim">
+                Share a few details and our team will be in touch shortly to
+                confirm availability and tailor your stay.
+              </p>
+            </div>
+            <InquiryForm
+              hotelSlug={hotel.slug}
+              hotelName={hotel.name}
+              roomTypes={roomTypes}
+            />
+          </div>
+        )}
+
+        {address && (
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-xs tracking-[0.25em] uppercase text-cream-muted text-center">
+            <span className="inline-flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+              {address}
+            </span>
           </div>
         )}
       </div>
