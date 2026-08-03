@@ -12,7 +12,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 ---
 
-## Current status (Phases 1–7 complete)
+## Current status (Phases 1–10B complete)
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -23,9 +23,26 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 5 | Room Type Management | ✅ |
 | 6 | Rooms Management | ✅ |
 | 7 | Hotel Media Management | ✅ |
-| 8–15 | Dynamic public integration → SaaS | ⬜ Upcoming |
+| 8 | Public Website Dynamic Integration | ✅ |
+| 9 | Tariff & Rate Management | ✅ |
+| 10A | Booking Engine Backend (schema + APIs) | ✅ |
+| 10B | Guest Booking UI | ✅ |
+| 10C–15 | Admin bookings, inventory rules, PMS, CRM, payments, SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)
+
+### Key routes
+
+| Route | Purpose |
+|-------|---------|
+| `/` · `/about` · `/hotels/[slug]` | Public marketing site |
+| `/book` | Guest booking flow (Select Hotel → Room & Dates → Guest Details) |
+| `/booking/[bookingNumber]` | Booking confirmation + contact-verified lookup |
+| `/admin/login` → `/admin/*` | Admin console (hotels, room types, rooms, media, tariffs) |
+
+> Bookings are requests, not prepaid reservations — no payment gateway yet.
+> Booking quotes read "Price on request" until a nightly `base_price` is set per
+> room type in Admin → Room Types (all seeded values are `0.00`).
 
 ---
 

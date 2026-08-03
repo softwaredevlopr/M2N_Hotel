@@ -1,6 +1,6 @@
 # 13 — Roadmap
 
-> **Status:** Living document · **Last updated:** 2026-08-02  
+> **Status:** Living document · **Last updated:** 2026-08-03  
 > **Related:** [01 — Project Status](01_PROJECT_STATUS.md) · [00 — Overview](00_PROJECT_OVERVIEW.md)
 
 ---
@@ -77,10 +77,24 @@ Reservation storage and REST APIs for direct bookings:
 - ✅ `npm run test:bookings` smoke suite
 - ⬜ No UI in this phase
 
-### Phase 10B — Booking UI & Inventory Rules ⬜
+### Phase 10B — Guest Booking UI ✅
 
-Admin bookings module and the guest-facing booking flow, plus availability
-calendars, per-date allotment, stop-sells and out-of-service coordination.
+The public reservation journey over the Phase 10A APIs:
+
+- ✅ `/book` three-step flow (Select Hotel → Room & Dates → Guest Details)
+- ✅ Deep links from hotel room cards (`/book?hotel=<slug>&room=<slug>`)
+- ✅ Live stay summary using the server's pricing formula
+- ✅ Availability validated client-side against sellable inventory and on submit
+  via the API's `409`
+- ✅ `/booking/[bookingNumber]` confirmation + contact-verified guest lookup
+- ✅ Loading, validation, error and responsive states
+- ⬜ No payment gateway, no confirmation email (Phases 11 / 14)
+
+### Phase 10C — Admin Bookings & Inventory Rules ⬜
+
+Admin bookings console over the existing `/api/admin/bookings` endpoints, plus
+availability calendars, per-date allotment, stop-sells and out-of-service
+coordination. (Split out of the original Phase 10B on 2026-08-03.)
 
 ### Phase 11 — Booking Engine Completion ⬜
 

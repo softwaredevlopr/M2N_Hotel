@@ -76,13 +76,19 @@ Photos under frontend/public       uploads under backend/uploads
 ## 4. Frontend
 
 - Location: `frontend/`
-- Public routes: `/`, `/about`, `/book`, `/hotels/[slug]`, …
+- Public routes: `/`, `/about`, `/book`, `/booking/[bookingNumber]`,
+  `/hotels/[slug]`, …
 - Admin routes: `/admin/login`, `/admin/dashboard`, `/admin/hotels`,
-  `/admin/room-types`, `/admin/rooms`, `/admin/media`, …
-- Hotel imagery (public): slug → `public/Photos/<Hotel>/…` via `lib/images.js`
+  `/admin/room-types`, `/admin/rooms`, `/admin/media`, `/admin/tariffs`, …
+- Hotel imagery (public): slug → `public/Photos/<Hotel>/…` via `lib/images.js`.
+  That module reads the filesystem, so it is **server-only**; interactive client
+  components receive already-resolved URLs as props ([ADR-0015](history/DECISIONS.md)).
 - Tariff display: `GET /api/tariffs` + `lib/tariffs.js` fallback for room-card packages
+- Booking flow: `components/booking/*` over `lib/bookingPricing.js` (limits and
+  totals mirrored from the backend) and `lib/bookingSession.js` (tab-scoped
+  contact for the guest lookup)
 - Admin helpers: `lib/adminAuth.js`, `adminHotels.js`, `adminRoomTypes.js`,
-  `adminRooms.js`, `adminMedia.js`
+  `adminRooms.js`, `adminMedia.js`, `adminTariffs.js`
 
 ## 5. Backend
 
@@ -110,6 +116,18 @@ models.
 3. Resolves gallery/room images primarily from `Photos/` folders.
 4. Renders tariff/facilities from frontend libs; inquiry posts to API.
 
+**Guest booking (Phase 10B)**
+
+1. `/book` loads hotels, room types, rooms and tariffs server-side, and resolves
+   every image URL before handing the data to the client flow.
+2. The guest picks hotel → room, dates and occupancy → guest details. The stay
+   summary recomputes locally with the server's own pricing formula.
+3. Submit posts to `POST /api/bookings`. A `409` sends the guest back to the
+   stay step with the server's availability message.
+4. On success the booking reference is pushed to `/booking/[bookingNumber]`,
+   which re-reads the reservation from `GET /api/bookings/:bookingNumber` using
+   the contact detail held for the tab.
+
 **Admin mutation**
 
 1. Admin logs in → JWT stored in localStorage.
@@ -125,6 +143,8 @@ models.
 | Room types | `/admin/room-types` | `/api/admin/room-types` |
 | Rooms | `/admin/rooms` | `/api/admin/rooms` |
 | Media | `/admin/media` | `/api/admin/media` |
+| Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
+| Bookings | ⬜ Phase 10C | `/api/admin/bookings` (live since 10A) |
 
 Protected by `AdminGuard` (client) + `requireAdminAuth` (server).
 

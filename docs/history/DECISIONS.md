@@ -537,6 +537,65 @@ last room at the same moment must not both succeed.
 - `SERIALIZABLE` isolation. Rejected — it would surface retryable serialisation
   failures to callers across the whole request, for no gain over a targeted lock.
 
+### ADR-0015 — Phase 10B guest booking UI: one price source, server-resolved images, tab-scoped lookup
+
+**Date:** 2026-08-03
+
+**Status:** Accepted
+
+**Context**
+Phase 10B adds the public reservation journey over the Phase 10A APIs, with no
+schema change, no new endpoint and no admin change. Three questions had to be
+settled: what price the guest is shown, how the flow gets hotel imagery into
+interactive components, and how the confirmation page satisfies the lookup
+endpoint's contact check.
+
+**Decision**
+- **One pricing source.** The stay summary computes `base_price × nights ×
+  rooms` with no tax component — byte-for-byte the server's
+  `buildIndicativeAmounts`. The booking page and the confirmation page therefore
+  never disagree. Where `base_price` is `0` the summary says "Price on request"
+  and quotes the lowest published Phase 9 tariff rate as *guidance only*, clearly
+  separated from the total.
+- **Images resolve on the server.** `lib/images.js` reads the photo folders via
+  `node:fs`, so importing it from a client component breaks the build. `/book`
+  resolves every hotel and room-type image and passes plain URLs down. Hotel
+  scoping is unchanged: each property still draws only from its own folder.
+- **Tab-scoped lookup contact.** After a booking is created, the guest's email and
+  phone go into `sessionStorage` so `/booking/[bookingNumber]` can call the
+  contact-verified lookup immediately. On a fresh tab the page asks for the
+  contact instead, which doubles as a "find my booking" screen.
+- **Availability is validated twice.** A client guard rejects room counts above
+  the property's sellable inventory before submitting; the API's `409` remains
+  the authority and returns the guest to the stay step with the server's message.
+- **Occupancy is advisory.** Exceeding `max_occupancy` shows a notice rather than
+  blocking, because the backend accepts it and the property can add bedding.
+
+**Consequences**
+- Quotes are honest and self-consistent, but they stay at "on request" until an
+  admin sets `room_types.base_price` — every seeded room type is currently `0`.
+  This is a data task in the existing Admin → Room Types screen, not a code
+  change.
+- Client validation duplicates backend limits, so the two must be changed
+  together; `lib/bookingPricing.js` names the backend files it mirrors.
+- Putting the contact in the URL was rejected: it would leak the guest's email
+  through browser history, referrer headers and server logs.
+- Phase 10B was narrowed to the guest journey, so the per-date allotment,
+  stop-sell and overbooking work that [ADR-0014](#adr-0014--phase-10a-booking-availability-is-derived-not-stored)
+  defers to "Phase 10B" is now **Phase 10C**, together with the admin bookings
+  console. ADR-0014's availability model itself is unchanged.
+
+**Alternatives considered**
+- Pricing the stay from the Phase 9 tariff matrix. Rejected — the booking record
+  would still be written from `base_price`, so the guest would see one number on
+  the booking page and a different one on the confirmation.
+- Passing the created booking through client state instead of re-fetching.
+  Rejected — it breaks on refresh and on a shared link, and it would let the page
+  render data the lookup endpoint had not verified.
+- Extending the backend to price from `tariff_rates`. Deferred — it changes
+  Phase 10A behaviour and its test expectations, and needs a meal-plan choice in
+  the booking model.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

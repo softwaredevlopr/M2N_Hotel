@@ -31,7 +31,9 @@ frontend/
 │       └── Zaarang-Inn/{…}/
 └── src/
     ├── app/
-    │   ├── page.js, about/, book/, hotels/[slug]/
+    │   ├── page.js, about/, hotels/[slug]/
+    │   ├── book/                    ← Guest booking flow (Phase 10B)
+    │   ├── booking/[bookingNumber]/ ← Confirmation + guest lookup (noindex)
     │   └── admin/
     │       ├── login/
     │       └── (protected)/
@@ -39,13 +41,17 @@ frontend/
     │           ├── hotels/
     │           ├── room-types/
     │           ├── rooms/
-    │           └── media/
+    │           ├── media/
+    │           └── tariffs/
     ├── components/           ← Public + admin UI
+    │   ├── booking/          ← BookingFlow + step / summary / confirmation
     │   └── admin/            ← AdminGuard, forms, Toast, …
     └── lib/
-        ├── api.js, images.js, tariffs.js, brand.js, …
+        ├── api.js, images.js, media.js, tariffs.js, brand.js, …
+        ├── bookingPricing.js, bookingSession.js
         ├── adminAuth.js
-        ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js
+        ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js,
+        │   adminTariffs.js
 ```
 
 ## 3. Backend

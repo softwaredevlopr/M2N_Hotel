@@ -59,7 +59,8 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 8 | Public Website Dynamic Integration | ✅ |
 | 9 | Tariff & Rate Management | ✅ |
 | 10A | Booking engine backend (schema + APIs) | ✅ Complete |
-| 10B–14 | Booking UI, inventory rules, PMS, CRM, payments | ⬜ Next: Phase 10B |
+| 10B | Guest booking UI (`/book` + confirmation) | ✅ Complete |
+| 10C–14 | Admin bookings, inventory rules, PMS, CRM, payments | ⬜ Next: Phase 10C |
 | 15 | Multi-Property SaaS | ⬜ |
 
 Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre hotel ka content ya photos share nahi karta.
@@ -84,7 +85,7 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
 
 ## 3. Current Status (Completed)
 
-**Phases 1–9 and 10A are complete.** Detail: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
+**Phases 1–9, 10A and 10B are complete.** Detail: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
 
 - ✅ **Public website** — multi-hotel Next.js; Aurelia Grand + Zaarang Inn; slug detail pages.
 - ✅ **Hotel-wise Photos folders** — gallery/room cards; empty categories skipped.
@@ -110,7 +111,15 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   admin JWT `/api/admin/bookings` (list/filter/paginate, detail, create, update,
   status transitions, room assignment). Backend only — no booking UI yet.
 
-**Next:** Phase 10B — Booking UI (admin module + guest flow) & inventory rules.
+- ✅ **Phase 10B — Guest booking UI** — `/book` teen-step flow (Select Hotel →
+  Room & Dates → Guest Details) with live stay summary, availability validation
+  (client-side inventory guard + API `409`), aur `/booking/[bookingNumber]`
+  confirmation + contact-verified lookup page. Frontend only — koi schema change
+  nahi, koi naya endpoint nahi, admin modules untouched, payment gateway nahi.
+  Quote tab tak "Price on request" dikhega jab tak admin room type ka nightly
+  `base_price` set nahi karta (seed mein sabhi `0` hain).
+
+**Next:** Phase 10C — Admin bookings module & inventory rules.
 
 ---
 
@@ -250,7 +259,9 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
-- ⬜ **Phase 10B** — Booking UI (admin module + guest flow) & inventory rules.
+- ⬜ **Phase 10C** — Admin bookings module (`/admin/bookings`) & inventory rules.
+- ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
+  total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
 - ⬜ Admin Inquiries CRUD UI.
 - ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ⬜ Production contact details (replace placeholders).

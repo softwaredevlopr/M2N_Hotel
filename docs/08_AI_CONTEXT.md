@@ -18,8 +18,11 @@
 - Hotels: Aurelia Grand, Zaarang Inn (slug-scoped).
 - **Phases 1–9 complete** (public site, inquiries, admin auth + hotels/room types/rooms/media/tariffs).
 - **Phase 10A complete** — booking backend: `bookings` table, availability engine
-  with overbooking protection, public + admin booking APIs. No booking UI yet.
-- **Next:** Phase 10B — admin bookings module, guest booking flow, inventory rules.
+  with overbooking protection, public + admin booking APIs.
+- **Phase 10B complete** — guest booking UI: `/book` three-step flow with a live
+  stay summary, and `/booking/[bookingNumber]` confirmation + contact-verified
+  lookup. Frontend only; no new endpoints, no payment gateway.
+- **Next:** Phase 10C — admin bookings module and per-date inventory rules.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 
 ## 3. Hard rules

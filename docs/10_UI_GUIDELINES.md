@@ -23,16 +23,32 @@
 - Full-bleed heroes on promotional surfaces; hotel-scoped galleries and room cards.
 - One job per section; skip empty data categories.
 
+**Booking flow (`/book`)**
+
+- Numbered step header; one step visible at a time so mobile never scrolls a
+  three-page form.
+- Two columns from `lg` up: step content left, stay summary sticky on the right.
+  Below `lg` the summary follows the step content and precedes the nav buttons.
+- Selection tiles (hotels, room types) are `<button aria-pressed>` with a gold
+  border and check badge when active — not links.
+- Fields reuse the inquiry-form styling via `components/booking/formStyles.js`;
+  errors sit inline under the field in gold, and the form-level banner uses
+  `role="alert"`.
+- The confirmation page is a printable document: reference block, stay details,
+  charges, and a print action.
+
 **Admin**
 
 - Shared shell: `AdminGuard` (nav + toast provider).
 - Patterns: table lists, filters, confirm dialogs, toast success/error, form
   sections with gold focus borders.
-- Modules: Hotels, Room Types, Rooms, Media (Inquiries TBD).
+- Modules: Hotels, Room Types, Rooms, Media, Tariffs (Bookings and Inquiries TBD).
 
 ## 4. Imagery
 
 - Public: slug → `Photos/` mapping only.
+- `lib/images.js` touches the filesystem, so client components must be handed
+  resolved URLs from a server component rather than importing it.
 - Admin media: preview via API origin + `/uploads/…` when relative.
 
 ## 5. Accessibility

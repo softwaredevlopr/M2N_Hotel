@@ -63,9 +63,13 @@ The direction is: **multi-property platform → dynamic public site → multi-te
 console (hotels / room types / rooms / media / tariffs), API-driven public hotel pages.
 
 **Completed (Phase 10A):** booking engine backend — `bookings` table, availability
-engine with overbooking protection, public + admin booking APIs (no UI yet).
+engine with overbooking protection, public + admin booking APIs.
 
-**Upcoming:** Phase 10B (booking UI & inventory rules) through Phase 15
+**Completed (Phase 10B):** guest booking UI — `/book` three-step flow with a live
+stay summary and availability validation, plus the `/booking/[bookingNumber]`
+confirmation and contact-verified lookup page. No payment gateway.
+
+**Upcoming:** Phase 10C (admin bookings module & inventory rules) through Phase 15
 (multi-property SaaS).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 

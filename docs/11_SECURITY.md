@@ -68,6 +68,17 @@ Implemented (see `backend/server.js` and `backend/middleware/`):
 - **Error disclosure** — `error.middleware.js` returns generic messages for 500s
   and never sends stack traces; set `NODE_ENV=production` in prod.
 
+**Guest booking UI (Phase 10B)**
+
+- `/booking/[bookingNumber]` is `noindex, nofollow` and `/booking/` is disallowed
+  in `robots.txt`, so reservation pages never reach a search index.
+- The lookup contact is kept in **sessionStorage** (tab-scoped, cleared when the
+  tab closes) purely so the confirmation page can call the verified lookup
+  without re-prompting. It is never placed in the URL, where it would leak
+  through history, referrers and server logs.
+- Client-side validation is a convenience layer only; every limit is still
+  enforced by the API, and the UI never sends prices, statuses or booking sources.
+
 TODO: Consider adding request logging, CSRF strategy (if cookies/auth are added),
 and stricter helmet CSP once the asset origins are finalized.
 

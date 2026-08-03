@@ -9,6 +9,91 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10B — Guest Booking UI ✅
+
+Public frontend only. No schema change, no admin module touched, no new backend
+endpoint, and no payment gateway. Phase 10A's APIs are consumed as they are.
+
+- `/book` rebuilt as a three-step reservation flow — **Select Hotel → Room &
+  Dates → Guest Details** — replacing the hotel-picker placeholder. Deep links
+  are supported (`/book?hotel=<slug>&room=<room-type-slug>`) and open the flow at
+  step 2 with that property and room preselected.
+- Live stay summary (`BookingPriceSummary`) recalculates hotel, room, dates,
+  nights, guests, rooms and the indicative total on every edit. It uses the same
+  formula as the server (`base_price × nights × rooms`, no tax component), so the
+  figure shown is the figure the API records. Where a room type has no published
+  base price, it reads "Price on request" and quotes the lowest published Phase 9
+  tariff rate as guidance.
+- Availability is validated in two layers: a client guard blocks room counts
+  above the property's sellable inventory (`GET /api/rooms`, statuses
+  `available` / `occupied`), and a `409` from `POST /api/bookings` returns the
+  guest to step 2 with the server's message intact so they can adjust the stay.
+- `/booking/[bookingNumber]` confirmation page. After a booking is created the
+  guest's contact detail is held in `sessionStorage` so the page loads directly;
+  on a fresh tab it asks for the email or mobile on the reservation, which
+  doubles as a "find my booking" screen. The route is `noindex` and disallowed in
+  `robots.txt`.
+- Loading, validation and error states throughout: route-level skeletons, an
+  inline field-level validator mirroring the backend limits (90-night maximum,
+  ≤30 adults, ≤30 children, ≤20 rooms, 2000-character requests), distinct
+  handling for validation (400), availability (409), rate limiting (429) and
+  network failures, plus an advisory notice when guests exceed the room's stated
+  occupancy.
+- Room-card "Book Now" on hotel pages now opens the booking flow with that hotel
+  and room preselected instead of scrolling to the inquiry form. The inquiry form
+  itself is unchanged and still available.
+- Frontend helpers: `lib/bookingPricing.js` (backend-mirrored limits, night
+  maths, totals, sellable inventory), `lib/bookingSession.js` (tab-scoped lookup
+  contact), and `createBooking` / `getBookingByNumber` / `getBookingPageData` in
+  `lib/api.js`.
+- Booking-flow imagery is resolved on the server and passed down as URLs, because
+  `lib/images.js` reads the photo folders through `node:fs` and cannot run in a
+  client component ([ADR-0015](history/DECISIONS.md)). Each property still draws
+  only from its own `Photos/` folder.
+
+**Database changes:** none. No migration, no column, no seed data change.
+
+**Backend changes:** none. `POST /api/bookings`, `GET /api/bookings/:bookingNumber`,
+`GET /api/hotels`, `GET /api/rooms`, `GET /api/rooms/types` and `GET /api/tariffs`
+are all consumed exactly as Phases 8–10A shipped them.
+
+**APIs added/changed:** none. New *frontend clients* only — `createBooking()`,
+`getBookingByNumber()` and `getBookingPageData()` in `frontend/src/lib/api.js`.
+
+**Frontend files added**
+
+| File | Role |
+|------|------|
+| `src/app/book/page.js` | Booking flow shell (rewritten from the hotel-picker placeholder); reads `?hotel=` / `?room=`, resolves images server-side |
+| `src/app/booking/[bookingNumber]/page.js` | Confirmation route, `noindex` |
+| `src/app/booking/[bookingNumber]/loading.js` | Route skeleton |
+| `src/components/booking/BookingFlow.js` | Step state machine, validation, submit and error routing |
+| `src/components/booking/BookingHotelStep.js` | Step 1 — hotel selection tiles |
+| `src/components/booking/BookingStayStep.js` | Step 2 — room, dates, occupancy, inventory guard |
+| `src/components/booking/BookingGuestStep.js` | Step 3 — guest details |
+| `src/components/booking/BookingPriceSummary.js` | Live stay summary |
+| `src/components/booking/BookingConfirmation.js` | Confirmation + contact-verified lookup |
+| `src/components/booking/formStyles.js` | Shared field/button classes (matches the inquiry form) |
+| `src/lib/bookingPricing.js` | Limits, night maths, totals and sellable inventory, mirrored from the backend |
+| `src/lib/bookingSession.js` | Tab-scoped lookup contact |
+
+**Frontend files modified**
+
+| File | Change |
+|------|--------|
+| `src/lib/api.js` | Added `getBookingPageData`, `createBooking`, `getBookingByNumber` |
+| `src/components/FeaturedRooms.js` | Room-card "Book Now" now deep-links into `/book` instead of the inquiry anchor |
+| `src/app/robots.js` | Disallow `/booking/` |
+
+**Remaining work**
+
+- Set a nightly `base_price` per room type (Admin → Room Types) so quotes show a
+  live total instead of "Price on request". Data task, no code change.
+- Admin bookings console and per-date inventory rules, previously grouped under
+  Phase 10B, move to **Phase 10C**.
+- Confirmation email / notification (Phase 11) and payments (Phase 14).
+- Guest self-service modification and cancellation (Phase 11).
+
 ### Added — Phase 10A — Booking Engine Backend Foundation ✅
 
 Backend only. No frontend booking pages, no payment gateway, OTA or channel

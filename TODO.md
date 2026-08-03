@@ -10,9 +10,12 @@
 
 - [x] **Phase 10A** — Booking Engine Backend Foundation (schema, availability
       engine, public + admin APIs). Backend only, no UI.
-- [ ] **Phase 10B** — Booking UI & inventory rules:
-  - [ ] Admin `/admin/bookings` module (list, filters, detail, status, room assignment).
-  - [ ] Guest booking flow on the public site (replacing inquiry-only).
+- [x] **Phase 10B** — Guest booking UI (`/book` three-step flow, live stay
+      summary, availability validation, `/booking/[bookingNumber]` confirmation
+      and lookup). Frontend only; no payment gateway.
+- [ ] **Phase 10C** — Admin bookings & inventory rules:
+  - [ ] Admin `/admin/bookings` module (list, filters, detail, status, room assignment)
+        over the existing Phase 10A APIs.
   - [ ] Availability calendar, per-date allotment, stop-sells, overbooking allowance.
   - [ ] Booking confirmation email / notification.
 
@@ -20,6 +23,10 @@
 
 ## High priority
 
+- [ ] Set a nightly `base_price` for each room type in Admin → Room Types. Every
+      seeded value is `0.00`, so the booking flow quotes "Price on request" and
+      records zero amounts. No code change needed — see
+      [ADR-0015](docs/history/DECISIONS.md).
 - [ ] Admin Inquiries CRUD UI (list/get/patch APIs already exist).
 - [ ] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 - [ ] Replace placeholder contact details before launch.
@@ -68,4 +75,4 @@
 
 ## Completed (pointer)
 
-Phases **1–9** and **10A** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md).
+Phases **1–9**, **10A** and **10B** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md).

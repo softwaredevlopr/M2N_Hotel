@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-02  
+> **Status:** Living document · **Last updated:** 2026-08-03  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -33,11 +33,12 @@
 | Public site fully API-driven | ✅ Phase 8 |
 | Tariff / rates in DB + admin | ✅ Phase 9 |
 | Booking engine — backend + APIs | ✅ Phase 10A |
-| Booking engine — admin + guest UI | ⬜ Phase 10B |
+| Booking engine — guest UI (`/book`, confirmation) | ✅ Phase 10B |
+| Booking engine — admin console + inventory rules | ⬜ Phase 10C |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A** ✅ · Next: **Phase 10B**
-(booking admin module + guest booking flow)
+**Roadmap progress:** Phases **1–9** ✅, **10A** ✅, **10B** ✅ · Next:
+**Phase 10C** (admin bookings module + per-date inventory rules)
 
 ---
 
@@ -107,6 +108,18 @@
   advisory lock per hotel + room type ([ADR-0014](history/DECISIONS.md)).
 - `npm run test:bookings` — 64 checks, self-cleaning. Backend only, no UI yet.
 
+### Phase 10B — Guest Booking UI ✅
+
+- `/book` three-step flow: Select Hotel → Room & Dates → Guest Details, with
+  deep links (`/book?hotel=<slug>&room=<slug>`) from hotel room cards.
+- Live stay summary using the server's own pricing formula; "Price on request"
+  with the published tariff as guidance when a room type has no base price.
+- Availability validated against sellable inventory client-side and against the
+  API's `409` on submit.
+- `/booking/[bookingNumber]` confirmation + contact-verified lookup, `noindex`.
+- Loading, validation, error and responsive states across the flow. No backend
+  or admin change; no payment gateway.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -117,14 +130,15 @@
 
 ## 3. In Progress
 
-- None formally in-flight. Next planned work: **Phase 10B**.
+- None formally in-flight. Next planned work: **Phase 10C**.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. **Phase 10B** — Admin bookings module + guest booking flow on the public site.
-2. Per-date allotment, stop-sells and overbooking allowances (Phase 10B/11).
+1. **Phase 10C** — Admin bookings module (`/admin/bookings`) over the existing
+   Phase 10A admin APIs.
+2. Per-date allotment, stop-sells and overbooking allowances (Phase 10C/11).
 3. Admin Inquiries CRUD UI.
 4. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
 5. Replace placeholder phones/emails before production launch.
@@ -139,6 +153,7 @@
 | MED-SEED | Aurelia Grand seed `hotel_media` URLs are flat paths whose files moved to `Photos/` | Low | Renders correctly via filesystem fallback; reconcile seed when convenient. Zaarang Inn reconciled 2026-08-02 |
 | ROOM-HOTEL | `bookings.room_id` consistency with `hotel_id` is enforced in the application, not by a constraint | Low | A composite FK would need `UNIQUE (id, hotel_id)` on `rooms` — an existing-table change requiring approval |
 | CONTACT | Placeholder contact strings in seed/UI | Medium | Replace before launch |
+| BASE-PRICE | Every seeded `room_types.base_price` is `0.00`, so booking quotes and recorded booking amounts read "on request" | Medium | Rates currently live only in `tariff_rates` (Phase 9). Set a nightly base price per room type in Admin → Room Types to enable live totals — no code change needed |
 
 ---
 
@@ -146,6 +161,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-03 | Phase 10B complete — guest booking flow at `/book`, live stay summary, availability validation, `/booking/[bookingNumber]` confirmation and lookup |
 | 2026-08-02 | Phase 10A complete — bookings schema, availability engine, public + admin booking APIs |
 | 2026-08-02 | Fixed Zaarang Inn media regression — stock placeholder `hotel_media` rows replaced with its real `Photos/Zaarang-Inn/**` photography; stock-host and cross-hotel fallback guards added |
 | 2026-08-02 | Phase 9 complete — tariff_rates schema, admin/public tariff APIs, admin UI |

@@ -157,6 +157,133 @@ export async function createInquiry(payload) {
 }
 
 /**
+ * Everything the public booking flow needs: the hotel collection plus each
+ * property's room types and physical rooms (used for the sellable-inventory
+ * guard before submitting).
+ */
+export async function getBookingPageData() {
+  const hotels = await getHotelsWithDetails();
+  if (hotels.length === 0) {
+    return {
+      hotels: [],
+      roomTypesByHotel: {},
+      roomsByHotel: {},
+      tariffsByHotel: {},
+    };
+  }
+
+  const perHotel = await Promise.all(
+    hotels.map(async (hotel) => {
+      const [roomTypes, rooms, tariff] = await Promise.all([
+        getRoomTypes(hotel.slug),
+        getRooms(hotel.slug),
+        getTariffsByHotelSlug(hotel.slug),
+      ]);
+      return { slug: hotel.slug, roomTypes, rooms, tariff };
+    })
+  );
+
+  const roomTypesByHotel = {};
+  const roomsByHotel = {};
+  const tariffsByHotel = {};
+  perHotel.forEach(({ slug, roomTypes, rooms, tariff }) => {
+    roomTypesByHotel[slug] = roomTypes;
+    roomsByHotel[slug] = rooms;
+    tariffsByHotel[slug] = tariff;
+  });
+
+  return { hotels, roomTypesByHotel, roomsByHotel, tariffsByHotel };
+}
+
+/**
+ * Create a reservation — POST /api/bookings.
+ * Client-safe. Returns a normalized result so the flow can distinguish
+ * validation errors (400), availability conflicts (409) and network failures.
+ */
+export async function createBooking(payload) {
+  const url = `${API_BASE_URL}/api/bookings`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    return {
+      ok: response.ok && data?.success === true,
+      status: response.status,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      networkError: true,
+      message: error?.message || "Network error",
+    };
+  }
+}
+
+/**
+ * Guest booking lookup — GET /api/bookings/:bookingNumber.
+ * The API requires the email or phone held on the reservation; a wrong
+ * reference and a failed contact check both return 404 by design.
+ */
+export async function getBookingByNumber(bookingNumber, { email, phone } = {}) {
+  if (!bookingNumber) {
+    return { ok: false, status: 400, data: null };
+  }
+
+  const params = new URLSearchParams();
+  if (email) params.set("email", email);
+  if (phone) params.set("phone", phone);
+
+  const url = `${API_BASE_URL}/api/bookings/${encodeURIComponent(
+    bookingNumber
+  )}?${params.toString()}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    return {
+      ok: response.ok && data?.success === true,
+      status: response.status,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      networkError: true,
+      message: error?.message || "Network error",
+    };
+  }
+}
+
+/**
  * Admin login — POST /api/admin/auth/login
  * Returns { ok, status, data, networkError?, message? }
  * On success, data matches backend: { admin, access_token, token_type, expires_in }

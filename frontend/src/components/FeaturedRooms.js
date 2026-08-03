@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   BedDouble,
   Users,
@@ -409,12 +410,14 @@ export default function FeaturedRooms({
                       >
                         View Tariff
                       </a>
-                      <a
-                        href="#contact"
+                      <Link
+                        href={`/book?hotel=${encodeURIComponent(
+                          hotel?.slug || ""
+                        )}&room=${encodeURIComponent(room.slug || "")}`}
                         className="inline-flex flex-1 items-center justify-center bg-gold px-7 py-4 text-xs tracking-[0.25em] uppercase text-cream transition-colors hover:bg-gold-soft"
                       >
                         Book Now
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </Reveal>

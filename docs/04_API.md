@@ -99,6 +99,7 @@ Static files: `GET /uploads/...` (admin-uploaded media).
 
 - `POST /api/bookings` — create a reservation request (availability checked).
 - `GET /api/bookings/:bookingNumber?email=` — guest lookup, contact-verified.
+  Backs the `/booking/[bookingNumber]` confirmation page.
 
 Full detail in [section 10](#10-bookings-phase-10a).
 
@@ -196,6 +197,10 @@ Stored in `hotels.metadata.tariff_settings` (no extra table).
 ## 10. Bookings (Phase 10A)
 
 Direct reservations. See [ADR-0014](history/DECISIONS.md) for the availability model.
+
+Consumed unchanged by the Phase 10B guest booking UI (`/book` and
+`/booking/[bookingNumber]`) through `createBooking()` and `getBookingByNumber()`
+in `frontend/src/lib/api.js`.
 
 ### Public
 
