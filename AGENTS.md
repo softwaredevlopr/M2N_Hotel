@@ -220,12 +220,18 @@ definition of done — code changes without matching documentation updates are
 
 ## 11. Git Commit Policy
 
-- **Only commit when explicitly asked.** Do not create commits proactively.
+**Standing instruction (2026-08-03):** a task is not complete until its changes are
+committed. After documentation is updated, run `git status`, then `git add .`,
+commit, and `git push origin main`.
+
 - Never modify git config, never force-push to `main`/`master`, never skip hooks
   unless explicitly requested.
-- Do not commit secrets (`.env`, credentials).
+- Do not commit secrets (`.env`, credentials) or build output. Read `git status`
+  before staging — `git add .` is only safe while the tree holds nothing but the
+  intended work.
 - Write clear, concise commit messages that focus on the "why".
-- Do not push to remote unless explicitly asked.
+- PowerShell has no heredoc: pass multi-line messages with `git commit -F <file>`
+  and delete the file afterwards.
 
 ## 12. Cursor Agent Workflow
 
@@ -235,7 +241,8 @@ definition of done — code changes without matching documentation updates are
 3. **Implement** — Make minimal, targeted edits. Use the correct specialized tools.
 4. **Verify** — Check for linter errors; build/run when a change could affect behavior.
 5. **Document** — Update `docs/` + `CHANGELOG.md` when behavior/structure changes.
-6. **Report** — Summarize what changed, why, and any follow-ups.
+6. **Commit** — Review `git status`, then commit and push ([§11](#11-git-commit-policy)).
+7. **Report** — Summarize what changed, why, and any follow-ups.
 
 ## 13. Task Completion Checklist
 
@@ -256,6 +263,12 @@ Before declaring a task done, confirm:
   - [ ] Architectural decisions recorded in `docs/history/DECISIONS.md`.
   - [ ] Completed features added to `docs/history/RELEASE_NOTES.md`.
   - [ ] Unfinished features listed in `TODO.md`.
+  - [ ] `README.md` updated when the phase table, routes or quick start change.
+- [ ] Every changelog entry states: what changed, files modified, APIs
+      added/changed, database changes, frontend changes, backend changes, and
+      remaining work — naming "none" explicitly where a category is untouched.
+- [ ] `git status` reviewed, then changes committed and pushed
+      ([§11](#11-git-commit-policy)).
 
 ## 14. Never Change Without Approval
 
