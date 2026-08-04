@@ -161,6 +161,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-04 | Restored original homepage `/brand-hero.jpg` from Git `336582d`; logo-only hero reverted; hotel pages unchanged |
 | 2026-08-04 | Fixed homepage hero completely — removed stock `brand-hero.jpg` resort file; BrandHero is logo + brand atmosphere only; hotel pages unchanged |
 | 2026-08-04 | Fixed homepage hero regression — brand hero is `/brand-hero.jpg` only; hotel photos stay on `/hotels/[slug]` |
 | 2026-08-03 | Phase 10B complete — guest booking flow at `/book`, live stay summary, availability validation, `/booking/[bookingNumber]` confirmation and lookup |

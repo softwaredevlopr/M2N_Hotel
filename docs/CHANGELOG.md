@@ -9,34 +9,36 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Fixed — Restored original homepage brand-hero.jpg from Git ✅
+
+- **Previous wrong image path (what the browser showed):** logo-only BrandHero
+  using `/m2n-logo-tagline.png` on a CSS atmosphere (commit `6676472`), after the
+  stock file had been deleted.
+- **Restored original image path:** `/brand-hero.jpg`
+  (`frontend/public/brand-hero.jpg`).
+- **Git source:** restored byte-identical from commit
+  `336582d` (“Updated project”, 2026-08-02) — SHA-256
+  `b63e51293e547e9b66b13e233eb9338081699876b6fec19559e2cd1776b42bef`.
+  Confirmed hospitality sunset / pool background photo, not a logo and not
+  Zaarang/Aurelia `/Photos` files.
+- **What changed.** Re-checked out `brand-hero.jpg` from history. Restored
+  photographic `BrandHero` layout (overlays, tagline, CTAs unchanged).
+  `resolveBrandHeroImage()` still ignores hotel lists and returns only
+  `/brand-hero.jpg`. Hotel detail pages untouched.
+- **APIs / database / backend:** none.
+- **Remaining work:** none for this restore.
+
 ### Fixed — Homepage brand hero was a stock resort photo file ✅
 
-- **Root cause (traced from rendered HTML).** The homepage CSS background
-  already resolved to `url(/brand-hero.jpg)` — it was **not** selecting
-  `hotels[0]`, featured hotel media, or Zaarang `/Photos` at render time. The
-  file `frontend/public/brand-hero.jpg` itself was a 2.4MB PNG (misnamed `.jpg`)
-  of a coastal luxury resort / infinity-pool scene. That asset looked like hotel
-  exterior media (and like the old stock imagery previously mis-attributed to
-  Zaarang), so the page still *appeared* to show hotel photography.
-- **What changed.** Removed `brand-hero.jpg`. Homepage `BrandHero` is now
-  brand-only: ink/gold atmosphere + `/m2n-logo-tagline.png` (no photographic
-  background, no `/Photos`, no Unsplash). Homepage `ContactCTA` (hotel=null)
-  likewise uses brand atmosphere only. Hotel detail heroes unchanged
-  (`resolveHeroImage` → each property’s own `/Photos/…`).
-- **Files modified.** `BrandHero.js`, `page.js`, `ContactCTA.js`, `lib/brand.js`,
-  `lib/images.js`; deleted `public/brand-hero.jpg`; docs.
-- **APIs added/changed:** none.
-- **Database changes:** none.
-- **Backend changes:** none.
-- **Frontend changes:** brand/hotel media separation completed at the asset +
-  component layer for `/` only.
-- **Remaining work:** none for this regression.
+Superseded for the homepage visual: deleting the file and switching to a logo
+hero was incorrect for product intent. The original `/brand-hero.jpg` from
+`336582d` is the required brand background (see restore entry above). Separation
+from hotel API/`/Photos` media remains in force ([ADR-0018](history/DECISIONS.md)).
 
 ### Fixed — Homepage brand hero no longer uses hotel photography ✅
 
-Superseded by the asset-level fix above (2026-08-04). The earlier code-path fix
-stopped selecting featured-hotel media, but left the misleading `brand-hero.jpg`
-resort file in place.
+Superseded by the asset-level restore above. The earlier code-path fix
+(stop selecting featured-hotel media) remains correct.
 
 ### Added — Phase 10B — Guest Booking UI ✅
 

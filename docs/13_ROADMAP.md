@@ -53,7 +53,7 @@ Replace static / filesystem-driven hotel presentation with API-backed data:
 - ✅ Dynamic amenities (API `hotel.amenities`)
 - ✅ Dynamic hotel details, contact, policies, inquiry form context
 - ✅ Dynamic featured media (hero/cards on hotel pages; homepage brand hero is
-  logo mark + brand atmosphere only — never hotel `/Photos`)
+  `/brand-hero.jpg` from Git history, never hotel `/Photos`)
 
 ### Phase 9 — Tariff & Rate Management ✅
 

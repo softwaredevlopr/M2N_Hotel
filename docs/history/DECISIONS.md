@@ -630,7 +630,7 @@ and violated the separation between brand surfaces and hotel detail media.
 
 **Date:** 2026-08-04
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0018](#adr-0018--restore-original-brand-herojpg-from-git-logo-is-not-the-homepage-hero) for the homepage visual (hotel-media isolation still stands)
 
 **Context**
 After ADR-0016 stopped the homepage from selecting featured-hotel media, the
@@ -653,11 +653,45 @@ media. Guests (and the product owner) correctly rejected it as a brand hero.
 **Consequences**
 - Homepage hero can no longer regress to hotel photography via a misnamed asset.
 - Brand and property surfaces stay separated at both the code and file layers.
+- Later reversed for the visual: product requires the original photographic
+  `/brand-hero.jpg` from Git (ADR-0018), while still forbidding hotel `/Photos`.
 
 **Alternatives considered**
 - Keep a photographic brand hero and swap in a new photo. Rejected for now —
   no approved brand photograph exists in-repo, and inventing/downloading stock
   is forbidden. The logo mark is the canonical brand asset.
+
+### ADR-0018 — Restore original `/brand-hero.jpg` from Git; logo is not the homepage hero
+
+**Date:** 2026-08-04
+
+**Status:** Accepted (supersedes ADR-0017 for the homepage visual)
+
+**Context**
+ADR-0017 deleted `brand-hero.jpg` and replaced the homepage hero with the M2N
+logo mark. Product feedback: the required background is the **original**
+photographic hero that sat behind “Stay Better, Grow Together” before the
+media/API regression — not Zaarang/Aurelia photos, not logo artwork, and not a
+newly generated image.
+
+**Decision**
+- Restore `frontend/public/brand-hero.jpg` byte-identical from commit `336582d`
+  (“Updated project”, 2026-08-02), the commit that first added the file.
+- Restore the photographic `BrandHero` layout (CSS overlays + tagline + CTAs)
+  that used `url(/brand-hero.jpg)`.
+- Keep `resolveBrandHeroImage()` hotel-list-agnostic so the homepage never
+  derives the hero from API/`/Photos` hotel media.
+- Do not redesign copy, spacing, overlays, or hotel detail pages.
+
+**Consequences**
+- Homepage hero is again the historical brand hospitality photo.
+- ADR-0016 still correctly bans hotel-folder media on the brand hero; only the
+  “delete the photo / use logo” part of ADR-0017 is reversed.
+
+**Alternatives considered**
+- Keep the logo hero. Rejected — product requires the original photo.
+- Use a hotel photo as temporary brand hero. Rejected — violates property
+  media isolation.
 
 ---
 

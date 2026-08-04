@@ -12,18 +12,25 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Fix — Original homepage brand-hero.jpg restored from Git (2026-08-04)
+
+- Previous wrong path: logo-only hero (`/m2n-logo-tagline.png` atmosphere).
+- Restored `/brand-hero.jpg` byte-identical from commit `336582d`
+  ([ADR-0018](DECISIONS.md)).
+- Hotel detail heroes unchanged.
+
 ### Fix — Homepage brand hero asset replaced (2026-08-04)
 
 - Traced rendered homepage hero to `url(/brand-hero.jpg)`. That file was stock
   coastal-resort photography (not real Zaarang Exterior files, but still wrong
   for a brand surface). Deleted it.
-- Homepage hero is now M2N logo mark + brand atmosphere only
-  ([ADR-0017](DECISIONS.md)). Zaarang and Aurelia hotel heroes unchanged.
+- Homepage hero became M2N logo mark + brand atmosphere only
+  ([ADR-0017](DECISIONS.md)). **Superseded** by the Git restore above.
 
 ### Fix — Homepage brand hero restored (2026-08-04)
 
 - Earlier code-path fix (stop selecting featured-hotel media) —
-  [ADR-0016](DECISIONS.md). Superseded for the asset layer by ADR-0017.
+  [ADR-0016](DECISIONS.md).
 
 ### Phase 10B — Guest Booking UI (2026-08-03)
 
