@@ -70,9 +70,9 @@ details → available rooms via `GET /api/bookings/availability` → guest → r
 → confirmation) with a live stay summary, plus the `/booking/[bookingNumber]`
 contact-verified lookup page. No payment gateway.
 
-**Upcoming:** Phase 10C (admin bookings module & inventory rules) through Phase 15
-(multi-property SaaS).
-See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
+**Completed (Phase 10C module):** admin bookings console — `/admin/bookings`
+list/detail with search, filters, pagination, sorting, status actions, room
+assignment, and dashboard stats. Calendar/allotment/email still upcoming.
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares
 another hotel's content or photos.

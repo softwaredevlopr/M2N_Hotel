@@ -9,6 +9,33 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10C — Admin Booking Management ✅
+
+- **What changed.** Admin bookings console at `/admin/bookings` (list + detail)
+  over Phase 10A APIs, plus dashboard booking statistics. Public homepage, hotel
+  pages, media, inquiry form, and guest `/book` UI are unchanged.
+- **Files modified (backend):** `controllers/adminBooking.controller.js` (list
+  `sort`/`order`, `GET /stats`), `routes/adminBooking.routes.js`,
+  `scripts/testBookings.js`.
+- **Files modified (frontend):** `lib/adminBookings.js`, `AdminGuard` nav,
+  `StatusBadge` booking/payment styles, `ConfirmDialog` children support,
+  `admin/(protected)/bookings/page.js`, `bookings/[id]/page.js`,
+  `dashboard/page.js`.
+- **APIs added/changed:** `GET /api/admin/bookings/stats`; list accepts
+  `sort` + `order` and echoes them. Existing status/assign/update endpoints
+  reused unchanged.
+- **Database changes:** none. Guest/staff notes use `special_requests`; cancel /
+  no-show reasons use `cancellation_reason`. Timeline derived from
+  `created_at` / `confirmed_at` / `cancelled_at` / `updated_at`.
+- **Frontend changes:** search, hotel/status/date filters, pagination, sorting,
+  status badges, confirm/cancel/check-in/check-out/no-show actions (transition-
+  guarded), room assign, notes save, dashboard arrivals/departures/upcoming/
+  occupancy + by-status counts.
+- **Backend changes:** sort whitelist + stats aggregates only.
+- **Remaining work:** availability calendar / allotment / stop-sells; dedicated
+  internal-notes column (schema approval); confirmation email; admin create-
+  booking form; inquiries UI.
+
 ### Changed — Phase 10B five-step booking UI + public availability API ✅
 
 - **What changed.** Guest booking at `/book` is now a five-step flow:

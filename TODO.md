@@ -14,11 +14,13 @@
       live stay summary, review + confirmation, `/booking/[bookingNumber]`
       lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
       No payment gateway.
-- [ ] **Phase 10C** — Admin bookings & inventory rules:
-  - [ ] Admin `/admin/bookings` module (list, filters, detail, status, room assignment)
-        over the existing Phase 10A APIs.
+- [x] **Phase 10C (partial)** — Admin bookings module (`/admin/bookings` list,
+      filters, pagination, sorting, detail, status actions, room assignment) +
+      dashboard booking stats. No schema change.
   - [ ] Availability calendar, per-date allotment, stop-sells, overbooking allowance.
   - [ ] Booking confirmation email / notification.
+  - [ ] Dedicated internal-notes column (needs schema approval).
+  - [ ] Admin create-booking form.
 
 ---
 
@@ -76,4 +78,4 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A** and **10B** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md). Homepage hero: original `/brand-hero.jpg` restored from Git `336582d` ([ADR-0018](docs/history/DECISIONS.md)).
+Phases **1–9**, **10A**, **10B** and **10C admin module** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md). Remaining 10C: calendar/allotment/email. Homepage hero: original `/brand-hero.jpg` restored from Git `336582d` ([ADR-0018](docs/history/DECISIONS.md)).

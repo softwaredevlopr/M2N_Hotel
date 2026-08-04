@@ -92,11 +92,21 @@ The public reservation journey over the Phase 10A APIs (+ availability route):
 - ✅ Loading, validation, error and responsive states
 - ⬜ No payment gateway, no confirmation email (Phases 11 / 14)
 
-### Phase 10C — Admin Bookings & Inventory Rules ⬜
+### Phase 10C — Admin Bookings & Inventory Rules ✅ / ⬜
 
-Admin bookings console over the existing `/api/admin/bookings` endpoints, plus
-availability calendars, per-date allotment, stop-sells and out-of-service
-coordination. (Split out of the original Phase 10B on 2026-08-03.)
+Admin bookings console over `/api/admin/bookings` (module shipped 2026-08-04):
+
+- ✅ `/admin/bookings` list (search, filters, pagination, sorting)
+- ✅ Booking detail + status actions + room assignment
+- ✅ Dashboard booking statistics (`GET /api/admin/bookings/stats`)
+- ✅ List `sort` / `order` query params
+- ⬜ Availability calendars, per-date allotment, stop-sells, out-of-service
+  coordination
+- ⬜ Confirmation email / notification
+- ⬜ Dedicated internal-notes column (schema approval)
+- ⬜ Admin create-booking form
+
+(Split out of the original Phase 10B on 2026-08-03.)
 
 ### Phase 11 — Booking Engine Completion ⬜
 

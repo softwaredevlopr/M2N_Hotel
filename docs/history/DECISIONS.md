@@ -724,6 +724,36 @@ overlapping reservations.
 - New `/api/availability` top-level router. Rejected — bookings already own the
   inventory model; keep the surface under `/api/bookings`.
 
+### ADR-0020 — Admin booking stats + list sort without schema change
+
+**Date:** 2026-08-04
+
+**Status:** Accepted
+
+**Context**
+Phase 10C needs dashboard aggregates (arrivals, departures, upcoming, occupancy,
+by-status) and list sorting. The bookings table already carries the timestamps
+and statuses required. A dedicated audit/notes table would need a schema change.
+
+**Decision**
+- Add `GET /api/admin/bookings/stats` aggregating from existing `bookings` and
+  `rooms` rows — no new tables.
+- Extend `GET /api/admin/bookings` with a whitelisted `sort` / `order` pair.
+- Derive the admin UI timeline from `created_at`, `confirmed_at`, `cancelled_at`,
+  `updated_at`. Store operational notes in `special_requests` for now; cancel /
+  no-show reasons stay on `cancellation_reason`. A dedicated internal-notes
+  column remains a future, approval-gated schema change.
+
+**Consequences**
+- Dashboard and list UX ship without migration risk.
+- Notes remain guest-visible via special requests until a private column exists.
+
+**Alternatives considered**
+- Client-side aggregation of full booking lists. Rejected — expensive and
+  inaccurate for occupancy.
+- Immediate `admin_notes` migration. Deferred — not required for the module to
+  function; needs explicit schema approval per AGENTS.md.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

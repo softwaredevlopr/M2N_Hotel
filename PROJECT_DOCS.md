@@ -60,7 +60,8 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 9 | Tariff & Rate Management | ✅ |
 | 10A | Booking engine backend (schema + APIs) | ✅ Complete |
 | 10B | Guest booking UI (`/book` + confirmation) | ✅ Complete |
-| 10C–14 | Admin bookings, inventory rules, PMS, CRM, payments | ⬜ Next: Phase 10C |
+| 10C | Admin bookings module + dashboard stats | ✅ Module done (calendar/email pending) |
+| 11–14 | Inventory rules polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
 Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre hotel ka content ya photos share nahi karta.
@@ -120,7 +121,16 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   gateway. Quotes read “Price on request” until an admin sets room-type
   `base_price` (seeded values are `0`).
 
-**Next:** Phase 10C — Admin bookings module & inventory rules.
+- ✅ **Phase 10C — Admin booking management (module)** — `/admin/bookings` list
+  (search, hotel/status/date filters, pagination, sorting), detail with guest /
+  stay / room / pricing / timeline / notes, status actions (confirm, cancel,
+  check-in, check-out, no-show), room assignment, and dashboard stats via
+  `GET /api/admin/bookings/stats`. List `sort`/`order` added without schema
+  change. Public site and guest booking UI untouched. Remaining 10C items:
+  availability calendar, allotment/stop-sells, confirmation email, dedicated
+  internal-notes column, admin create form.
+
+**Next:** Remaining Phase 10C inventory rules / emails, then Phase 11.
 
 ---
 
@@ -263,7 +273,8 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
-- ⬜ **Phase 10C** — Admin bookings module (`/admin/bookings`) & inventory rules.
+- ⬜ **Remaining Phase 10C** — availability calendar, allotment/stop-sells,
+  confirmation email, dedicated internal-notes column, admin create-booking form.
 - ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
   total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
 - ⬜ Admin Inquiries CRUD UI.

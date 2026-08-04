@@ -8,6 +8,17 @@ const STYLES = {
   blocked: "border-amber-500/40 bg-amber-500/10 text-amber-200",
   out_of_service: "border-ink-line bg-ink-elevated text-cream-muted",
   archived: "border-ink-line bg-ink-elevated text-cream-muted",
+  // Booking statuses (Phase 10C)
+  pending: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  confirmed: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+  checked_in: "border-sky-500/40 bg-sky-500/10 text-sky-200",
+  checked_out: "border-cream/20 bg-ink text-cream-muted",
+  cancelled: "border-ink-line bg-ink-elevated text-cream-muted",
+  no_show: "border-rose-500/40 bg-rose-500/10 text-rose-200",
+  unpaid: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  partial: "border-sky-500/40 bg-sky-500/10 text-sky-200",
+  paid: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+  refunded: "border-ink-line bg-ink-elevated text-cream-muted",
 };
 
 export default function StatusBadge({ status }) {

@@ -12,6 +12,7 @@ export default function ConfirmDialog({
   busy = false,
   onConfirm,
   onCancel,
+  children,
 }) {
   if (!open) return null;
 
@@ -30,6 +31,7 @@ export default function ConfirmDialog({
           {title}
         </h2>
         <p className="mt-4 text-sm leading-relaxed text-cream-dim">{message}</p>
+        {children}
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"

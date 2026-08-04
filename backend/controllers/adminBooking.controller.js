@@ -181,11 +181,30 @@ const listBookings = asyncHandler(async (req, res) => {
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
+  const SORT_COLUMNS = {
+    created_at: "b.created_at",
+    check_in_date: "b.check_in_date",
+    check_out_date: "b.check_out_date",
+    guest_name: "b.guest_name",
+    booking_status: "b.booking_status",
+    total_amount: "b.total_amount",
+    booking_number: "b.booking_number",
+  };
+  const sortKey =
+    typeof req.query.sort === "string" && SORT_COLUMNS[req.query.sort]
+      ? req.query.sort
+      : "created_at";
+  const sortDir =
+    typeof req.query.order === "string" &&
+    req.query.order.toLowerCase() === "asc"
+      ? "ASC"
+      : "DESC";
+
   const result = await query(
     `SELECT ${BOOKING_FIELDS}, COUNT(*) OVER()::int AS total_count
      ${BOOKING_JOINS}
      ${where}
-     ORDER BY b.created_at DESC
+     ORDER BY ${SORT_COLUMNS[sortKey]} ${sortDir}, b.created_at DESC
      LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
     params
   );
@@ -198,7 +217,88 @@ const listBookings = asyncHandler(async (req, res) => {
     total,
     limit,
     offset,
+    sort: sortKey,
+    order: sortDir.toLowerCase(),
     data,
+  });
+});
+
+/**
+ * Dashboard aggregates for the admin console. Uses calendar dates in UTC so the
+ * same "today" matches the DATE columns stored on bookings.
+ */
+const getBookingStats = asyncHandler(async (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [byStatus, ops, occupancy] = await Promise.all([
+    query(
+      `SELECT booking_status, COUNT(*)::int AS count
+       FROM bookings
+       GROUP BY booking_status`
+    ),
+    query(
+      `SELECT
+         COUNT(*) FILTER (
+           WHERE check_in_date = $1::date
+             AND booking_status IN ('pending', 'confirmed', 'checked_in')
+         )::int AS arrivals_today,
+         COUNT(*) FILTER (
+           WHERE check_out_date = $1::date
+             AND booking_status IN ('confirmed', 'checked_in')
+         )::int AS departures_today,
+         COUNT(*) FILTER (
+           WHERE check_in_date > $1::date
+             AND booking_status IN ('pending', 'confirmed')
+         )::int AS upcoming,
+         COUNT(*) FILTER (
+           WHERE booking_status IN ('pending', 'confirmed', 'checked_in')
+             AND check_in_date <= $1::date
+             AND check_out_date > $1::date
+         )::int AS in_house_bookings,
+         COALESCE(SUM(number_of_rooms) FILTER (
+           WHERE booking_status IN ('pending', 'confirmed', 'checked_in')
+             AND check_in_date <= $1::date
+             AND check_out_date > $1::date
+         ), 0)::int AS rooms_held_tonight
+       FROM bookings`,
+      [today]
+    ),
+    query(
+      `SELECT COUNT(*)::int AS sellable_rooms
+       FROM rooms
+       WHERE status = ANY($1::text[])`,
+      [["available", "occupied"]]
+    ),
+  ]);
+
+  const statusCounts = Object.fromEntries(
+    BOOKING_STATUSES.map((status) => [status, 0])
+  );
+  byStatus.rows.forEach((row) => {
+    if (Object.prototype.hasOwnProperty.call(statusCounts, row.booking_status)) {
+      statusCounts[row.booking_status] = row.count;
+    }
+  });
+
+  const opsRow = ops.rows[0] || {};
+  const sellable = occupancy.rows[0]?.sellable_rooms || 0;
+  const held = opsRow.rooms_held_tonight || 0;
+
+  return sendSuccess(res, 200, {
+    data: {
+      today,
+      arrivals_today: opsRow.arrivals_today || 0,
+      departures_today: opsRow.departures_today || 0,
+      upcoming: opsRow.upcoming || 0,
+      by_status: statusCounts,
+      occupancy: {
+        sellable_rooms: sellable,
+        rooms_held_tonight: held,
+        in_house_bookings: opsRow.in_house_bookings || 0,
+        occupancy_pct:
+          sellable > 0 ? Math.min(100, Math.round((held / sellable) * 100)) : 0,
+      },
+    },
   });
 });
 
@@ -618,6 +718,7 @@ const updateBooking = asyncHandler(async (req, res) => {
 
 module.exports = {
   listBookings,
+  getBookingStats,
   getBookingById,
   createBooking,
   updateBookingStatus,

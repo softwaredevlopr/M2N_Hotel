@@ -493,6 +493,32 @@ async function main() {
   check("returns pagination metadata", typeof list.body?.total === "number" && list.body?.limit === 5);
   check("honours the limit", (list.body?.data || []).length <= 5);
 
+  const sorted = await api(
+    "GET",
+    "/api/admin/bookings?sort=check_in_date&order=asc&limit=5",
+    { token }
+  );
+  check(
+    "accepts sort + order",
+    sorted.status === 200 && sorted.body?.sort === "check_in_date",
+    `got ${sorted.status} sort=${sorted.body?.sort}`
+  );
+  check("echoes order", sorted.body?.order === "asc");
+
+  const stats = await api("GET", "/api/admin/bookings/stats", { token });
+  check("returns booking stats", stats.status === 200, `got ${stats.status}`);
+  check(
+    "stats include arrivals and by_status",
+    typeof stats.body?.data?.arrivals_today === "number" &&
+      stats.body?.data?.by_status &&
+      typeof stats.body.data.by_status.pending === "number"
+  );
+  check(
+    "stats include occupancy summary",
+    stats.body?.data?.occupancy &&
+      typeof stats.body.data.occupancy.sellable_rooms === "number"
+  );
+
   const filtered = await api(
     "GET",
     `/api/admin/bookings?hotel_id=${withRooms.hotel_id}&booking_status=pending`,

@@ -34,11 +34,12 @@
 | Tariff / rates in DB + admin | ✅ Phase 9 |
 | Booking engine — backend + APIs | ✅ Phase 10A |
 | Booking engine — guest UI (`/book`, confirmation) | ✅ Phase 10B |
-| Booking engine — admin console + inventory rules | ⬜ Phase 10C |
+| Booking engine — admin console | ✅ Phase 10C (module + stats; calendar/allotment pending) |
+| Booking engine — inventory rules / emails | ⬜ Remaining 10C / 11 |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A** ✅, **10B** ✅ · Next:
-**Phase 10C** (admin bookings module + per-date inventory rules)
+**Roadmap progress:** Phases **1–9** ✅, **10A** ✅, **10B** ✅, **10C admin UI** ✅ ·
+Next: allotment/stop-sells, confirmation email, inquiries UI
 
 ---
 
@@ -119,6 +120,20 @@
 - `/booking/[bookingNumber]` contact-verified lookup (`BookingLookup`), `noindex`.
 - No payment gateway. Availability route added without a schema change.
 
+### Phase 10C — Admin Booking Management ✅ (module)
+
+- `/admin/bookings` list: search, hotel/status/check-in date filters, pagination,
+  sorting (`sort`/`order`).
+- Booking detail: guest, stay, room, pricing, derived timeline, notes.
+- Actions: confirm, cancel, check-in, check-out, no-show (API transition rules),
+  room assign/unassign for single-room stays.
+- Dashboard booking stats via `GET /api/admin/bookings/stats` (arrivals,
+  departures, upcoming, occupancy, by-status).
+- Status badges for booking + payment statuses. No schema change; public site
+  untouched.
+- Still pending under 10C/11: availability calendar, allotment/stop-sells,
+  confirmation email, dedicated internal notes column, admin create form.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -129,15 +144,15 @@
 
 ## 3. In Progress
 
-- None formally in-flight. Next planned work: **Phase 10C**.
+- None formally in-flight. Next planned work: remaining Phase 10C inventory
+  rules / emails, then Phase 11.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. **Phase 10C** — Admin bookings module (`/admin/bookings`) over the existing
-   Phase 10A admin APIs.
-2. Per-date allotment, stop-sells and overbooking allowances (Phase 10C/11).
+1. Availability calendar, per-date allotment, stop-sells (remaining 10C).
+2. Booking confirmation email / notification.
 3. Admin Inquiries CRUD UI.
 4. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
 5. Replace placeholder phones/emails before production launch.
@@ -160,6 +175,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-04 | Phase 10C admin bookings module + dashboard stats (`/admin/bookings`, `GET /api/admin/bookings/stats`, list sort) |
 | 2026-08-04 | Phase 10B upgraded to five-step `/book` UI + public `GET /api/bookings/availability`; hotel Book Now CTAs wired; inquiry form preserved |
 | 2026-08-04 | Restored original homepage `/brand-hero.jpg` from Git `336582d`; logo-only hero reverted; hotel pages unchanged |
 | 2026-08-04 | Fixed homepage hero completely — removed stock `brand-hero.jpg` resort file; BrandHero is logo + brand atmosphere only; hotel pages unchanged |

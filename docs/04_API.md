@@ -59,7 +59,8 @@
 | `POST` | `/api/bookings` | Public | 10A |
 | `GET` | `/api/bookings/availability` | Public | 10B |
 | `GET` | `/api/bookings/:bookingNumber` | Public + contact check | 10A |
-| `GET` | `/api/admin/bookings` | JWT | 10A |
+| `GET` | `/api/admin/bookings` | JWT | 10A/10C |
+| `GET` | `/api/admin/bookings/stats` | JWT | 10C |
 | `POST` | `/api/admin/bookings` | JWT | 10A |
 | `GET` | `/api/admin/bookings/:id` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id` | JWT | 10A |
@@ -252,6 +253,7 @@ contact details are omitted from the response.
 | Method | Path |
 |--------|------|
 | `GET` | `/api/admin/bookings` |
+| `GET` | `/api/admin/bookings/stats` |
 | `POST` | `/api/admin/bookings` |
 | `GET` | `/api/admin/bookings/:id` |
 | `PATCH` | `/api/admin/bookings/:id` |
@@ -260,8 +262,16 @@ contact details are omitted from the response.
 
 **List filters:** `hotel_id`, `room_type_id`, `booking_status`, `payment_status`,
 `booking_source`, `check_in_from`, `check_in_to`, `search` (booking number, guest
-name, email, or phone digits), `limit` (default 50, max 100), `offset`. The
-response carries `count`, `total`, `limit`, and `offset`.
+name, email, or phone digits), `limit` (default 50, max 100), `offset`,
+`sort` (`created_at` \| `check_in_date` \| `check_out_date` \| `guest_name` \|
+`booking_status` \| `total_amount` \| `booking_number`, default `created_at`),
+`order` (`asc` \| `desc`, default `desc`). The response carries `count`, `total`,
+`limit`, `offset`, `sort`, and `order`.
+
+**Stats (`GET /stats`):** arrivals today, departures today, upcoming bookings,
+`by_status` counts, and occupancy summary (`sellable_rooms`,
+`rooms_held_tonight`, `in_house_bookings`, `occupancy_pct`) for calendar
+`today` (UTC date). Must be registered before `/:id`.
 
 **Create:** staff bookings default to `booking_source=admin` and
 `booking_status=confirmed`, may use past dates (walk-ins recorded after the

@@ -12,6 +12,17 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10C — Admin Booking Management module (2026-08-04)
+
+- `/admin/bookings` list with search, hotel/status/date filters, pagination and
+  sorting; detail page with guest/stay/room/pricing/timeline/notes.
+- Status actions: confirm, cancel, check-in, check-out, no-show (transition-
+  guarded) plus room assignment for single-room stays.
+- Dashboard booking statistics via `GET /api/admin/bookings/stats`.
+- List API gains `sort` / `order` ([ADR-0020](DECISIONS.md)). No schema change.
+- Remaining: calendar/allotment/stop-sells, confirmation email, dedicated
+  internal notes, admin create form.
+
 ### Fix — Original homepage brand-hero.jpg restored from Git (2026-08-04)
 
 - Previous wrong path: logo-only hero (`/m2n-logo-tagline.png` atmosphere).

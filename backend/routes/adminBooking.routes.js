@@ -14,11 +14,13 @@ const router = express.Router();
 router.use(requireAdminAuth);
 
 router.get("/", adminBookingController.listBookings);
+router.get("/stats", adminBookingController.getBookingStats);
 router.post(
   "/",
   validate(adminCreateBookingSchema),
   adminBookingController.createBooking
 );
+// Static paths must be registered before /:id.
 router.get("/:id", adminBookingController.getBookingById);
 router.patch(
   "/:id/status",
