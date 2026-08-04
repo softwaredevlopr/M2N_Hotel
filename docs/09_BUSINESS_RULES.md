@@ -32,10 +32,11 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 - Fallbacks are hotel-scoped: once a hotel is known, an unavailable image falls
   back only within that hotel's own folder, never to another property's photos.
   See [ADR-0013](history/DECISIONS.md).
-- **Homepage brand hero is brand media only.** `/` uses `/brand-hero.jpg`
-  (`BRAND_HERO_IMAGE`). Hotel photos appear on `/hotels/[slug]` (and hotel cards
-  on the homepage listing), never as the brand hero background.
-  See [ADR-0016](history/DECISIONS.md).
+- **Homepage brand hero is brand media only.** `/` uses the M2N logo mark
+  (`/m2n-logo-tagline.png`) on a brand atmosphere background — never a hotel
+  photo and never the removed stock `brand-hero.jpg` resort file. Hotel photos
+  appear on `/hotels/[slug]` and on homepage hotel cards only.
+  See [ADR-0016](history/DECISIONS.md) / [ADR-0017](history/DECISIONS.md).
 
 ## 4. Inquiry rules
 

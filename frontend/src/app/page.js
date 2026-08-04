@@ -9,7 +9,6 @@ import BackendOfflineBanner from "@/components/BackendOfflineBanner";
 import JsonLd from "@/components/JsonLd";
 import { getHotelsWithDetails } from "@/lib/api";
 import { BRAND_NAME, BRAND_TAGLINE, BRAND_DESCRIPTION } from "@/lib/brand";
-import { resolveBrandHeroImage } from "@/lib/images";
 import { organizationLd } from "@/lib/structuredData";
 
 export const revalidate = 60;
@@ -22,8 +21,6 @@ export const metadata = {
 export default async function Home() {
   const hotels = await getHotelsWithDetails();
   const isOffline = hotels.length === 0;
-  // Brand hero only — never a hotel photo (those stay on /hotels/[slug]).
-  const brandHeroImage = resolveBrandHeroImage();
 
   return (
     <>
@@ -31,7 +28,9 @@ export default async function Home() {
       {isOffline && <BackendOfflineBanner />}
       <Navbar hotels={hotels} />
       <main>
-        <BrandHero heroImage={brandHeroImage} />
+        {/* BrandHero is brand-only (logo + atmosphere). Hotel photos appear
+            only in OurHotels cards and on /hotels/[slug]. */}
+        <BrandHero />
         <BrandAbout />
         <OurHotels hotels={hotels} />
         <WhyChooseM2N />

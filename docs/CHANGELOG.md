@@ -9,26 +9,34 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
-### Fixed — Homepage brand hero no longer uses hotel photography ✅
+### Fixed — Homepage brand hero was a stock resort photo file ✅
 
-- **Root cause.** Phase 8 made `resolveBrandHeroImage(hotels)` prefer the
-  featured hotel's API/filesystem hero (then Lobby/Reception/Exterior across
-  every property). That put hotel-specific photography into the homepage
-  `BrandHero`, blurring brand branding and property media.
-- **What changed.** Homepage `/` uses only `/brand-hero.jpg`
-  (`BRAND_HERO_IMAGE` in `lib/brand.js`). `resolveBrandHeroImage` and the
-  hotel-less brand fallback ignore hotel lists and never pick from
-  `/Photos/<Hotel>/…`. Hotel detail helpers (`resolveHeroImage`, cards,
-  gallery) are unchanged.
-- **Files modified.** `frontend/src/lib/images.js`, `frontend/src/lib/brand.js`,
-  `frontend/src/components/BrandHero.js`, `frontend/src/app/page.js`, plus docs.
+- **Root cause (traced from rendered HTML).** The homepage CSS background
+  already resolved to `url(/brand-hero.jpg)` — it was **not** selecting
+  `hotels[0]`, featured hotel media, or Zaarang `/Photos` at render time. The
+  file `frontend/public/brand-hero.jpg` itself was a 2.4MB PNG (misnamed `.jpg`)
+  of a coastal luxury resort / infinity-pool scene. That asset looked like hotel
+  exterior media (and like the old stock imagery previously mis-attributed to
+  Zaarang), so the page still *appeared* to show hotel photography.
+- **What changed.** Removed `brand-hero.jpg`. Homepage `BrandHero` is now
+  brand-only: ink/gold atmosphere + `/m2n-logo-tagline.png` (no photographic
+  background, no `/Photos`, no Unsplash). Homepage `ContactCTA` (hotel=null)
+  likewise uses brand atmosphere only. Hotel detail heroes unchanged
+  (`resolveHeroImage` → each property’s own `/Photos/…`).
+- **Files modified.** `BrandHero.js`, `page.js`, `ContactCTA.js`, `lib/brand.js`,
+  `lib/images.js`; deleted `public/brand-hero.jpg`; docs.
 - **APIs added/changed:** none.
 - **Database changes:** none.
 - **Backend changes:** none.
-- **Frontend changes:** brand/hotel media separation restored for the homepage
-  hero only. Hotel detail pages (including Zaarang Inn) untouched.
-- **Remaining work:** none for this regression. Phase 10C (admin bookings) still
-  pending.
+- **Frontend changes:** brand/hotel media separation completed at the asset +
+  component layer for `/` only.
+- **Remaining work:** none for this regression.
+
+### Fixed — Homepage brand hero no longer uses hotel photography ✅
+
+Superseded by the asset-level fix above (2026-08-04). The earlier code-path fix
+stopped selecting featured-hotel media, but left the misleading `brand-hero.jpg`
+resort file in place.
 
 ### Added — Phase 10B — Guest Booking UI ✅
 

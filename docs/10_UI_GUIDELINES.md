@@ -47,7 +47,8 @@
 ## 4. Imagery
 
 - Public: slug → `Photos/` mapping only on hotel surfaces.
-- Homepage brand hero: `/brand-hero.jpg` only ([ADR-0016](history/DECISIONS.md)).
+- Homepage brand hero: M2N logo mark + brand atmosphere only
+  ([ADR-0017](history/DECISIONS.md)); never `/Photos/` or stock resort files.
 - `lib/images.js` touches the filesystem, so client components must be handed
   resolved URLs from a server component rather than importing it.
 - Admin media: preview via API origin + `/uploads/…` when relative.

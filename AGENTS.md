@@ -160,7 +160,8 @@ Full detail: [`docs/05_FOLDER_STRUCTURE.md`](docs/05_FOLDER_STRUCTURE.md).
 - Category subfolders per hotel: `Hero`, `Exterior`, `Lobby`, `Reception`,
   `Rooms`, `Bathroom`, `Banquet`.
 - Usage: Hero → hotel detail hero banner; Rooms → room cards; the rest feed the gallery.
-- **Homepage brand hero** uses `/brand-hero.jpg` only — never a hotel folder image.
+- **Homepage brand hero** uses the M2N logo mark on a brand atmosphere
+  background only — never a hotel folder image and never stock resort photos.
 - If a category folder is empty, it is skipped safely.
 - Adding a new hotel:
   1. Create `frontend/public/Photos/<Hotel-Name>/` with category subfolders + images.

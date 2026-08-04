@@ -11,6 +11,7 @@ import {
   BRAND_NAME,
   BRAND_TAGLINE,
   BRAND_DESCRIPTION,
+  BRAND_MARK_IMAGE,
 } from "@/lib/brand";
 
 function buildChannels(hotel) {
@@ -56,20 +57,45 @@ function buildChannels(hotel) {
 export default function ContactCTA({ hotel, roomTypes = [] }) {
   const channels = buildChannels(hotel);
   const address = formatAddress(hotel);
-  const contactBg = resolveHeroImage(hotel);
+  // Hotel pages keep property photography. Homepage (hotel=null) uses brand
+  // atmosphere only — never /Photos or the old stock brand-hero resort file.
+  const contactBg = hotel ? resolveHeroImage(hotel) : null;
   const intro = hotel?.description || BRAND_DESCRIPTION;
 
   return (
     <section id="contact" className="relative isolate overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${contactBg})` }}
-        aria-hidden
-      />
+      {contactBg ? (
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${contactBg})` }}
+          aria-hidden
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              radial-gradient(ellipse 70% 50% at 50% 40%, rgba(215, 25, 32, 0.18), transparent 55%),
+              linear-gradient(180deg, #0B0B0B 0%, #161616 50%, #0B0B0B 100%)
+            `,
+          }}
+          aria-hidden
+        />
+      )}
       <div className="absolute inset-0 bg-ink/85" aria-hidden />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10 py-28 sm:py-36">
         <div className="mx-auto max-w-3xl text-center">
+          {!hotel && (
+            <img
+              src={BRAND_MARK_IMAGE}
+              alt=""
+              width={200}
+              height={75}
+              className="mx-auto mb-8 h-auto w-[min(100%,12.5rem)] object-contain opacity-90"
+              aria-hidden
+            />
+          )}
           <span className="text-xs tracking-[0.45em] uppercase text-gold">
             Reserve Your Stay
           </span>

@@ -626,6 +626,39 @@ and violated the separation between brand surfaces and hotel detail media.
 - Keep featured-hotel hero for “editorial” feel. Rejected — product requirement
   is an M2N brand hero; hotel photos belong on hotel pages.
 
+### ADR-0017 — Brand hero asset must not be hotel or stock resort photography
+
+**Date:** 2026-08-04
+
+**Status:** Accepted
+
+**Context**
+After ADR-0016 stopped the homepage from selecting featured-hotel media, the
+rendered CSS still used `url(/brand-hero.jpg)`. Tracing the live HTML confirmed
+that path. Inspecting the file showed it was a PNG (misnamed `.jpg`) of a
+coastal resort with an infinity pool — not byte-identical to Zaarang’s real
+`/Photos/Zaarang-Inn/Exterior/*` street photos, but visually hotel/stock exterior
+media. Guests (and the product owner) correctly rejected it as a brand hero.
+
+**Decision**
+- Delete `frontend/public/brand-hero.jpg`.
+- Homepage `BrandHero` uses brand atmosphere (ink/gold gradients) plus the
+  existing `/m2n-logo-tagline.png` mark — no photographic background.
+- Homepage `ContactCTA` with `hotel=null` uses the same brand atmosphere rule.
+- Hotel detail pages continue to use `resolveHeroImage(hotel)` and their own
+  `/Photos/<Hotel>/…` assets unchanged.
+- `resolveBrandHeroImage` returns the brand mark path only; it must never return
+  `/Photos/…` or Unsplash.
+
+**Consequences**
+- Homepage hero can no longer regress to hotel photography via a misnamed asset.
+- Brand and property surfaces stay separated at both the code and file layers.
+
+**Alternatives considered**
+- Keep a photographic brand hero and swap in a new photo. Rejected for now —
+  no approved brand photograph exists in-repo, and inventing/downloading stock
+  is forbidden. The logo mark is the canonical brand asset.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*
