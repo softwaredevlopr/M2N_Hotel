@@ -196,6 +196,58 @@ export async function getBookingPageData() {
 }
 
 /**
+ * Live room availability for a stay window — GET /api/bookings/availability.
+ * Client-safe. Returns a normalized result so the booking UI can show loading,
+ * empty, validation and network states without guessing response shape.
+ */
+export async function getBookingAvailability({
+  hotelId,
+  hotelSlug,
+  roomTypeId,
+  checkInDate,
+  checkOutDate,
+  numberOfRooms = 1,
+} = {}) {
+  const params = new URLSearchParams();
+  if (hotelId) params.set("hotel_id", hotelId);
+  if (hotelSlug) params.set("hotel_slug", hotelSlug);
+  if (roomTypeId) params.set("room_type_id", roomTypeId);
+  if (checkInDate) params.set("check_in_date", checkInDate);
+  if (checkOutDate) params.set("check_out_date", checkOutDate);
+  if (numberOfRooms != null) params.set("number_of_rooms", String(numberOfRooms));
+
+  const url = `${API_BASE_URL}/api/bookings/availability?${params.toString()}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    return {
+      ok: response.ok && data?.success === true,
+      status: response.status,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      networkError: true,
+      message: error?.message || "Network error",
+    };
+  }
+}
+
+/**
  * Create a reservation — POST /api/bookings.
  * Client-safe. Returns a normalized result so the flow can distinguish
  * validation errors (400), availability conflicts (409) and network failures.

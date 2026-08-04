@@ -4,10 +4,17 @@ const validate = require("../middleware/validate.middleware");
 const {
   createBookingSchema,
   lookupBookingSchema,
+  availabilityQuerySchema,
 } = require("../validators/booking.validator");
 
 const router = express.Router();
 
+// Static paths must be registered before /:bookingNumber.
+router.get(
+  "/availability",
+  validate(availabilityQuerySchema),
+  bookingController.getAvailability
+);
 router.post("/", validate(createBookingSchema), bookingController.createBooking);
 router.get(
   "/:bookingNumber",

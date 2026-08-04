@@ -111,13 +111,14 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   admin JWT `/api/admin/bookings` (list/filter/paginate, detail, create, update,
   status transitions, room assignment). Backend only — no booking UI yet.
 
-- ✅ **Phase 10B — Guest booking UI** — `/book` teen-step flow (Select Hotel →
-  Room & Dates → Guest Details) with live stay summary, availability validation
-  (client-side inventory guard + API `409`), aur `/booking/[bookingNumber]`
-  confirmation + contact-verified lookup page. Frontend only — koi schema change
-  nahi, koi naya endpoint nahi, admin modules untouched, payment gateway nahi.
-  Quote tab tak "Price on request" dikhega jab tak admin room type ka nightly
-  `base_price` set nahi karta (seed mein sabhi `0` hain).
+- ✅ **Phase 10B — Guest booking UI** — `/book` five-step flow (Stay Details →
+  Available Rooms → Guest Details → Review → Confirmation) with live stay
+  summary, `GET /api/bookings/availability` for date-aware inventory, submit via
+  `POST /api/bookings`, and `/booking/[bookingNumber]` contact-verified lookup.
+  Hotel “Book Your Stay” / sticky Book Now deep-link with `?hotel=`; room cards
+  with `?hotel=&room=`. Inquiry form unchanged. No schema change, no payment
+  gateway. Quotes read “Price on request” until an admin sets room-type
+  `base_price` (seeded values are `0`).
 
 **Next:** Phase 10C — Admin bookings module & inventory rules.
 

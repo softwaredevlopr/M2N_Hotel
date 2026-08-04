@@ -80,14 +80,15 @@ Reservation storage and REST APIs for direct bookings:
 
 ### Phase 10B — Guest Booking UI ✅
 
-The public reservation journey over the Phase 10A APIs:
+The public reservation journey over the Phase 10A APIs (+ availability route):
 
-- ✅ `/book` three-step flow (Select Hotel → Room & Dates → Guest Details)
-- ✅ Deep links from hotel room cards (`/book?hotel=<slug>&room=<slug>`)
-- ✅ Live stay summary using the server's pricing formula
-- ✅ Availability validated client-side against sellable inventory and on submit
-  via the API's `409`
-- ✅ `/booking/[bookingNumber]` confirmation + contact-verified guest lookup
+- ✅ `/book` five-step flow (Stay Details → Available Rooms → Guest Details →
+  Review → Confirmation)
+- ✅ `GET /api/bookings/availability` for date-aware inventory + indicative rates
+- ✅ Deep links from hotel / room CTAs (`/book?hotel=<slug>&room=<slug>`)
+- ✅ Live stay summary using server pricing / availability amounts
+- ✅ Submit via `POST /api/bookings`; `409` returns to Available Rooms
+- ✅ `/booking/[bookingNumber]` contact-verified guest lookup
 - ✅ Loading, validation, error and responsive states
 - ⬜ No payment gateway, no confirmation email (Phases 11 / 14)
 

@@ -57,6 +57,7 @@
 | `CRUD` | `/api/admin/tariffs` | JWT | 9 |
 | `GET/PATCH` | `/api/admin/tariffs/settings/:hotelId` | JWT | 9 |
 | `POST` | `/api/bookings` | Public | 10A |
+| `GET` | `/api/bookings/availability` | Public | 10B |
 | `GET` | `/api/bookings/:bookingNumber` | Public + contact check | 10A |
 | `GET` | `/api/admin/bookings` | JWT | 10A |
 | `POST` | `/api/admin/bookings` | JWT | 10A |
@@ -95,8 +96,10 @@ Static files: `GET /uploads/...` (admin-uploaded media).
   rates or `singleNote`/`doubleNote`), plus hotel-level settings from
   `hotels.metadata.tariff_settings` (disclaimer, extra bed, GST, cancellation).
 
-### Bookings (Phase 10A)
+### Bookings (Phase 10A / 10B)
 
+- `GET /api/bookings/availability` — live inventory + indicative amounts for a
+  stay window (Phase 10B UI Step 2). Must be registered before `/:bookingNumber`.
 - `POST /api/bookings` — create a reservation request (availability checked).
 - `GET /api/bookings/:bookingNumber?email=` — guest lookup, contact-verified.
   Backs the `/booking/[bookingNumber]` confirmation page.
@@ -194,20 +197,34 @@ Stored in `hotels.metadata.tariff_settings` (no extra table).
 (`single` \| `double`), `price`, `display_note`, `valid_from`, `valid_to`,
 `status` (`active` \| `inactive`).
 
-## 10. Bookings (Phase 10A)
+## 10. Bookings (Phase 10A / 10B)
 
-Direct reservations. See [ADR-0014](history/DECISIONS.md) for the availability model.
+Direct reservations. See [ADR-0014](history/DECISIONS.md) for the availability model
+and [ADR-0019](history/DECISIONS.md) for the public availability route.
 
-Consumed unchanged by the Phase 10B guest booking UI (`/book` and
-`/booking/[bookingNumber]`) through `createBooking()` and `getBookingByNumber()`
+Consumed by the Phase 10B guest booking UI (`/book` and `/booking/[bookingNumber]`)
+through `getBookingAvailability()`, `createBooking()` and `getBookingByNumber()`
 in `frontend/src/lib/api.js`.
 
 ### Public
 
 | Method | Path |
 |--------|------|
+| `GET` | `/api/bookings/availability` |
 | `POST` | `/api/bookings` |
 | `GET` | `/api/bookings/:bookingNumber?email=` or `?phone=` |
+
+**`GET /api/bookings/availability`** — query `hotel_id` **or** `hotel_slug`,
+`check_in_date`, `check_out_date` (`YYYY-MM-DD`). Optional `room_type_id`,
+`number_of_rooms` (default 1). Past check-in rejected; checkout must be after
+check-in; stay capped at 90 nights. Hotel must be `active`.
+
+Returns `data` with hotel identity, `nights`, `currency`, and `room_types[]`.
+Each room type includes `room_type_id`, `slug`, `name`, `max_occupancy`,
+`bed_type`, `base_price`, inventory (`total_rooms`, `booked_rooms`,
+`available_rooms`, `is_available`), and indicative amounts matching create
+(`nightly_rate`, `on_request`, `subtotal`, `tax_amount`, `total_amount`).
+`tax_amount` is `0` until a tax engine exists.
 
 **`POST /api/bookings`** — required `hotel_id`, `room_type_id`, `guest_name`,
 `guest_email`, `guest_phone`, `check_in_date`, `check_out_date` (`YYYY-MM-DD`).

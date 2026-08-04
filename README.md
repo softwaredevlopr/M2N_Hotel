@@ -36,7 +36,7 @@ Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PR
 | Route | Purpose |
 |-------|---------|
 | `/` · `/about` · `/hotels/[slug]` | Public marketing site |
-| `/book` | Guest booking flow (Select Hotel → Room & Dates → Guest Details) |
+| `/book` | Guest booking flow (Stay → Rooms → Guest → Review → Confirm) |
 | `/booking/[bookingNumber]` | Booking confirmation + contact-verified lookup |
 | `/admin/login` → `/admin/*` | Admin console (hotels, room types, rooms, media, tariffs) |
 

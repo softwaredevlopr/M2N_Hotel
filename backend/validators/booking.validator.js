@@ -195,6 +195,17 @@ const lookupBookingSchema = {
   },
 };
 
+const availabilityQuerySchema = {
+  query: {
+    hotel_id: { type: "string", maxLength: 36 },
+    hotel_slug: { type: "string", maxLength: 120 },
+    room_type_id: { type: "string", maxLength: 36 },
+    check_in_date: { type: "string", maxLength: 10 },
+    check_out_date: { type: "string", maxLength: 10 },
+    number_of_rooms: { type: "number" },
+  },
+};
+
 const adminCreateBookingSchema = {
   body: {
     hotel_id: { required: true, type: "string", maxLength: 36 },
@@ -271,6 +282,7 @@ module.exports = {
   validateGuestFields,
   createBookingSchema,
   lookupBookingSchema,
+  availabilityQuerySchema,
   adminCreateBookingSchema,
   updateBookingSchema,
   updateBookingStatusSchema,

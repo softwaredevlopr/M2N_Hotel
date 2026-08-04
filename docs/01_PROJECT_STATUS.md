@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-03  
+> **Status:** Living document · **Last updated:** 2026-08-04  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -106,19 +106,18 @@
   update, status transitions, room assignment.
 - Overbooking protection: per-night peak occupancy in a transaction with an
   advisory lock per hotel + room type ([ADR-0014](history/DECISIONS.md)).
-- `npm run test:bookings` — 64 checks, self-cleaning. Backend only, no UI yet.
+- `npm run test:bookings` — 71 checks, self-cleaning. Backend only for 10A core;
+  availability route covered for 10B.
 
 ### Phase 10B — Guest Booking UI ✅
 
-- `/book` three-step flow: Select Hotel → Room & Dates → Guest Details, with
-  deep links (`/book?hotel=<slug>&room=<slug>`) from hotel room cards.
-- Live stay summary using the server's own pricing formula; "Price on request"
-  with the published tariff as guidance when a room type has no base price.
-- Availability validated against sellable inventory client-side and against the
-  API's `409` on submit.
-- `/booking/[bookingNumber]` confirmation + contact-verified lookup, `noindex`.
-- Loading, validation, error and responsive states across the flow. No backend
-  or admin change; no payment gateway.
+- `/book` five-step flow: Stay Details → Available Rooms → Guest Details →
+  Review → Confirmation, with deep links (`/book?hotel=<slug>&room=<slug>`).
+- Live stay summary; Step 2 loads `GET /api/bookings/availability` (inventory +
+  indicative amounts). Submit via `POST /api/bookings`; `409` returns to rooms.
+- Hotel hero / sticky CTAs open `/book?hotel=`; inquiry form unchanged.
+- `/booking/[bookingNumber]` contact-verified lookup (`BookingLookup`), `noindex`.
+- No payment gateway. Availability route added without a schema change.
 
 ### Platform foundations ✅
 
@@ -161,6 +160,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-04 | Phase 10B upgraded to five-step `/book` UI + public `GET /api/bookings/availability`; hotel Book Now CTAs wired; inquiry form preserved |
 | 2026-08-04 | Restored original homepage `/brand-hero.jpg` from Git `336582d`; logo-only hero reverted; hotel pages unchanged |
 | 2026-08-04 | Fixed homepage hero completely — removed stock `brand-hero.jpg` resort file; BrandHero is logo + brand atmosphere only; hotel pages unchanged |
 | 2026-08-04 | Fixed homepage hero regression — brand hero is `/brand-hero.jpg` only; hotel photos stay on `/hotels/[slug]` |

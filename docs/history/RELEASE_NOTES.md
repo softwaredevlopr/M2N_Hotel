@@ -32,25 +32,25 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 - Earlier code-path fix (stop selecting featured-hotel media) —
   [ADR-0016](DECISIONS.md).
 
+### Phase 10B — Guest Booking UI five-step + availability API (2026-08-04)
+
+- `/book` is a five-step reservation flow — Stay Details → Available Rooms →
+  Guest Details → Review → Confirmation — with modular components and a live
+  stay summary.
+- New public `GET /api/bookings/availability` returns date-aware inventory and
+  indicative amounts for each active room type ([ADR-0019](DECISIONS.md)).
+- Hotel hero / sticky “Book Now” and room-card CTAs deep-link into `/book` with
+  `hotel` / `room` query params. Inquiry form unchanged.
+- Submit uses `POST /api/bookings`; confirmation shows booking reference/status
+  with Back to Home and View Hotel. Lookup at `/booking/[bookingNumber]` remains.
+- No schema change, no payment gateway. Quotes stay “on request” until room-type
+  `base_price` is set.
+
 ### Phase 10B — Guest Booking UI (2026-08-03)
 
-- `/book` is now a three-step reservation flow — Select Hotel → Room & Dates →
-  Guest Details — with a live stay summary that recalculates on every edit using
-  the server's own pricing formula.
-- Room cards on hotel pages open the flow with that property and room
-  preselected (`/book?hotel=<slug>&room=<slug>`).
-- Availability is guarded client-side against the property's sellable inventory
-  and on submit by the API's `409`, which returns the guest to the stay step with
-  the server's message.
-- New `/booking/[bookingNumber]` confirmation page, which also serves as a
-  contact-verified "find my booking" screen. It is `noindex` and disallowed in
-  `robots.txt`.
-- Full loading, validation, error and responsive states; limits mirror the API
-  ([ADR-0015](DECISIONS.md)).
-- Frontend only — no schema change, no new endpoint, no admin module touched, and
-  no payment gateway.
-- Quotes read "Price on request" until an admin sets a nightly `base_price` per
-  room type, since every seeded room type is currently `0`.
+- Initial three-step `/book` flow and `/booking/[bookingNumber]` lookup (superseded
+  for the flow shape by the 2026-08-04 five-step release above).
+- Frontend helpers and pricing rules ([ADR-0015](DECISIONS.md)).
 
 ### Phase 10A — Booking Engine Backend Foundation (2026-08-02)
 

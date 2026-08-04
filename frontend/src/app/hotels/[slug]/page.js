@@ -99,7 +99,9 @@ export default async function HotelDetailPage({ params }) {
         <GuestReviews hotel={hotel} reviews={reviews} />
         <ContactCTA hotel={hotel} roomTypes={roomTypes} />
       </main>
-      <StickyBookCTA targetId="contact" />
+      <StickyBookCTA
+        href={`/book?hotel=${encodeURIComponent(hotel.slug)}`}
+      />
       <Footer hotel={hotel} />
     </>
   );

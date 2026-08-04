@@ -1,5 +1,5 @@
-import { formatPrice, formatTimeOfDay } from "@/lib/format";
 import Link from "next/link";
+import { formatPrice, formatTimeOfDay } from "@/lib/format";
 import {
   calculateStayTotals,
   formatStayDate,
@@ -26,13 +26,13 @@ function Row({ label, value, muted = false }) {
 }
 
 /**
- * Live stay summary. Recomputes from the current selection on every render and
- * uses the same formula as the server, so the figure shown is the figure the API
- * will record.
+ * Live stay summary sidebar. Prefers API availability amounts when present so
+ * the figure matches GET /api/bookings/availability and POST /api/bookings.
  */
-export default function BookingPriceSummary({
+export default function BookingSummary({
   hotel,
   roomType,
+  availabilityOption = null,
   tariff,
   checkIn,
   checkOut,
@@ -41,13 +41,29 @@ export default function BookingPriceSummary({
   rooms,
   className = "",
 }) {
-  const currency = hotel?.currency_code || "INR";
+  const currency =
+    hotel?.currency_code || availabilityOption?.currency || "INR";
   const nights = nightsBetween(checkIn, checkOut);
-  const totals = calculateStayTotals({
-    basePrice: roomType?.base_price,
-    nights,
-    rooms,
-  });
+
+  const totals = availabilityOption
+    ? {
+        onRequest: Boolean(availabilityOption.on_request),
+        nightlyRate: availabilityOption.nightly_rate,
+        nights,
+        rooms: Number(rooms) || 1,
+        subtotal: Number(availabilityOption.subtotal) || 0,
+        tax: Number(availabilityOption.tax_amount) || 0,
+        total: Number(availabilityOption.total_amount) || 0,
+      }
+    : {
+        ...calculateStayTotals({
+          basePrice: roomType?.base_price,
+          nights,
+          rooms,
+        }),
+        tax: 0,
+      };
+
   const settings = getTariffSettings(hotel);
   const publishedFrom = totals.onRequest ? lowestPublishedRate(tariff) : null;
 
@@ -72,8 +88,10 @@ export default function BookingPriceSummary({
         <Row label="Hotel" value={hotel?.name || "Not selected"} muted={!hotel} />
         <Row
           label="Room"
-          value={roomType?.name || "Not selected"}
-          muted={!roomType}
+          value={
+            availabilityOption?.name || roomType?.name || "Not selected"
+          }
+          muted={!availabilityOption && !roomType}
         />
         <Row
           label="Check-in"
@@ -132,12 +150,18 @@ export default function BookingPriceSummary({
                 {formatPrice(totals.subtotal, currency)}
               </span>
             </div>
+            {totals.tax > 0 && (
+              <div className="mt-2 flex items-baseline justify-between gap-4 text-sm text-cream-muted">
+                <span>Taxes / fees</span>
+                <span>{formatPrice(totals.tax, currency)}</span>
+              </div>
+            )}
             <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-ink-line pt-4">
               <span className="text-xs tracking-[0.25em] uppercase text-cream-muted">
                 Estimated total
               </span>
               <span className="font-display text-2xl text-gold">
-                {formatPrice(totals.total, currency)}
+                {formatPrice(totals.total ?? totals.subtotal, currency)}
               </span>
             </div>
           </>

@@ -178,6 +178,60 @@ async function main() {
   const bookingNumber = created.body?.data?.booking_number;
 
   // -------------------------------------------------------------------------
+  section("Public GET /api/bookings/availability");
+  const availability = await api(
+    "GET",
+    `/api/bookings/availability?hotel_slug=${encodeURIComponent(
+      withRooms.hotel_slug
+    )}&check_in_date=${checkIn}&check_out_date=${checkOut}&number_of_rooms=1`
+  );
+  check("returns 200", availability.status === 200, `got ${availability.status}`);
+  check(
+    "includes hotel + nights",
+    availability.body?.data?.hotel_slug === withRooms.hotel_slug &&
+      availability.body?.data?.nights === 2
+  );
+  check(
+    "returns room_types array",
+    Array.isArray(availability.body?.data?.room_types) &&
+      availability.body.data.room_types.length > 0
+  );
+  const matchedType = (availability.body?.data?.room_types || []).find(
+    (rt) => rt.room_type_id === withRooms.room_type_id
+  );
+  check(
+    "includes inventory counts for fixture room type",
+    matchedType &&
+      typeof matchedType.available_rooms === "number" &&
+      typeof matchedType.is_available === "boolean"
+  );
+  check(
+    "includes indicative pricing fields",
+    matchedType &&
+      "subtotal" in matchedType &&
+      "tax_amount" in matchedType &&
+      "total_amount" in matchedType &&
+      "on_request" in matchedType
+  );
+
+  const availabilityMissing = await api(
+    "GET",
+    `/api/bookings/availability?check_in_date=${checkIn}&check_out_date=${checkOut}`
+  );
+  check(
+    "requires hotel_id or hotel_slug",
+    availabilityMissing.status === 400
+  );
+
+  const availabilityPast = await api(
+    "GET",
+    `/api/bookings/availability?hotel_slug=${encodeURIComponent(
+      withRooms.hotel_slug
+    )}&check_in_date=2020-01-01&check_out_date=2020-01-03`
+  );
+  check("rejects past check-in", availabilityPast.status === 400);
+
+  // -------------------------------------------------------------------------
   section("Public POST /api/bookings — validation");
   const badDates = await api("POST", "/api/bookings", {
     body: {

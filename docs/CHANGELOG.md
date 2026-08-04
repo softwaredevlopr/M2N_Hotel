@@ -9,6 +9,36 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Changed — Phase 10B five-step booking UI + public availability API ✅
+
+- **What changed.** Guest booking at `/book` is now a five-step flow:
+  Stay Details → Available Rooms → Guest Details → Review → Confirmation.
+  Step 2 calls the new public availability endpoint (live inventory + indicative
+  pricing). Hotel “Book Your Stay” / sticky “Book Now” deep-link to
+  `/book?hotel=<slug>`; room cards keep `/book?hotel=&room=`. Inquiry form
+  unchanged. Homepage hero and hotel media untouched.
+- **Files modified (backend):** `controllers/booking.controller.js`,
+  `routes/booking.routes.js`, `validators/booking.validator.js`,
+  `scripts/testBookings.js`.
+- **Files modified (frontend):** `components/booking/*` (modular steps),
+  `lib/api.js` (`getBookingAvailability`), `Hero.js`, `StickyBookCTA.js`,
+  `app/hotels/[slug]/page.js`, `app/book/page.js`,
+  `app/booking/[bookingNumber]/page.js` (uses `BookingLookup`).
+- **APIs added:** `GET /api/bookings/availability` — query `hotel_id` or
+  `hotel_slug`, `check_in_date`, `check_out_date`, optional `room_type_id`,
+  `number_of_rooms`. Returns per room type: inventory counts, `is_available`,
+  `nightly_rate` / `on_request`, `subtotal`, `tax_amount` (always 0 today),
+  `total_amount`, `bed_type`, `max_occupancy`.
+- **APIs unchanged:** `POST /api/bookings`, `GET /api/bookings/:bookingNumber`.
+- **Database changes:** none.
+- **Frontend changes:** five-step modular UI; availability loading/empty/error;
+  review + inline confirmation with Home / View Hotel; Indian-mobile-friendly
+  phone validation; `NEXT_PUBLIC_API_BASE_URL` with `NEXT_PUBLIC_API_URL` fallback.
+- **Backend changes:** thin public wrapper over existing
+  `booking.service.checkAvailability` (no schema change).
+- **Remaining work:** Phase 10C admin bookings UI; set room-type `base_price`
+  for live totals (BASE-PRICE); payment gateway later.
+
 ### Fixed — Restored original homepage brand-hero.jpg from Git ✅
 
 - **Previous wrong image path (what the browser showed):** logo-only BrandHero

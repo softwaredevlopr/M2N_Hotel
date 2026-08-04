@@ -11,7 +11,7 @@ function FieldError({ id, message }) {
   );
 }
 
-export default function BookingGuestStep({ values, errors, onChange }) {
+export default function GuestDetailsStep({ values, errors, onChange }) {
   return (
     <section>
       <h3 className="text-xs tracking-[0.35em] uppercase text-gold">
@@ -53,8 +53,9 @@ export default function BookingGuestStep({ values, errors, onChange }) {
             value={values.guestPhone}
             onChange={(event) => onChange("guestPhone", event.target.value)}
             className={inputClass(errors.guestPhone)}
-            placeholder="e.g. +91 98765 43210"
+            placeholder="10-digit mobile or +91…"
             autoComplete="tel"
+            inputMode="tel"
             aria-invalid={Boolean(errors.guestPhone)}
             aria-describedby={errors.guestPhone ? "bk-phone-err" : undefined}
           />
@@ -81,7 +82,7 @@ export default function BookingGuestStep({ values, errors, onChange }) {
 
         <div className="sm:col-span-2">
           <label htmlFor="bk-requests" className={LABEL_CLASS}>
-            Special Requests
+            Special Request
           </label>
           <textarea
             id="bk-requests"

@@ -693,6 +693,37 @@ newly generated image.
 - Use a hotel photo as temporary brand hero. Rejected — violates property
   media isolation.
 
+### ADR-0019 — Public booking availability HTTP route for Phase 10B UI
+
+**Date:** 2026-08-04
+
+**Status:** Accepted
+
+**Context**
+Phase 10A exposed availability only inside `booking.service.checkAvailability`
+(used during create/admin). The five-step guest UI needs a date-aware room list
+before submit. Inventing client-only inventory from `GET /api/rooms` would miss
+overlapping reservations.
+
+**Decision**
+- Add public `GET /api/bookings/availability` (registered before
+  `/:bookingNumber`) wrapping the existing service helper — no schema change.
+- Return active room types for the hotel with inventory counts, `is_available`,
+  and the same indicative amounts `POST /api/bookings` would record
+  (`tax_amount` remains 0).
+- Accept `hotel_id` or `hotel_slug` plus stay dates; optional `room_type_id` /
+  `number_of_rooms`.
+
+**Consequences**
+- Frontend Step 2 can show live availability with loading/empty/error states.
+- Rate-limit path reuses existing `GET /api/bookings` lookup limiter.
+- Docs/API contracts must list the route; smoke tests cover happy + validation.
+
+**Alternatives considered**
+- Keep client-only sellable-room counts. Rejected — not date-aware.
+- New `/api/availability` top-level router. Rejected — bookings already own the
+  inventory model; keep the surface under `/api/bookings`.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

@@ -59,11 +59,154 @@ async function fetchPublicBooking(bookingNumber) {
 function buildIndicativeAmounts(basePrice, nights, rooms) {
   const price = Number(basePrice);
   if (!Number.isFinite(price) || price <= 0) {
-    return { subtotal: 0, tax_amount: 0, total_amount: 0 };
+    return {
+      nightly_rate: null,
+      on_request: true,
+      subtotal: 0,
+      tax_amount: 0,
+      total_amount: 0,
+    };
   }
   const subtotal = Math.round(price * nights * rooms * 100) / 100;
-  return { subtotal, tax_amount: 0, total_amount: subtotal };
+  return {
+    nightly_rate: price,
+    on_request: false,
+    subtotal,
+    tax_amount: 0,
+    total_amount: subtotal,
+  };
 }
+
+/**
+ * Public availability probe for the guest booking UI. Resolves a hotel by id or
+ * slug, then returns each active room type with live inventory counts and the
+ * same indicative amounts createBooking would record (tax_amount is always 0
+ * until a payment/tax engine exists).
+ */
+const getAvailability = asyncHandler(async (req, res) => {
+  const q = req.query || {};
+  const errors = [];
+
+  const hotelIdRaw = trimOrNull(q.hotel_id);
+  const hotelSlug = trimOrNull(q.hotel_slug);
+  const roomTypeIdFilter = parseUuid(q.room_type_id, "room_type_id", errors, {
+    required: false,
+  });
+
+  if (!hotelIdRaw && !hotelSlug) {
+    errors.push("Provide hotel_id or hotel_slug");
+  }
+
+  let hotelId = null;
+  if (hotelIdRaw) {
+    hotelId = parseUuid(hotelIdRaw, "hotel_id", errors);
+  }
+
+  const checkIn = parseDate(q.check_in_date, "check_in_date", errors);
+  const checkOut = parseDate(q.check_out_date, "check_out_date", errors);
+  validateStayDates(checkIn, checkOut, errors, { allowPastDates: false });
+
+  const numberOfRooms = parseInteger(
+    q.number_of_rooms,
+    "number_of_rooms",
+    errors,
+    { min: 1, max: MAX_ROOMS, fallback: 1 }
+  );
+
+  if (errors.length > 0) {
+    return sendValidationError(res, errors);
+  }
+
+  let hotelResult;
+  if (hotelId) {
+    hotelResult = await query(
+      `SELECT id, slug, name, status, currency_code
+       FROM hotels
+       WHERE id = $1
+       LIMIT 1`,
+      [hotelId]
+    );
+  } else {
+    hotelResult = await query(
+      `SELECT id, slug, name, status, currency_code
+       FROM hotels
+       WHERE slug = $1
+       LIMIT 1`,
+      [hotelSlug]
+    );
+  }
+
+  if (hotelResult.rows.length === 0) {
+    throw new AppError("Hotel not found", 404);
+  }
+
+  const hotel = hotelResult.rows[0];
+  if (hotel.status !== "active") {
+    throw new AppError("Hotel is not available for booking", 404);
+  }
+
+  const roomTypeParams = [hotel.id];
+  let roomTypeSql = `
+    SELECT id, slug, name, status, base_price, max_occupancy, bed_type
+    FROM room_types
+    WHERE hotel_id = $1 AND status = 'active'`;
+  if (roomTypeIdFilter) {
+    roomTypeParams.push(roomTypeIdFilter);
+    roomTypeSql += ` AND id = $2`;
+  }
+  roomTypeSql += ` ORDER BY sort_order ASC, name ASC`;
+
+  const roomTypesResult = await query(roomTypeSql, roomTypeParams);
+  const nights = nightsBetween(checkIn, checkOut);
+
+  const roomTypes = [];
+  for (const roomType of roomTypesResult.rows) {
+    const availability = await bookingService.checkAvailability({
+      hotelId: hotel.id,
+      roomTypeId: roomType.id,
+      checkIn,
+      checkOut,
+    });
+    const amounts = buildIndicativeAmounts(
+      roomType.base_price,
+      nights,
+      numberOfRooms
+    );
+    const availableEnough = availability.available_rooms >= numberOfRooms;
+
+    roomTypes.push({
+      room_type_id: roomType.id,
+      slug: roomType.slug,
+      name: roomType.name,
+      max_occupancy: roomType.max_occupancy,
+      bed_type: roomType.bed_type,
+      base_price: Number(roomType.base_price),
+      total_rooms: availability.total_rooms,
+      booked_rooms: availability.booked_rooms,
+      available_rooms: availability.available_rooms,
+      is_available: availableEnough && availability.total_rooms > 0,
+      nightly_rate: amounts.nightly_rate,
+      on_request: amounts.on_request,
+      subtotal: amounts.subtotal,
+      tax_amount: amounts.tax_amount,
+      total_amount: amounts.total_amount,
+    });
+  }
+
+  return sendSuccess(res, 200, {
+    data: {
+      hotel_id: hotel.id,
+      hotel_slug: hotel.slug,
+      hotel_name: hotel.name,
+      currency: hotel.currency_code || "INR",
+      check_in_date: checkIn,
+      check_out_date: checkOut,
+      nights,
+      number_of_rooms: numberOfRooms,
+      room_types: roomTypes,
+    },
+  });
+});
 
 const createBooking = asyncHandler(async (req, res) => {
   const body = req.body || {};
@@ -205,6 +348,7 @@ const getBookingByNumber = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getAvailability,
   createBooking,
   getBookingByNumber,
 };

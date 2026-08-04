@@ -72,7 +72,7 @@ export default function Hero({ hotel }) {
 
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="#contact"
+            href={hotel?.slug ? `/book?hotel=${encodeURIComponent(hotel.slug)}` : "/book"}
             className="group inline-flex items-center justify-center bg-gold px-9 py-4 text-sm tracking-[0.25em] uppercase text-cream hover:bg-gold-soft transition-colors w-full sm:w-auto"
           >
             Book Your Stay

@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BookingConfirmation from "@/components/booking/BookingConfirmation";
+import BookingLookup from "@/components/booking/BookingLookup";
 import { getHotels } from "@/lib/api";
 
 // A reservation is private: it must never be indexed or previewed by crawlers.
@@ -22,7 +22,7 @@ export default async function BookingConfirmationPage({ params }) {
       <Navbar hotels={hotels} />
       <main className="bg-ink">
         <section className="mx-auto max-w-4xl px-6 py-16 lg:px-10 sm:py-24">
-          <BookingConfirmation bookingNumber={bookingNumber} />
+          <BookingLookup bookingNumber={bookingNumber} />
         </section>
       </main>
       <Footer hotel={null} />

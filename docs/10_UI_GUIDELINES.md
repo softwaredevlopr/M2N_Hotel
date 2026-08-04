@@ -25,17 +25,17 @@
 
 **Booking flow (`/book`)**
 
-- Numbered step header; one step visible at a time so mobile never scrolls a
-  three-page form.
-- Two columns from `lg` up: step content left, stay summary sticky on the right.
-  Below `lg` the summary follows the step content and precedes the nav buttons.
-- Selection tiles (hotels, room types) are `<button aria-pressed>` with a gold
-  border and check badge when active — not links.
+- Numbered five-step header (Stay Details → Available Rooms → Guest Details →
+  Review → Confirmation); one step visible at a time on mobile.
+- Two columns from `lg` up: step content left, stay summary sticky on the right
+  (steps 1–4). Confirmation is a centred success panel with Home / View Hotel.
+- Selection tiles (hotels, available rooms) are `<button aria-pressed>` with a
+  gold border and check badge when active — not links.
 - Fields reuse the inquiry-form styling via `components/booking/formStyles.js`;
   errors sit inline under the field in gold, and the form-level banner uses
   `role="alert"`.
-- The confirmation page is a printable document: reference block, stay details,
-  charges, and a print action.
+- The `/booking/[bookingNumber]` lookup page remains a printable document:
+  reference block, stay details, charges, and a print action.
 
 **Admin**
 

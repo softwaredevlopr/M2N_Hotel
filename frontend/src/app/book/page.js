@@ -17,11 +17,11 @@ function firstParam(value) {
   return typeof value === "string" ? value : "";
 }
 
-// Guest booking flow: Select Hotel → Room & Dates → Guest Details.
+// Guest booking flow: Stay Details → Available Rooms → Guest Details → Review → Confirmation.
 // A property page can deep-link into the flow with ?hotel=<slug>&room=<slug>.
 export default async function BookPage({ searchParams }) {
   const params = (await searchParams) || {};
-  const { hotels, roomTypesByHotel, roomsByHotel, tariffsByHotel } =
+  const { hotels, roomTypesByHotel, tariffsByHotel } =
     await getBookingPageData();
   const isOffline = hotels.length === 0;
 
@@ -70,9 +70,9 @@ export default async function BookPage({ searchParams }) {
               Reserve Your Room
             </h1>
             <p className="mt-6 text-base leading-relaxed text-cream-dim sm:text-lg">
-              Choose a property from the {BRAND_NAME} collection, pick your room
-              and dates, and share your details. Our team confirms every
-              reservation personally — no payment is taken online.
+              Choose a property, check live availability for your dates, and
+              share your details. Our team confirms every reservation personally
+              — no payment is taken online.
             </p>
           </div>
         </section>
@@ -86,7 +86,6 @@ export default async function BookPage({ searchParams }) {
             <BookingFlow
               hotels={hotels}
               roomTypesByHotel={roomTypesByHotel}
-              roomsByHotel={roomsByHotel}
               tariffsByHotel={tariffsByHotel}
               hotelImages={hotelImages}
               roomImagesByHotel={roomImagesByHotel}

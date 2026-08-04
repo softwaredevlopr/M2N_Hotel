@@ -10,9 +10,10 @@
 
 - [x] **Phase 10A** — Booking Engine Backend Foundation (schema, availability
       engine, public + admin APIs). Backend only, no UI.
-- [x] **Phase 10B** — Guest booking UI (`/book` three-step flow, live stay
-      summary, availability validation, `/booking/[bookingNumber]` confirmation
-      and lookup). Frontend only; no payment gateway.
+- [x] **Phase 10B** — Guest booking UI (`/book` five-step flow, availability API,
+      live stay summary, review + confirmation, `/booking/[bookingNumber]`
+      lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
+      No payment gateway.
 - [ ] **Phase 10C** — Admin bookings & inventory rules:
   - [ ] Admin `/admin/bookings` module (list, filters, detail, status, room assignment)
         over the existing Phase 10A APIs.

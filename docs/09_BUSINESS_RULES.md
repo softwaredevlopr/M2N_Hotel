@@ -69,23 +69,24 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 
 ## 6. Guest booking UI rules (Phase 10B)
 
-- The flow is **Select Hotel → Room & Dates → Guest Details**. A room selection
-  never survives a change of hotel, because room types are property-specific.
-- The stay summary uses the server's own formula (`base_price × nights × rooms`,
-  no tax). It never invents a price: a room type without a base price reads
-  "Price on request", optionally quoting the lowest published Phase 9 tariff rate
-  as guidance, and the reservation is recorded with zero amounts.
+- The flow is **Stay Details → Available Rooms → Guest Details → Review →
+  Confirmation**. A room selection never survives a change of hotel, because
+  room types are property-specific.
+- Available rooms come only from `GET /api/bookings/availability` for the chosen
+  hotel and dates. Options with `is_available=false` are hidden; loading, empty
+  and API error states are required.
+- The stay summary prefers availability-API amounts when a room is selected, and
+  otherwise uses the same formula as create (`base_price × nights × rooms`, tax
+  `0`). A room type without a base price reads "Price on request".
 - Taxes are stated as applicable rather than calculated, and no payment is taken
   online at this stage.
-- Client-side limits mirror the API exactly (90-night maximum, ≥1 adult, ≤30
-  adults, ≤30 children, ≥1 room, ≤20 rooms, 2000-character requests). The client
-  never relaxes a server rule.
-- The guest cannot request more rooms than the property has of that type; room
-  types with no sellable rooms are shown as unavailable and cannot be selected.
-- Exceeding a room type's `max_occupancy` is a **notice**, not a block — the
-  property can add bedding, and the backend does not reject it.
-- A `409` on submit returns the guest to the stay step with the server's message,
-  because inventory can sell out while the form is being filled.
+- Client-side limits mirror the API (90-night maximum, ≥1 adult, ≤30 adults,
+  ≤30 children, ≥1 room, ≤20 rooms, 2000-character requests). Check-out must be
+  after check-in; past check-in is rejected. Mobile validation is
+  Indian-friendly (10-digit 6–9, optional `0`/`91`) without hardcoding a real
+  number.
+- A `409` on submit returns the guest to Available Rooms with the server's
+  message, because inventory can sell out while the form is being filled.
 - Confirmation pages are private: `noindex`, disallowed in `robots.txt`, and
   readable only with the booking reference plus the email or phone on it.
 
