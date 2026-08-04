@@ -9,6 +9,27 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Fixed — Homepage brand hero no longer uses hotel photography ✅
+
+- **Root cause.** Phase 8 made `resolveBrandHeroImage(hotels)` prefer the
+  featured hotel's API/filesystem hero (then Lobby/Reception/Exterior across
+  every property). That put hotel-specific photography into the homepage
+  `BrandHero`, blurring brand branding and property media.
+- **What changed.** Homepage `/` uses only `/brand-hero.jpg`
+  (`BRAND_HERO_IMAGE` in `lib/brand.js`). `resolveBrandHeroImage` and the
+  hotel-less brand fallback ignore hotel lists and never pick from
+  `/Photos/<Hotel>/…`. Hotel detail helpers (`resolveHeroImage`, cards,
+  gallery) are unchanged.
+- **Files modified.** `frontend/src/lib/images.js`, `frontend/src/lib/brand.js`,
+  `frontend/src/components/BrandHero.js`, `frontend/src/app/page.js`, plus docs.
+- **APIs added/changed:** none.
+- **Database changes:** none.
+- **Backend changes:** none.
+- **Frontend changes:** brand/hotel media separation restored for the homepage
+  hero only. Hotel detail pages (including Zaarang Inn) untouched.
+- **Remaining work:** none for this regression. Phase 10C (admin bookings) still
+  pending.
+
 ### Added — Phase 10B — Guest Booking UI ✅
 
 Public frontend only. No schema change, no admin module touched, no new backend
@@ -184,7 +205,9 @@ manager, and no change to tariff content, media, or the public hotel page design
 - Loading states: `app/loading.js`, `hotels/[slug]/loading.js`, `book/loading.js`,
   `PublicPageLoading`.
 - Error states: `app/error.js`, `hotels/[slug]/error.js` with retry + home navigation.
-- Homepage brand hero resolves from featured hotel API media when available.
+- Homepage brand hero resolves from featured hotel API media when available
+  (**superseded 2026-08-04** — homepage uses `/brand-hero.jpg` only; see
+  [ADR-0016](history/DECISIONS.md)).
 
 ### Documentation
 

@@ -1,10 +1,8 @@
 import { ChevronDown } from "lucide-react";
-import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
+import { BRAND_NAME, BRAND_TAGLINE, BRAND_HERO_IMAGE } from "@/lib/brand";
 
 const HERO_SUBHEADING =
   "Discover premium stays across our growing collection of hotels with thoughtfully designed hospitality for business and leisure travellers.";
-
-const BRAND_HERO_IMAGE = "/brand-hero.jpg";
 
 export default function BrandHero({ heroImage = BRAND_HERO_IMAGE }) {
   return (

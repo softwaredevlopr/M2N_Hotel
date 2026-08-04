@@ -8,6 +8,7 @@ import {
   pickCoverMedia,
   resolvePublicMediaUrl,
 } from "@/lib/media";
+import { BRAND_HERO_IMAGE } from "@/lib/brand";
 
 const PHOTOS_PUBLIC_ROOT = "/Photos";
 const PHOTOS_FS_ROOT = path.join(process.cwd(), "public", "Photos");
@@ -96,29 +97,21 @@ function getHotelPhotos(hotelOrSlug) {
 }
 
 function firstAvailableBrandImage() {
-  for (const slug of Object.keys(HOTEL_PHOTO_FOLDERS)) {
-    const photos = getHotelPhotos(slug);
-    if (photos?.Hero?.[0]) return photos.Hero[0];
-    if (photos?.Exterior?.[0]) return photos.Exterior[0];
+  try {
+    if (fs.existsSync(path.join(process.cwd(), "public", "brand-hero.jpg"))) {
+      return BRAND_HERO_IMAGE;
+    }
+  } catch {
+    // Fall through to remote backup only when the brand asset is missing.
   }
   return REMOTE_BACKUP_IMAGE;
 }
 
-export function resolveBrandHeroImage(hotels = []) {
-  const featured =
-    hotels.find((hotel) => hotel?.is_featured) || hotels[0] || null;
-  if (featured) {
-    const fromApi = resolveHeroImage(featured);
-    if (fromApi && fromApi !== REMOTE_BACKUP_IMAGE) return fromApi;
-  }
-
-  const preferredCategories = ["Lobby", "Reception", "Exterior"];
-  for (const category of preferredCategories) {
-    for (const slug of Object.keys(HOTEL_PHOTO_FOLDERS)) {
-      const photos = getHotelPhotos(slug);
-      if (photos?.[category]?.[0]) return photos[category][0];
-    }
-  }
+/**
+ * Homepage / brand surfaces only. Intentionally ignores hotel lists so a
+ * featured property's photography never appears as the M2N brand hero.
+ */
+export function resolveBrandHeroImage(_hotels = []) {
   return firstAvailableBrandImage();
 }
 
@@ -194,7 +187,7 @@ function anyPhotoFromHotel(hotel) {
 
 // A property must never borrow another property's photography. Once a hotel is
 // known the fallback chain stays inside that hotel's own folder; the brand-wide
-// fallback is only for hotel-less contexts such as the homepage hero.
+// fallback (`/brand-hero.jpg`) is only for hotel-less brand surfaces.
 function lastResortImage(hotel) {
   if (!hotel) return firstAvailableBrandImage();
   return anyPhotoFromHotel(hotel) || REMOTE_BACKUP_IMAGE;

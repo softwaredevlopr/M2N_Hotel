@@ -75,4 +75,4 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A** and **10B** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md).
+Phases **1–9**, **10A** and **10B** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md). Homepage brand-hero regression fixed 2026-08-04 ([ADR-0016](docs/history/DECISIONS.md)).

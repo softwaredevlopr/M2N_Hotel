@@ -12,6 +12,13 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Fix — Homepage brand hero restored (2026-08-04)
+
+- Homepage `/` hero again uses only `/brand-hero.jpg`, not a featured hotel's
+  photography ([ADR-0016](DECISIONS.md)).
+- Hotel detail pages (including Zaarang Inn) unchanged; hotel photos remain on
+  `/hotels/[slug]` and homepage hotel cards only.
+
 ### Phase 10B — Guest Booking UI (2026-08-03)
 
 - `/book` is now a three-step reservation flow — Select Hotel → Room & Dates →

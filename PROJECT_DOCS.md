@@ -252,6 +252,9 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 - Hotel known ho to fallback usi hotel ke folder ke andar hi rahega — dusre hotel ki photo
   fallback ke roop mein bhi kabhi nahi aayegi. Details: [ADR-0013](docs/history/DECISIONS.md).
 - Hero ke liye sirf **ek** cover select hota hai; baaki active images `sort_order` ke hisaab se gallery mein jaati hain.
+- **Homepage brand hero** sirf `/brand-hero.jpg` hai — kisi hotel ki photo brand
+  hero background mein nahi aati. Hotel photos `/hotels/[slug]` (aur homepage
+  hotel cards) par dikhti hain. [ADR-0016](docs/history/DECISIONS.md).
 
 ---
 

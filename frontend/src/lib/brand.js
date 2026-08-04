@@ -24,6 +24,9 @@ export const BRAND_DESCRIPTION =
 export const BRAND_SHORT_DESCRIPTION =
   "Thoughtfully designed stays, warm hospitality, and modern comfort across every M2N Hotels property.";
 
+// Homepage brand hero only. Hotel photography belongs on /hotels/[slug].
+export const BRAND_HERO_IMAGE = "/brand-hero.jpg";
+
 // Canonical public site URL. Override per environment via NEXT_PUBLIC_SITE_URL.
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://m2n-hotel.vercel.app"

@@ -22,7 +22,8 @@ export const metadata = {
 export default async function Home() {
   const hotels = await getHotelsWithDetails();
   const isOffline = hotels.length === 0;
-  const brandHeroImage = resolveBrandHeroImage(hotels);
+  // Brand hero only — never a hotel photo (those stay on /hotels/[slug]).
+  const brandHeroImage = resolveBrandHeroImage();
 
   return (
     <>

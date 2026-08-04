@@ -46,7 +46,8 @@
 
 ## 4. Imagery
 
-- Public: slug → `Photos/` mapping only.
+- Public: slug → `Photos/` mapping only on hotel surfaces.
+- Homepage brand hero: `/brand-hero.jpg` only ([ADR-0016](history/DECISIONS.md)).
 - `lib/images.js` touches the filesystem, so client components must be handed
   resolved URLs from a server component rather than importing it.
 - Admin media: preview via API origin + `/uploads/…` when relative.

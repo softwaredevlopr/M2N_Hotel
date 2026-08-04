@@ -159,7 +159,8 @@ Full detail: [`docs/05_FOLDER_STRUCTURE.md`](docs/05_FOLDER_STRUCTURE.md).
   Zaarang).
 - Category subfolders per hotel: `Hero`, `Exterior`, `Lobby`, `Reception`,
   `Rooms`, `Bathroom`, `Banquet`.
-- Usage: Hero → hero banner; Rooms → room cards; the rest feed the gallery.
+- Usage: Hero → hotel detail hero banner; Rooms → room cards; the rest feed the gallery.
+- **Homepage brand hero** uses `/brand-hero.jpg` only — never a hotel folder image.
 - If a category folder is empty, it is skipped safely.
 - Adding a new hotel:
   1. Create `frontend/public/Photos/<Hotel-Name>/` with category subfolders + images.

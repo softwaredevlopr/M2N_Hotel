@@ -596,6 +596,36 @@ endpoint's contact check.
   Phase 10A behaviour and its test expectations, and needs a meal-plan choice in
   the booking model.
 
+### ADR-0016 — Homepage brand hero is brand media, never hotel photography
+
+**Date:** 2026-08-04
+
+**Status:** Accepted
+
+**Context**
+Phase 8 wired the homepage `BrandHero` through `resolveBrandHeroImage(hotels)`,
+which preferred the featured hotel's hero (then Lobby/Reception/Exterior across
+properties). That made the M2N brand landing page look like a single property
+and violated the separation between brand surfaces and hotel detail media.
+
+**Decision**
+- Homepage `/` uses only `/brand-hero.jpg` (`BRAND_HERO_IMAGE` in `lib/brand.js`).
+- `resolveBrandHeroImage` ignores hotel lists and returns that brand asset
+  (remote backup only if the file is missing).
+- Hotel photography continues to resolve via `resolveHeroImage` /
+  `resolveCardImage` / gallery helpers on `/hotels/[slug]` and on homepage
+  hotel cards — never as the brand hero background.
+- Hotel detail pages and Zaarang Inn media helpers were not changed for this fix.
+
+**Consequences**
+- Brand and property imagery stay visually and architecturally separate.
+- Replaces the Phase 8 “homepage from featured hotel” behaviour recorded in the
+  roadmap; that line is corrected to brand-hero-only.
+
+**Alternatives considered**
+- Keep featured-hotel hero for “editorial” feel. Rejected — product requirement
+  is an M2N brand hero; hotel photos belong on hotel pages.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*
