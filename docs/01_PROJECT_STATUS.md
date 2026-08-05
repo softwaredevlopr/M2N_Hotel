@@ -131,6 +131,9 @@ Next: allotment/stop-sells, confirmation email, inquiries UI
   departures, upcoming, occupancy, by-status).
 - Status badges for booking + payment statuses. No schema change; public site
   untouched.
+- Verified 2026-08-05: auth gate, list filters/sort/pagination, detail, status
+  transitions + `cancellation_reason`, stats, frontend build; no_show now stamps
+  `cancelled_at` for timeline audit (reuses existing column).
 - Still pending under 10C/11: availability calendar, allotment/stop-sells,
   confirmation email, dedicated internal notes column, admin create form.
 
@@ -175,6 +178,7 @@ Next: allotment/stop-sells, confirmation email, inquiries UI
 
 | Date | Update |
 |------|--------|
+| 2026-08-05 | Phase 10C verified end-to-end; fixed no_show audit stamp (`cancelled_at`); added `npm run verify:phase10c` |
 | 2026-08-04 | Phase 10C admin bookings module + dashboard stats (`/admin/bookings`, `GET /api/admin/bookings/stats`, list sort) |
 | 2026-08-04 | Phase 10B upgraded to five-step `/book` UI + public `GET /api/bookings/availability`; hotel Book Now CTAs wired; inquiry form preserved |
 | 2026-08-04 | Restored original homepage `/brand-hero.jpg` from Git `336582d`; logo-only hero reverted; hotel pages unchanged |

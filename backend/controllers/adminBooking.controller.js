@@ -455,7 +455,13 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     if (nextBookingStatus === "confirmed") {
       sets.push("confirmed_at = COALESCE(confirmed_at, NOW())");
     }
-    if (nextBookingStatus === "cancelled") {
+    // cancelled_at records when a reservation left the active pipeline —
+    // both cancelled and no_show are terminal exits without a separate
+    // no_show_at column (schema frozen for Phase 10C).
+    if (
+      nextBookingStatus === "cancelled" ||
+      nextBookingStatus === "no_show"
+    ) {
       sets.push("cancelled_at = COALESCE(cancelled_at, NOW())");
     }
   }

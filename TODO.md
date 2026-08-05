@@ -14,9 +14,10 @@
       live stay summary, review + confirmation, `/booking/[bookingNumber]`
       lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
       No payment gateway.
-- [x] **Phase 10C (partial)** — Admin bookings module (`/admin/bookings` list,
-      filters, pagination, sorting, detail, status actions, room assignment) +
-      dashboard booking stats. No schema change.
+- [x] **Phase 10C (module verified 2026-08-05)** — Admin bookings module
+      (`/admin/bookings` list, filters, pagination, sorting, detail, status
+      actions, room assignment) + dashboard booking stats. No schema change.
+      Smoke: `npm run verify:phase10c` / `npm run test:bookings`.
   - [ ] Availability calendar, per-date allotment, stop-sells, overbooking allowance.
   - [ ] Booking confirmation email / notification.
   - [ ] Dedicated internal-notes column (needs schema approval).

@@ -20,6 +20,8 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
   guarded) plus room assignment for single-room stays.
 - Dashboard booking statistics via `GET /api/admin/bookings/stats`.
 - List API gains `sort` / `order` ([ADR-0020](DECISIONS.md)). No schema change.
+- Verified 2026-08-05: auth gate, filters, status + `cancellation_reason`,
+  frontend build; no_show stamps `cancelled_at`. Script: `npm run verify:phase10c`.
 - Remaining: calendar/allotment/stop-sells, confirmation email, dedicated
   internal notes, admin create form.
 

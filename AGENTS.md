@@ -70,9 +70,11 @@ details → available rooms via `GET /api/bookings/availability` → guest → r
 → confirmation) with a live stay summary, plus the `/booking/[bookingNumber]`
 contact-verified lookup page. No payment gateway.
 
-**Completed (Phase 10C module):** admin bookings console — `/admin/bookings`
-list/detail with search, filters, pagination, sorting, status actions, room
-assignment, and dashboard stats. Calendar/allotment/email still upcoming.
+**Completed (Phase 10C module, verified 2026-08-05):** admin bookings console —
+`/admin/bookings` list/detail with search, filters, pagination, sorting, status
+actions, room assignment, and dashboard stats. `no_show` stamps `cancelled_at`
+for audit. Calendar/allotment/email still upcoming. Verify with
+`npm run verify:phase10c` in `backend/`.
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares
 another hotel's content or photos.

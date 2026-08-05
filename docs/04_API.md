@@ -280,8 +280,9 @@ fact), accept explicit amounts, and record `created_by_admin_id`.
 **Status:** `booking_status` and/or `payment_status`. Transitions are enforced —
 `pending → confirmed | cancelled | no_show`, `confirmed → checked_in | cancelled
 | no_show`, `checked_in → checked_out | cancelled`; `checked_out`, `cancelled`
-and `no_show` are terminal. Confirming stamps `confirmed_at`; cancelling stamps
-`cancelled_at` and stores `cancellation_reason`. Payment status moves freely.
+and `no_show` are terminal. **Confirming** stamps `confirmed_at`. **Cancelling or marking no_show** stamps
+`cancelled_at` (shared terminal-exit audit column; no separate `no_show_at`) and
+may store `cancellation_reason`. Payment status moves freely.
 
 **Assign room:** attaches a physical room, or clears it with `room_id: null`.
 The room must belong to the booking's hotel *and* room type, be sellable, and

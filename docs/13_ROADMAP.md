@@ -100,6 +100,7 @@ Admin bookings console over `/api/admin/bookings` (module shipped 2026-08-04):
 - ✅ Booking detail + status actions + room assignment
 - ✅ Dashboard booking statistics (`GET /api/admin/bookings/stats`)
 - ✅ List `sort` / `order` query params
+- ✅ Verified 2026-08-05 (`npm run verify:phase10c`); no_show stamps `cancelled_at`
 - ⬜ Availability calendars, per-date allotment, stop-sells, out-of-service
   coordination
 - ⬜ Confirmation email / notification

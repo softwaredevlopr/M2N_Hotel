@@ -741,8 +741,9 @@ and statuses required. A dedicated audit/notes table would need a schema change.
 - Extend `GET /api/admin/bookings` with a whitelisted `sort` / `order` pair.
 - Derive the admin UI timeline from `created_at`, `confirmed_at`, `cancelled_at`,
   `updated_at`. Store operational notes in `special_requests` for now; cancel /
-  no-show reasons stay on `cancellation_reason`. A dedicated internal-notes
-  column remains a future, approval-gated schema change.
+  no-show reasons stay on `cancellation_reason`. Both `cancelled` and `no_show`
+  stamp `cancelled_at` so the timeline has an exit event without a schema change.
+  A dedicated internal-notes column remains a future, approval-gated schema change.
 
 **Consequences**
 - Dashboard and list UX ship without migration risk.

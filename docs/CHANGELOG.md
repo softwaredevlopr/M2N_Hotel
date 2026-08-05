@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Fixed — Phase 10C verification: no_show now stamps cancelled_at ✅
+
+- **What changed.** During Phase 10C verification, `PATCH /api/admin/bookings/:id/status`
+  with `booking_status=no_show` persisted `cancellation_reason` but did not stamp
+  `cancelled_at`, so the admin timeline/audit trail missed no-show exits.
+- **Files modified:** `backend/controllers/adminBooking.controller.js`,
+  `backend/scripts/verifyPhase10C.js` (new), `backend/package.json`
+  (`verify:phase10c`).
+- **APIs changed:** status update stamps `cancelled_at` for both `cancelled` and
+  `no_show` (no schema change; reuses existing column).
+- **Database changes:** none.
+- **Frontend changes:** none.
+- **Backend changes:** audit stamp only.
+- **Verification:** backend `:5001` healthy; frontend `:3000` serving; admin login
+  rejects bad credentials; admin bookings APIs gated at 401 without JWT;
+  list/search/hotel/status/date/sort/pagination/detail/stats/status transitions
+  verified; `npm run build` passed; `test:bookings` 76/76; `verify:phase10c` 35/35.
+- **Remaining work:** availability calendar / allotment / stop-sells; confirmation
+  email; dedicated internal-notes column (schema approval); admin create-booking form.
+
 ### Added — Phase 10C — Admin Booking Management ✅
 
 - **What changed.** Admin bookings console at `/admin/bookings` (list + detail)

@@ -128,7 +128,8 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   `GET /api/admin/bookings/stats`. List `sort`/`order` added without schema
   change. Public site and guest booking UI untouched. Remaining 10C items:
   availability calendar, allotment/stop-sells, confirmation email, dedicated
-  internal-notes column, admin create form.
+  internal-notes column, admin create form. Verified 2026-08-05
+  (`verify:phase10c`); no_show stamps `cancelled_at` for audit.
 
 **Next:** Remaining Phase 10C inventory rules / emails, then Phase 11.
 
