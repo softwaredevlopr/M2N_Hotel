@@ -167,7 +167,7 @@ export default function AdminDashboardPage() {
         >
           <h2 className="font-display text-2xl text-cream">Bookings</h2>
           <p className="mt-3 text-sm leading-relaxed text-cream-dim">
-            Search, filter, confirm, and manage guest reservations.
+            Search, create, confirm, and manage guest reservations.
           </p>
         </Link>
         <Link

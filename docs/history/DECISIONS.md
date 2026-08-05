@@ -822,6 +822,35 @@ status APIs must keep working if email delivery fails.
   is not required for first delivery.
 - Hard-code a single SaaS SDK. Rejected — harder to swap providers later.
 
+### ADR-0023 — Phase 10G admin create booking UI without schema change
+
+**Date:** 2026-08-05
+
+**Status:** Accepted
+
+**Context**
+Staff need to record phone/walk-in/admin reservations in the console. The
+`POST /api/admin/bookings` contract already exists (Phase 10A/10C). Notes must
+not invent a new column; guests already have `special_requests`.
+
+**Decision**
+- Ship `/admin/bookings/new` consuming existing admin create + public
+  `GET /api/bookings/availability` for pre-submit inventory checks.
+- Map booking notes to `special_requests` only.
+- Price summary from room-type `base_price` × nights × rooms (tax 0), matching
+  indicative public pricing.
+- No database schema change; no new booking endpoints.
+
+**Consequences**
+- Create flow is available without waiting on an `admin_notes` migration.
+- Availability probe is the public active-hotel endpoint; inactive properties may
+  show a soft message while create still enforces inventory server-side.
+
+**Alternatives considered**
+- Add `admin_notes` column. Deferred — needs schema approval.
+- Skip pre-submit availability and rely only on 409. Rejected — poorer UX for
+  staff entering phone bookings.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

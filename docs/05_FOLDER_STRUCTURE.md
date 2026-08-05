@@ -39,6 +39,8 @@ frontend/
     │       └── (protected)/
     │           ├── dashboard/
     │           ├── bookings/
+    │           │   ├── [id]/
+    │           │   └── new/              ← Phase 10G create form
     │           ├── inventory/        ← Phase 10E calendar UI
     │           ├── hotels/
     │           ├── room-types/
@@ -47,7 +49,7 @@ frontend/
     │           └── tariffs/
     ├── components/           ← Public + admin UI
     │   ├── booking/          ← BookingFlow + step / summary / confirmation
-    │   └── admin/            ← AdminGuard, InventoryCalendarGrid, forms, Toast, …
+    │   └── admin/            ← AdminGuard, BookingCreateForm, InventoryCalendarGrid, forms, Toast, …
     └── lib/
         ├── api.js, images.js, media.js, tariffs.js, brand.js, …
         ├── bookingPricing.js, bookingSession.js

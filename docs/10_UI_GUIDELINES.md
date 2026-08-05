@@ -45,6 +45,14 @@
   emerald available, amber low (≤25% remaining), rose sold out.
 - Loading, empty (no hotel / no room types), and error states required.
 
+**Admin create booking (`/admin/bookings/new`)**
+
+- Sections: guest details, stay (hotel/room type/dates/guests/rooms), options
+  (source/status/payment), notes (`special_requests`), price summary.
+- Availability check button + blocking submit when inventory probe says sold out.
+- Confirmation screen after create with View booking / Create another actions.
+- Match existing admin form chrome (ink panels, gold CTAs, uppercase labels).
+
 **Admin**
 
 - Shared shell: `AdminGuard` (nav + toast provider).

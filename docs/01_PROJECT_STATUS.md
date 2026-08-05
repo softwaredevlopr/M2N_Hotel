@@ -38,11 +38,12 @@
 | Booking engine — inventory calendar APIs | ✅ Phase 10D |
 | Booking engine — admin inventory calendar UI | ✅ Phase 10E |
 | Booking engine — confirmation emails | ✅ Phase 10F |
+| Booking engine — admin create booking form | ✅ Phase 10G |
 | Booking engine — stop-sell rules | ⬜ Remaining (schema approval) |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10F** ✅ · Next: stop-sell schema
-(approval), inquiries UI, admin create-booking form
+**Roadmap progress:** Phases **1–9** ✅, **10A–10G** ✅ · Next: stop-sell schema
+(approval), inquiries UI, internal notes (schema)
 
 ---
 
@@ -138,7 +139,7 @@
   transitions + `cancellation_reason`, stats, frontend build; no_show now stamps
   `cancelled_at` for timeline audit (reuses existing column).
 - Still pending under 10C/11: allotment/stop-sells (schema), dedicated internal
-  notes column, admin create form.
+  notes column.
 
 ### Phase 10D — Availability & Inventory Engine ✅
 
@@ -168,6 +169,13 @@
 - Fire-and-forget hooks on public/admin booking create and admin status changes.
   Email failures never fail booking APIs. Verify: `npm run verify:phase10f`.
 
+### Phase 10G — Admin Create Booking Form ✅
+
+- `/admin/bookings/new` — guest details, hotel/room type, dates, adults/children,
+  source/status/payment, notes via `special_requests`, availability check before
+  submit (`GET /api/bookings/availability`), indicative price summary, confirmation
+  screen. Reuses `POST /api/admin/bookings`. No schema change.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -179,7 +187,7 @@
 ## 3. In Progress
 
 - None formally in-flight. Next: schema-approved stop-sell/allotment if product
-  requires persistence; inquiries UI; admin create-booking form.
+  requires persistence; inquiries UI; internal notes column (schema).
 
 ---
 
@@ -187,10 +195,9 @@
 
 1. Persistent stop-sell / allotment / overbooking (needs schema approval).
 2. Admin Inquiries CRUD UI.
-3. Admin create-booking form.
-4. Dedicated internal-notes column (schema approval).
-5. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-6. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+3. Dedicated internal-notes column (schema approval).
+4. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
+5. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -209,6 +216,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-05 | Phase 10G admin create booking form at `/admin/bookings/new` |
 | 2026-08-05 | Phase 10F booking confirmation email & notification system (console + SMTP providers) |
 | 2026-08-05 | Phase 10E admin inventory calendar UI at `/admin/inventory` |
 | 2026-08-05 | Phase 10D availability & inventory engine (derived calendar APIs; stop-sell pending schema) |

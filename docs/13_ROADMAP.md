@@ -137,6 +137,14 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ `npm run verify:phase10f` (no SMTP credentials required)
 - ⬜ Wire a production SMTP/API provider with real credentials at deploy time
 
+### Phase 10G — Admin Create Booking Form ✅
+
+- ✅ `/admin/bookings/new` guest/stay form over `POST /api/admin/bookings`
+- ✅ Availability check via `GET /api/bookings/availability` before submit
+- ✅ Indicative price summary; notes via `special_requests`
+- ✅ Post-create confirmation screen; list CTA
+- ⬜ Optional room auto-assign on create (still admin detail action)
+
 ### Phase 11 — Booking Engine Completion ⬜
 
 End-to-end guest journey polish, guest self-service modification/cancellation,

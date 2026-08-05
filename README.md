@@ -12,7 +12,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 ---
 
-## Current status (Phases 1–10F complete)
+## Current status (Phases 1–10G complete)
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -31,6 +31,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 10D | Availability & Inventory Engine | ✅ |
 | 10E | Admin Inventory Calendar UI | ✅ |
 | 10F | Booking Confirmation Email & Notifications | ✅ |
+| 10G | Admin Create Booking Form | ✅ |
 | 11–15 | Booking polish, PMS, CRM, payments, SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)

@@ -89,6 +89,10 @@ emails via provider abstraction (`console` when SMTP unset, nodemailer SMTP when
 configured). Fire-and-forget; never blocks booking APIs. Verify:
 `npm run verify:phase10f`.
 
+**Completed (Phase 10G):** admin create booking form at `/admin/bookings/new`
+(availability check, price summary, confirmation screen) over existing admin
+create API. No schema change.
+
 **Upcoming:** stop-sell schema (approval), inquiries UI, Phase 11+.
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 

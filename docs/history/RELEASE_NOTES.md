@@ -12,6 +12,12 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10G — Admin Create Booking Form (2026-08-05)
+
+- `/admin/bookings/new` over existing `POST /api/admin/bookings`.
+- Availability check, indicative price summary, notes via `special_requests`,
+  confirmation screen. No schema change.
+
 ### Phase 10F — Booking Confirmation Email & Notifications (2026-08-05)
 
 - Provider-agnostic email layer (console log without SMTP; nodemailer SMTP when

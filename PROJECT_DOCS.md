@@ -64,6 +64,7 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 10D | Availability & inventory engine (derived APIs) | ✅ Complete (stop-sell schema pending) |
 | 10E | Admin inventory calendar UI | ✅ Complete |
 | 10F | Booking confirmation email & notifications | ✅ Complete |
+| 10G | Admin create booking form | ✅ Complete |
 | 11–14 | Booking polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
@@ -151,8 +152,12 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   booking create and admin status changes. No schema change. Verify:
   `npm run verify:phase10f`.
 
+- ✅ **Phase 10G — Admin create booking form** — `/admin/bookings/new` with
+  availability check, price summary, notes (`special_requests`), confirmation
+  screen. Reuses `POST /api/admin/bookings`. No schema change.
+
 **Next:** Schema-approved stop-sell/allotment if needed; inquiries UI;
-admin create-booking form; Phase 11.
+internal notes column (schema); Phase 11.
 
 ---
 
@@ -296,8 +301,7 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
 - ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
-- ⬜ **Remaining Phase 10C** — dedicated internal-notes column, admin
-  create-booking form.
+- ⬜ **Remaining Phase 10C** — dedicated internal-notes column (schema approval).
 - ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
   total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
 - ⬜ Admin Inquiries CRUD UI.

@@ -19,7 +19,6 @@
       actions, room assignment) + dashboard booking stats. No schema change.
       Smoke: `npm run verify:phase10c` / `npm run test:bookings`.
   - [ ] Dedicated internal-notes column (needs schema approval).
-  - [ ] Admin create-booking form.
 - [x] **Phase 10D — Availability & Inventory Engine** — derived per-day
       inventory service + calendar/day/overlaps APIs (admin + public calendar).
       Stop-sell/allotment/overbooking **not** in schema — flagged unsupported;
@@ -32,6 +31,10 @@
       email provider abstraction (console + SMTP), branded HTML templates
       (confirmation / cancellation / status update), hooked into booking create
       and admin status changes. No schema change. Smoke: `npm run verify:phase10f`.
+- [x] **Phase 10G — Admin Create Booking Form** — `/admin/bookings/new` with
+      guest/stay fields, availability check, price summary, notes
+      (`special_requests`), confirmation screen. Reuses existing admin create API.
+      No schema change.
 
 ---
 
@@ -89,6 +92,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A–10F** complete (email notifications) — see
+Phases **1–9**, **10A–10G** complete (admin create booking) — see
 [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: stop-sell
-schema (approval), inquiries, admin create booking, internal notes.
+schema (approval), inquiries, internal notes.

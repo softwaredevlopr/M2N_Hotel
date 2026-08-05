@@ -162,17 +162,25 @@ function AdminBookingsPageInner() {
 
   return (
     <div>
-      <div>
-        <span className="text-xs tracking-[0.45em] uppercase text-gold">
-          Bookings
-        </span>
-        <div className="gold-divider mt-5" />
-        <h1 className="mt-8 font-display text-4xl text-cream sm:text-5xl">
-          Booking Management
-        </h1>
-        <p className="mt-3 text-sm text-cream-dim">
-          Search, filter, and manage guest reservations across properties.
-        </p>
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <span className="text-xs tracking-[0.45em] uppercase text-gold">
+            Bookings
+          </span>
+          <div className="gold-divider mt-5" />
+          <h1 className="mt-8 font-display text-4xl text-cream sm:text-5xl">
+            Booking Management
+          </h1>
+          <p className="mt-3 text-sm text-cream-dim">
+            Search, filter, and manage guest reservations across properties.
+          </p>
+        </div>
+        <Link
+          href="/admin/bookings/new"
+          className="inline-flex shrink-0 items-center justify-center bg-gold px-6 py-3.5 text-[11px] tracking-[0.22em] uppercase text-cream transition-colors hover:bg-gold-soft"
+        >
+          New booking
+        </Link>
       </div>
 
       <form

@@ -9,6 +9,24 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10G — Admin Create Booking Form ✅
+
+- **What changed.** Admin create-booking UI at `/admin/bookings/new` over existing
+  `POST /api/admin/bookings` and public availability probe. Guest/stay/source/
+  status fields, availability check before submit, indicative price summary,
+  notes via `special_requests`, and a post-create confirmation screen. No schema
+  change; booking logic unchanged.
+- **Files created:** `frontend/src/app/admin/(protected)/bookings/new/page.js`,
+  `frontend/src/components/admin/BookingCreateForm.js`.
+- **Files modified:** `adminBookings.js` (create helpers), bookings list CTA,
+  dashboard copy, docs.
+- **APIs added:** none (reuses admin create + public availability).
+- **Database changes:** none.
+- **Frontend changes:** admin create booking form + confirmation.
+- **Backend changes:** none.
+- **Remaining work:** stop-sell schema (approval); internal notes column;
+  inquiries UI.
+
 ### Added — Phase 10F — Booking Confirmation Email & Notification System ✅
 
 - **What changed.** Provider-agnostic email layer (`services/email`) with console
