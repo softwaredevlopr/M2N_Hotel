@@ -24,7 +24,11 @@ This document tracks security practices and requirements.
 
 - Secrets live in `.env` files and must **never** be committed.
 - Use `backend/.env.example` as a template.
-- TODO: Document secret management for deployment environments.
+- Email (Phase 10F): `SMTP_PASS` / provider API keys are secrets. Prefer
+  `EMAIL_PROVIDER=console` (or leave `SMTP_HOST` empty) in local development so
+  no credentials are required. Guest PII in email bodies must not be logged
+  beyond operational need; the console provider logs subject + a short text
+  preview only.
 
 ## 3. Authentication & Authorization
 

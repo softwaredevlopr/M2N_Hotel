@@ -4,6 +4,9 @@ const asyncHandler = require("../utils/asyncHandler");
 const { AppError } = require("../middleware/error.middleware");
 const bookingService = require("../services/booking.service");
 const {
+  notifyBookingConfirmation,
+} = require("../services/bookingNotification.service");
+const {
   normalizePhoneForMatch,
   parseDate,
   parseInteger,
@@ -293,10 +296,18 @@ const createBooking = asyncHandler(async (req, res) => {
     [bookingId]
   );
 
+  const publicBooking = created.rows[0];
+  // Guest contact is omitted from the API response; attach it only for email.
+  notifyBookingConfirmation({
+    ...publicBooking,
+    guest_email: guest.guest_email,
+    guest_name: guest.guest_name,
+  });
+
   return sendSuccess(res, 201, {
     message:
       "Booking request received. Our team will confirm your reservation shortly.",
-    data: { ...created.rows[0], nights },
+    data: { ...publicBooking, nights },
   });
 });
 

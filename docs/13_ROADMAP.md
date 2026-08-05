@@ -128,10 +128,19 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ Loading, empty, error states; admin nav integration
 - ⬜ Click-through to bookings / day detail drill-down (future polish)
 
+### Phase 10F — Booking Confirmation Email & Notification System ✅
+
+- ✅ Email provider abstraction (`console` + `smtp`; `EMAIL_PROVIDER=auto`)
+- ✅ Branded HTML templates: confirmation, cancellation, status update
+- ✅ Hooks on public/admin create and admin booking status changes
+- ✅ Dev mode logs emails when SMTP is not configured
+- ✅ `npm run verify:phase10f` (no SMTP credentials required)
+- ⬜ Wire a production SMTP/API provider with real credentials at deploy time
+
 ### Phase 11 — Booking Engine Completion ⬜
 
-End-to-end guest journey polish (select hotel → room → guest → confirm),
-confirmation emails, and modification/cancellation self-service.
+End-to-end guest journey polish, guest self-service modification/cancellation,
+and richer notification preferences.
 
 ### Phase 12 — PMS Lite ⬜
 

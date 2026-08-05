@@ -63,6 +63,7 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 10C | Admin bookings module + dashboard stats | ✅ Module done |
 | 10D | Availability & inventory engine (derived APIs) | ✅ Complete (stop-sell schema pending) |
 | 10E | Admin inventory calendar UI | ✅ Complete |
+| 10F | Booking confirmation email & notifications | ✅ Complete |
 | 11–14 | Booking polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
@@ -144,8 +145,14 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   PMS calendar (hotel/room-type selectors, color-coded day cells) consuming
   `GET /api/admin/inventory/calendar`. No schema or booking-logic changes.
 
-**Next:** Schema-approved stop-sell/allotment if needed; confirmation email;
-Phase 11.
+- ✅ **Phase 10F — Booking confirmation email & notifications** — provider
+  abstraction (`services/email`: console + SMTP), branded HTML templates
+  (confirmation / cancellation / status update), fire-and-forget hooks on
+  booking create and admin status changes. No schema change. Verify:
+  `npm run verify:phase10f`.
+
+**Next:** Schema-approved stop-sell/allotment if needed; inquiries UI;
+admin create-booking form; Phase 11.
 
 ---
 
@@ -289,8 +296,8 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
 - ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
-- ⬜ **Remaining Phase 10C** — confirmation email, dedicated internal-notes
-  column, admin create-booking form.
+- ⬜ **Remaining Phase 10C** — dedicated internal-notes column, admin
+  create-booking form.
 - ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
   total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
 - ⬜ Admin Inquiries CRUD UI.

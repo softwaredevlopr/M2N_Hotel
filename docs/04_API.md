@@ -213,6 +213,11 @@ Consumed by the Phase 10B guest booking UI (`/book` and `/booking/[bookingNumber
 through `getBookingAvailability()`, `createBooking()` and `getBookingByNumber()`
 in `frontend/src/lib/api.js`.
 
+**Notifications (Phase 10F):** `POST /api/bookings` and admin create/status
+endpoints trigger guest emails as fire-and-forget side effects (confirmation,
+cancellation, status update). No new HTTP routes; delivery failures never change
+API responses. See [ADR-0022](history/DECISIONS.md).
+
 ### Public
 
 | Method | Path |

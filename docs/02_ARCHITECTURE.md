@@ -97,8 +97,9 @@ Photos under frontend/public       uploads under backend/uploads
 - Middleware: `validate`, `requireAdminAuth`, `error.middleware`
 - Responses: `utils/apiResponse` (`success` / validation errors)
 - Services: `backend/services/` holds multi-step domain logic that needs a
-  transaction or locking, so controllers stay request-shaped. First use:
-  `booking.service.js` (Phase 10A availability + reservation writes).
+  transaction or locking, so controllers stay request-shaped. Uses:
+  `booking.service.js` (Phase 10A), `inventory.service.js` (Phase 10D), and
+  `email/` + `bookingNotification.service.js` (Phase 10F outbound guest mail).
 
 Public and admin surfaces are split into sibling files per module
 (`booking.routes.js` / `adminBooking.routes.js`), which keeps JWT enforcement at
@@ -146,6 +147,7 @@ models.
 | Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
 | Bookings | ✅ Phase 10C | `/api/admin/bookings` |
 | Inventory | ✅ Phase 10D/10E | `/api/admin/inventory/*` + `/admin/inventory` UI |
+| Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |
 
 Protected by `AdminGuard` (client) + `requireAdminAuth` (server).
 

@@ -11,7 +11,8 @@
     "seed:admin": "node scripts/seedAdmin.js",
     "test:bookings": "node scripts/testBookings.js",
     "verify:phase10c": "node scripts/verifyPhase10C.js",
-    "verify:phase10d": "node scripts/verifyPhase10D.js"
+    "verify:phase10d": "node scripts/verifyPhase10D.js",
+    "verify:phase10f": "node scripts/verifyPhase10F.js"
   },
   "keywords": [
     "hotel",
@@ -32,6 +33,7 @@
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.1",
     "pg": "^8.13.3"
   },
   "devDependencies": {

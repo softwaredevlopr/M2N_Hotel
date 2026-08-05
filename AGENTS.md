@@ -84,7 +84,12 @@ Verify with `npm run verify:phase10d`.
 (monthly grid, hotel/room-type filters, color-coded availability) over Phase 10D
 APIs. No schema change.
 
-**Upcoming:** confirmation emails, stop-sell schema (approval), Phase 11+.
+**Completed (Phase 10F):** booking confirmation / cancellation / status-update
+emails via provider abstraction (`console` when SMTP unset, nodemailer SMTP when
+configured). Fire-and-forget; never blocks booking APIs. Verify:
+`npm run verify:phase10f`.
+
+**Upcoming:** stop-sell schema (approval), inquiries UI, Phase 11+.
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

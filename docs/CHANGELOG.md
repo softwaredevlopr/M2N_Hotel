@@ -9,6 +9,25 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10F — Booking Confirmation Email & Notification System ✅
+
+- **What changed.** Provider-agnostic email layer (`services/email`) with console
+  (dev log) and SMTP (nodemailer) transports, M2N-branded HTML templates for
+  booking confirmation, cancellation, and status updates, and fire-and-forget
+  hooks on public/admin booking create + admin status changes. No schema change;
+  booking APIs unchanged aside from non-blocking notification side effects.
+- **Files created:** `backend/services/email/**`,
+  `backend/services/bookingNotification.service.js`,
+  `backend/scripts/verifyPhase10F.js`.
+- **Files modified:** `booking.controller.js`, `adminBooking.controller.js`,
+  `backend/.env.example`, `backend/package.json` (+ nodemailer), docs.
+- **APIs added:** none (side-effect notifications only).
+- **Database changes:** none.
+- **Frontend changes:** none.
+- **Backend changes:** email abstraction + booking notification hooks.
+- **Remaining work:** stop-sell schema (approval); internal notes column;
+  admin create-booking form; inquiries UI; real SMTP credentials in deploy env.
+
 ### Added — Phase 10E — Admin Inventory Calendar UI ✅
 
 - **What changed.** Admin PMS inventory calendar at `/admin/inventory` consuming

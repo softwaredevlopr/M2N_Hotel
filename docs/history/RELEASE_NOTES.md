@@ -12,6 +12,14 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10F — Booking Confirmation Email & Notifications (2026-08-05)
+
+- Provider-agnostic email layer (console log without SMTP; nodemailer SMTP when
+  configured) with M2N-branded HTML templates for confirmation, cancellation,
+  and status updates.
+- Non-blocking hooks on public/admin booking create and admin status changes.
+- Smoke: `npm run verify:phase10f`. No schema change.
+
 ### Phase 10E — Admin Inventory Calendar UI (2026-08-05)
 
 - `/admin/inventory` monthly calendar over Phase 10D

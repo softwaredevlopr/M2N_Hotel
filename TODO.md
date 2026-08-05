@@ -18,7 +18,6 @@
       (`/admin/bookings` list, filters, pagination, sorting, detail, status
       actions, room assignment) + dashboard booking stats. No schema change.
       Smoke: `npm run verify:phase10c` / `npm run test:bookings`.
-  - [ ] Booking confirmation email / notification.
   - [ ] Dedicated internal-notes column (needs schema approval).
   - [ ] Admin create-booking form.
 - [x] **Phase 10D — Availability & Inventory Engine** — derived per-day
@@ -29,6 +28,10 @@
 - [x] **Phase 10E — Admin Inventory Calendar UI** — `/admin/inventory` monthly
       calendar (hotel/room-type filters, color-coded availability). Consumes
       Phase 10D calendar API. No schema / booking-logic changes.
+- [x] **Phase 10F — Booking Confirmation Email & Notification System** —
+      email provider abstraction (console + SMTP), branded HTML templates
+      (confirmation / cancellation / status update), hooked into booking create
+      and admin status changes. No schema change. Smoke: `npm run verify:phase10f`.
 
 ---
 
@@ -86,6 +89,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A–10E** complete (inventory calendar UI) — see
+Phases **1–9**, **10A–10F** complete (email notifications) — see
 [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: stop-sell
-schema (approval), emails, inquiries, admin create booking.
+schema (approval), inquiries, admin create booking, internal notes.

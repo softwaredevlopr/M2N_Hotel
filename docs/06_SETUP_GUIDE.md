@@ -25,7 +25,10 @@ cd ../frontend && npm install
 - Database: `DATABASE_URL` **or** `DB_*` fields
 - `JWT_SECRET`, `JWT_EXPIRES_IN`
 - Optional seed admin: `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
-- Optional: `FRONTEND_URL` for CORS
+- Optional: `FRONTEND_URL` for CORS and booking email deep-links
+- Optional email (Phase 10F): `EMAIL_ENABLED`, `EMAIL_PROVIDER` (`auto` /
+  `console` / `smtp`), `EMAIL_FROM`, and `SMTP_*`. With no `SMTP_HOST`, messages
+  are logged to the server console (no credentials required).
 
 **Frontend** — optional `.env.local`:
 

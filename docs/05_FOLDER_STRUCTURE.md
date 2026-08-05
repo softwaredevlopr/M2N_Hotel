@@ -69,7 +69,8 @@ backend/
 │   ├── tariff.routes.js, adminTariff.routes.js
 │   ├── booking.routes.js, adminBooking.routes.js
 ├── controllers/
-├── services/                 ← multi-step domain logic (booking + inventory)
+├── services/                 ← booking, inventory, email, bookingNotification
+│   └── email/                ← provider abstraction + HTML templates (Phase 10F)
 ├── middleware/               ← validate, adminAuth, error
 ├── validators/
 ├── utils/                    ← apiResponse, mediaCategory, booking* …

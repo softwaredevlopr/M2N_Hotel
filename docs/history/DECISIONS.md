@@ -790,6 +790,38 @@ blocking `bookings`. There are still no `stop_sell`, `allotment`, or
 - Encode stop-sell in `hotels.metadata` JSON. Deferred — soft rules without a
   clear product contract; prefer an explicit ADR + migration when needed.
 
+### ADR-0022 — Phase 10F email provider abstraction without schema change
+
+**Date:** 2026-08-05
+
+**Status:** Accepted
+
+**Context**
+Guests need confirmation, cancellation, and status-update emails. The product
+must not require real SMTP credentials in development, and must stay able to
+swap SMTP for an API provider (Resend, SendGrid, etc.) later. Booking create /
+status APIs must keep working if email delivery fails.
+
+**Decision**
+- Add `services/email` with a common `send({ to, subject, html, text })` shape,
+  `console` provider (logs when SMTP unset), and `smtp` provider (nodemailer).
+  `EMAIL_PROVIDER=auto|console|smtp` selects the transport.
+- Brand HTML templates for confirmation, cancellation, and status update.
+- Orchestrate via `bookingNotification.service.js` as fire-and-forget side
+  effects from booking controllers. Failures are logged only.
+- No database schema change; no new HTTP notification endpoints.
+
+**Consequences**
+- Local/dev works with zero SMTP config.
+- Production can set `SMTP_*` (or a future provider) without touching booking
+  logic.
+- Email delivery is best-effort until an outbox/queue is introduced (future).
+
+**Alternatives considered**
+- Persist notification rows / outbox table. Deferred — needs schema approval and
+  is not required for first delivery.
+- Hard-code a single SaaS SDK. Rejected — harder to swap providers later.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

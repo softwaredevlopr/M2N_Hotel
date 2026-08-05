@@ -4,6 +4,10 @@ const asyncHandler = require("../utils/asyncHandler");
 const { AppError } = require("../middleware/error.middleware");
 const bookingService = require("../services/booking.service");
 const {
+  notifyBookingConfirmation,
+  notifyBookingStatusChange,
+} = require("../services/bookingNotification.service");
+const {
   BOOKING_SOURCES,
   BOOKING_STATUSES,
   PAYMENT_STATUSES,
@@ -400,7 +404,10 @@ const createBooking = asyncHandler(async (req, res) => {
     require_active_room_type: false,
   });
 
-  return sendSuccess(res, 201, { data: await fetchBookingById(bookingId) });
+  const created = await fetchBookingById(bookingId);
+  notifyBookingConfirmation(created);
+
+  return sendSuccess(res, 201, { data: created });
 });
 
 const updateBookingStatus = asyncHandler(async (req, res) => {
@@ -482,7 +489,12 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     params
   );
 
-  return sendSuccess(res, 200, { data: await fetchBookingById(booking.id) });
+  const updated = await fetchBookingById(booking.id);
+  if (nextBookingStatus) {
+    notifyBookingStatusChange(booking, updated);
+  }
+
+  return sendSuccess(res, 200, { data: updated });
 });
 
 /**
