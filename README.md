@@ -12,7 +12,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 ---
 
-## Current status (Phases 1–10C module complete)
+## Current status (Phases 1–10D engine complete)
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -27,7 +27,8 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 9 | Tariff & Rate Management | ✅ |
 | 10A | Booking Engine Backend (schema + APIs) | ✅ |
 | 10B | Guest Booking UI | ✅ |
-| 10C | Admin Booking Management | ✅ module (calendar/email pending) |
+| 10C | Admin Booking Management | ✅ module |
+| 10D | Availability & Inventory Engine | ✅ |
 | 11–15 | Booking polish, PMS, CRM, payments, SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)

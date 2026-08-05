@@ -1,5 +1,6 @@
 const express = require("express");
 const bookingController = require("../controllers/booking.controller");
+const inventoryController = require("../controllers/inventory.controller");
 const validate = require("../middleware/validate.middleware");
 const {
   createBookingSchema,
@@ -10,6 +11,10 @@ const {
 const router = express.Router();
 
 // Static paths must be registered before /:bookingNumber.
+router.get(
+  "/availability/calendar",
+  inventoryController.getPublicInventoryCalendar
+);
 router.get(
   "/availability",
   validate(availabilityQuerySchema),

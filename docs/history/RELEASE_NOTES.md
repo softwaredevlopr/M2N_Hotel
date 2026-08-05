@@ -12,6 +12,16 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10D — Availability & Inventory Engine (2026-08-05)
+
+- New `inventory.service.js` derives per-day sold/remaining counts and stay-peak
+  availability matching the booking engine ([ADR-0021](DECISIONS.md)).
+- Admin APIs: `/api/admin/inventory/calendar`, `/day`, `/overlaps`.
+- Public calendar: `/api/bookings/availability/calendar` (stay-range
+  `/availability` unchanged).
+- Stop-sell / allotment / overbooking not in schema — flagged unsupported.
+- Verified with `npm run verify:phase10d`. No frontend calendar UI yet.
+
 ### Phase 10C — Admin Booking Management module (2026-08-04)
 
 - `/admin/bookings` list with search, hotel/status/date filters, pagination and

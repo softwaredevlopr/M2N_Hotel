@@ -18,10 +18,15 @@
       (`/admin/bookings` list, filters, pagination, sorting, detail, status
       actions, room assignment) + dashboard booking stats. No schema change.
       Smoke: `npm run verify:phase10c` / `npm run test:bookings`.
-  - [ ] Availability calendar, per-date allotment, stop-sells, overbooking allowance.
   - [ ] Booking confirmation email / notification.
   - [ ] Dedicated internal-notes column (needs schema approval).
   - [ ] Admin create-booking form.
+- [x] **Phase 10D — Availability & Inventory Engine** — derived per-day
+      inventory service + calendar/day/overlaps APIs (admin + public calendar).
+      Stop-sell/allotment/overbooking **not** in schema — flagged unsupported;
+      needs approval before any migration. Smoke: `npm run verify:phase10d`.
+  - [ ] Admin inventory calendar UI (consume `/api/admin/inventory/calendar`).
+  - [ ] Persistent stop-sell / allotment / overbooking allowance (schema approval).
 
 ---
 
@@ -79,4 +84,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A**, **10B** and **10C admin module** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) and [`docs/history/RELEASE_NOTES.md`](docs/history/RELEASE_NOTES.md). Remaining 10C: calendar/allotment/email. Homepage hero: original `/brand-hero.jpg` restored from Git `336582d` ([ADR-0018](docs/history/DECISIONS.md)).
+Phases **1–9**, **10A**, **10B**, **10C admin module** and **10D inventory
+engine** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
+Remaining: calendar UI, stop-sell schema (approval), emails, inquiries.

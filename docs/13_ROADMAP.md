@@ -109,6 +109,18 @@ Admin bookings console over `/api/admin/bookings` (module shipped 2026-08-04):
 
 (Split out of the original Phase 10B on 2026-08-03.)
 
+### Phase 10D — Availability & Inventory Engine ✅
+
+Derived inventory (no new tables) for calendar-ready APIs:
+
+- ✅ `services/inventory.service.js` — per-day sold/remaining, stay peak, overlaps
+- ✅ `GET /api/admin/inventory/calendar|day|overlaps`
+- ✅ `GET /api/bookings/availability/calendar` (public; does not replace stay-range
+  `/availability`)
+- ✅ Parity checks vs `booking.service.checkAvailability`
+- ⬜ Admin calendar UI
+- ⬜ Persistent stop-sell / allotment / overbooking_allowance (schema approval)
+
 ### Phase 11 — Booking Engine Completion ⬜
 
 End-to-end guest journey polish (select hotel → room → guest → confirm),

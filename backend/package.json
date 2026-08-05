@@ -10,7 +10,8 @@
     "seed": "node scripts/seed.js",
     "seed:admin": "node scripts/seedAdmin.js",
     "test:bookings": "node scripts/testBookings.js",
-    "verify:phase10c": "node scripts/verifyPhase10C.js"
+    "verify:phase10c": "node scripts/verifyPhase10C.js",
+    "verify:phase10d": "node scripts/verifyPhase10D.js"
   },
   "keywords": [
     "hotel",

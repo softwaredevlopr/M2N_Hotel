@@ -73,8 +73,15 @@ contact-verified lookup page. No payment gateway.
 **Completed (Phase 10C module, verified 2026-08-05):** admin bookings console —
 `/admin/bookings` list/detail with search, filters, pagination, sorting, status
 actions, room assignment, and dashboard stats. `no_show` stamps `cancelled_at`
-for audit. Calendar/allotment/email still upcoming. Verify with
-`npm run verify:phase10c` in `backend/`.
+for audit. Verify with `npm run verify:phase10c` in `backend/`.
+
+**Completed (Phase 10D):** derived availability & inventory engine —
+`inventory.service.js`, admin `/api/admin/inventory/*`, public
+`/api/bookings/availability/calendar`. Stop-sell/allotment need schema approval.
+Verify with `npm run verify:phase10d`.
+
+**Upcoming:** admin calendar UI, confirmation emails, Phase 11+.
+See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares
 another hotel's content or photos.

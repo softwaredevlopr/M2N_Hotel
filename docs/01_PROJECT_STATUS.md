@@ -34,12 +34,13 @@
 | Tariff / rates in DB + admin | ✅ Phase 9 |
 | Booking engine — backend + APIs | ✅ Phase 10A |
 | Booking engine — guest UI (`/book`, confirmation) | ✅ Phase 10B |
-| Booking engine — admin console | ✅ Phase 10C (module + stats; calendar/allotment pending) |
-| Booking engine — inventory rules / emails | ⬜ Remaining 10C / 11 |
+| Booking engine — admin console | ✅ Phase 10C (module + stats) |
+| Booking engine — inventory calendar APIs | ✅ Phase 10D (derived; stop-sell pending schema) |
+| Booking engine — calendar UI / stop-sell rules | ⬜ Remaining |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A** ✅, **10B** ✅, **10C admin UI** ✅ ·
-Next: allotment/stop-sells, confirmation email, inquiries UI
+**Roadmap progress:** Phases **1–9** ✅, **10A–10D** ✅ (engine) · Next:
+admin calendar UI, stop-sell schema (approval), emails
 
 ---
 
@@ -137,6 +138,18 @@ Next: allotment/stop-sells, confirmation email, inquiries UI
 - Still pending under 10C/11: availability calendar, allotment/stop-sells,
   confirmation email, dedicated internal notes column, admin create form.
 
+### Phase 10D — Availability & Inventory Engine ✅
+
+- `services/inventory.service.js` — per-day sold/remaining, stay-peak parity with
+  `booking.service.checkAvailability`, overlap detection, hotel + room-type
+  calendars (max 92 days).
+- Admin APIs under `/api/admin/inventory/*` (calendar, day, overlaps).
+- Public `GET /api/bookings/availability/calendar` for future widgets; existing
+  stay-range `GET /api/bookings/availability` unchanged.
+- Stop-sell / allotment / overbooking allowance **not in schema** — responses
+  set `*_supported: false`; migration requires explicit approval.
+- Verified via `npm run verify:phase10d`. No frontend calendar UI yet.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -147,18 +160,18 @@ Next: allotment/stop-sells, confirmation email, inquiries UI
 
 ## 3. In Progress
 
-- None formally in-flight. Next planned work: remaining Phase 10C inventory
-  rules / emails, then Phase 11.
+- None formally in-flight. Next: admin inventory calendar UI, then schema-
+  approved stop-sell/allotment if product requires persistence.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Availability calendar, per-date allotment, stop-sells (remaining 10C).
-2. Booking confirmation email / notification.
-3. Admin Inquiries CRUD UI.
-4. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-5. Replace placeholder phones/emails before production launch.
+1. Admin inventory calendar UI over `/api/admin/inventory/calendar`.
+2. Persistent stop-sell / allotment / overbooking (needs schema approval).
+3. Booking confirmation email / notification.
+4. Admin Inquiries CRUD UI.
+5. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
 6. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
@@ -178,6 +191,7 @@ Next: allotment/stop-sells, confirmation email, inquiries UI
 
 | Date | Update |
 |------|--------|
+| 2026-08-05 | Phase 10D availability & inventory engine (derived calendar APIs; stop-sell pending schema) |
 | 2026-08-05 | Phase 10C verified end-to-end; fixed no_show audit stamp (`cancelled_at`); added `npm run verify:phase10c` |
 | 2026-08-04 | Phase 10C admin bookings module + dashboard stats (`/admin/bookings`, `GET /api/admin/bookings/stats`, list sort) |
 | 2026-08-04 | Phase 10B upgraded to five-step `/book` UI + public `GET /api/bookings/availability`; hotel Book Now CTAs wired; inquiry form preserved |

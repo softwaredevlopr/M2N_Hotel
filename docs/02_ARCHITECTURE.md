@@ -144,7 +144,8 @@ models.
 | Rooms | `/admin/rooms` | `/api/admin/rooms` |
 | Media | `/admin/media` | `/api/admin/media` |
 | Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
-| Bookings | ⬜ Phase 10C | `/api/admin/bookings` (live since 10A) |
+| Bookings | ✅ Phase 10C | `/api/admin/bookings` |
+| Inventory | ✅ Phase 10D | `/api/admin/inventory/*` (calendar UI pending) |
 
 Protected by `AdminGuard` (client) + `requireAdminAuth` (server).
 

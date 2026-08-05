@@ -99,5 +99,7 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 
 ## 8. Upcoming domain areas
 
-Per-date allotment, stop-sells and overbooking allowances (Phase 10C), and
-payments/invoicing (Phase 14) are not yet productized in the database.
+Persistent per-date allotment, stop-sells and overbooking allowances are **not**
+in the database. Phase 10D exposes derived calendars and sets
+`stop_sell_supported` / `allotment_supported` / `overbooking_allowance_supported`
+to `false` until a schema change is approved. Payments/invoicing remain Phase 14.

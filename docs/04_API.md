@@ -58,6 +58,7 @@
 | `GET/PATCH` | `/api/admin/tariffs/settings/:hotelId` | JWT | 9 |
 | `POST` | `/api/bookings` | Public | 10A |
 | `GET` | `/api/bookings/availability` | Public | 10B |
+| `GET` | `/api/bookings/availability/calendar` | Public | 10D |
 | `GET` | `/api/bookings/:bookingNumber` | Public + contact check | 10A |
 | `GET` | `/api/admin/bookings` | JWT | 10A/10C |
 | `GET` | `/api/admin/bookings/stats` | JWT | 10C |
@@ -66,6 +67,9 @@
 | `PATCH` | `/api/admin/bookings/:id` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id/status` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id/assign-room` | JWT | 10A |
+| `GET` | `/api/admin/inventory/calendar` | JWT | 10D |
+| `GET` | `/api/admin/inventory/day` | JWT | 10D |
+| `GET` | `/api/admin/inventory/overlaps` | JWT | 10D |
 
 \*Inquiry list/get/patch exist on the API; admin UI for inquiries is still pending.
 
@@ -97,10 +101,12 @@ Static files: `GET /uploads/...` (admin-uploaded media).
   rates or `singleNote`/`doubleNote`), plus hotel-level settings from
   `hotels.metadata.tariff_settings` (disclaimer, extra bed, GST, cancellation).
 
-### Bookings (Phase 10A / 10B)
+### Bookings (Phase 10A / 10B / 10D)
 
-- `GET /api/bookings/availability` — live inventory + indicative amounts for a
-  stay window (Phase 10B UI Step 2). Must be registered before `/:bookingNumber`.
+- `GET /api/bookings/availability` — stay-window inventory + indicative amounts
+  (Phase 10B UI Step 2).
+- `GET /api/bookings/availability/calendar` — per-day sold/remaining calendar for
+  a hotel (Phase 10D; future widgets). Does not replace the stay-window route.
 - `POST /api/bookings` — create a reservation request (availability checked).
 - `GET /api/bookings/:bookingNumber?email=` — guest lookup, contact-verified.
   Backs the `/booking/[bookingNumber]` confirmation page.
@@ -297,6 +303,35 @@ refused on terminal bookings.
 **Statuses:** `pending`, `confirmed`, `checked_in`, `checked_out`, `cancelled`,
 `no_show`. **Payment:** `unpaid`, `partial`, `paid`, `refunded`.
 **Sources:** `website`, `admin`, `phone`, `walk_in`, `ota`.
+
+## 10b. Inventory calendar (Phase 10D)
+
+Derived inventory — same sellable / blocking rules as ADR-0014. See
+[ADR-0021](history/DECISIONS.md).
+
+| Method | Path | Auth |
+|--------|------|------|
+| `GET` | `/api/admin/inventory/calendar` | JWT |
+| `GET` | `/api/admin/inventory/day` | JWT |
+| `GET` | `/api/admin/inventory/overlaps` | JWT |
+| `GET` | `/api/bookings/availability/calendar` | Public |
+
+**Calendar query:** `hotel_id` or `hotel_slug`, `from`, `to` (`YYYY-MM-DD`,
+inclusive, max 92 days), optional `room_type_id`.
+
+**Per-day fields:** `date`, `total_rooms`, `sold_count`, `booked_rooms` (alias),
+`remaining_count`, `available_rooms` (alias), `is_sold_out`, `stop_sell` (always
+`false`), `stop_sell_supported` (`false`). Top-level also sets
+`allotment_supported` / `overbooking_allowance_supported` to `false`.
+
+**Day query:** `hotel_id`, `room_type_id`, `date`.
+
+**Overlaps query:** `hotel_id`, `room_type_id`, `check_in_date`, `check_out_date`,
+optional `exclude_booking_id`. Returns peak inventory for the stay plus
+`overlapping_bookings[]`.
+
+**Not supported without schema approval:** persistent stop-sell, allotment caps,
+overbooking allowance.
 
 ## 11. Errors & security
 

@@ -755,6 +755,41 @@ and statuses required. A dedicated audit/notes table would need a schema change.
 - Immediate `admin_notes` migration. Deferred — not required for the module to
   function; needs explicit schema approval per AGENTS.md.
 
+### ADR-0021 — Phase 10D derived inventory calendar without stop-sell schema
+
+**Date:** 2026-08-05
+
+**Status:** Accepted
+
+**Context**
+Product needs per-day sold/remaining inventory and calendar-ready APIs for a
+future admin UI. ADR-0014 already defines availability as derived from `rooms` +
+blocking `bookings`. There are still no `stop_sell`, `allotment`, or
+`overbooking_allowance` columns/tables.
+
+**Decision**
+- Add `services/inventory.service.js` for per-day occupancy, stay-peak helpers,
+  and overlap listing — predicates match `booking.service` (half-open nights,
+  `INVENTORY_BLOCKING_STATUSES`, `SELLABLE_ROOM_STATUSES`).
+- Expose admin `/api/admin/inventory/{calendar,day,overlaps}` and public
+  `GET /api/bookings/availability/calendar` without changing create or stay-range
+  availability contracts.
+- Do **not** invent stop-sell persistence. Responses include
+  `stop_sell_supported: false` (and related flags) until a migration is
+  explicitly approved.
+- Cap calendar ranges at 92 days.
+
+**Consequences**
+- Calendar UI can be built against stable APIs without a schema risk.
+- True stop-sell/allotment remain blocked on schema approval (documented in
+  TODO / roadmap).
+
+**Alternatives considered**
+- Store allotment rows immediately. Rejected — violates “no schema without
+  approval” and is not required for derived calendars.
+- Encode stop-sell in `hotels.metadata` JSON. Deferred — soft rules without a
+  clear product contract; prefer an explicit ADR + migration when needed.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

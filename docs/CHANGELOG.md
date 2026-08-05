@@ -9,6 +9,33 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10D — Availability & Inventory Engine ✅
+
+- **What changed.** Derived inventory engine for per-day sold/remaining counts,
+  stay-peak parity with the booking engine, overlap diagnostics, and
+  calendar-ready admin + public APIs. No schema change. Existing
+  `POST /api/bookings` and `GET /api/bookings/availability` unchanged.
+- **Services created:** `backend/services/inventory.service.js`
+- **Files modified:** `controllers/inventory.controller.js`,
+  `routes/adminInventory.routes.js`, `routes/booking.routes.js`,
+  `routes/index.js`, `scripts/verifyPhase10D.js`, `package.json`.
+- **APIs added:**
+  - `GET /api/admin/inventory/calendar?hotel_id|hotel_slug&from&to&room_type_id?`
+  - `GET /api/admin/inventory/day?hotel_id&room_type_id&date`
+  - `GET /api/admin/inventory/overlaps?hotel_id&room_type_id&check_in_date&check_out_date`
+  - `GET /api/bookings/availability/calendar?hotel_slug|hotel_id&from&to&room_type_id?`
+- **Per-day fields:** `total_rooms`, `sold_count`, `remaining_count`,
+  `available_rooms`/`booked_rooms` aliases, `is_sold_out`.
+- **Stop-sell / allotment / overbooking allowance:** not in schema —
+  responses expose `stop_sell_supported: false` (and related flags); documented
+  as pending pending migration approval.
+- **Database changes:** none.
+- **Frontend changes:** none (APIs prepared for future calendar UI).
+- **Verification:** `npm run verify:phase10d` (23/23); `test:bookings` 76/76;
+  frontend `npm run build` passed.
+- **Remaining:** admin calendar UI; persistent stop-sell/allotment (schema);
+  confirmation email; admin create-booking form; internal notes column.
+
 ### Fixed — Phase 10C verification: no_show now stamps cancelled_at ✅
 
 - **What changed.** During Phase 10C verification, `PATCH /api/admin/bookings/:id/status`

@@ -60,8 +60,9 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 9 | Tariff & Rate Management | ✅ |
 | 10A | Booking engine backend (schema + APIs) | ✅ Complete |
 | 10B | Guest booking UI (`/book` + confirmation) | ✅ Complete |
-| 10C | Admin bookings module + dashboard stats | ✅ Module done (calendar/email pending) |
-| 11–14 | Inventory rules polish, PMS, CRM, payments | ⬜ |
+| 10C | Admin bookings module + dashboard stats | ✅ Module done (calendar UI pending) |
+| 10D | Availability & inventory engine (derived APIs) | ✅ Complete (stop-sell schema pending) |
+| 11–14 | Booking polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
 Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre hotel ka content ya photos share nahi karta.
@@ -131,7 +132,15 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   internal-notes column, admin create form. Verified 2026-08-05
   (`verify:phase10c`); no_show stamps `cancelled_at` for audit.
 
-**Next:** Remaining Phase 10C inventory rules / emails, then Phase 11.
+- ✅ **Phase 10D — Availability & inventory engine** — `inventory.service.js`
+  with per-day sold/remaining counts, stay-peak parity with booking availability,
+  overlap detection, and calendar-ready APIs (`/api/admin/inventory/*`,
+  `GET /api/bookings/availability/calendar`). No schema change. Stop-sell /
+  allotment / overbooking allowance are **not** in the database — API flags
+  `*_supported: false` until a migration is explicitly approved.
+
+**Next:** Admin inventory calendar UI; schema-approved stop-sell/allotment if
+needed; confirmation email; Phase 11.
 
 ---
 
@@ -274,8 +283,10 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
-- ⬜ **Remaining Phase 10C** — availability calendar, allotment/stop-sells,
-  confirmation email, dedicated internal-notes column, admin create-booking form.
+- ⬜ **Admin inventory calendar UI** over Phase 10D APIs.
+- ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
+- ⬜ **Remaining Phase 10C** — confirmation email, dedicated internal-notes
+  column, admin create-booking form.
 - ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
   total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
 - ⬜ Admin Inquiries CRUD UI.
