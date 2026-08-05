@@ -35,12 +35,13 @@
 | Booking engine — backend + APIs | ✅ Phase 10A |
 | Booking engine — guest UI (`/book`, confirmation) | ✅ Phase 10B |
 | Booking engine — admin console | ✅ Phase 10C (module + stats) |
-| Booking engine — inventory calendar APIs | ✅ Phase 10D (derived; stop-sell pending schema) |
-| Booking engine — calendar UI / stop-sell rules | ⬜ Remaining |
+| Booking engine — inventory calendar APIs | ✅ Phase 10D |
+| Booking engine — admin inventory calendar UI | ✅ Phase 10E |
+| Booking engine — stop-sell rules / emails | ⬜ Remaining |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10D** ✅ (engine) · Next:
-admin calendar UI, stop-sell schema (approval), emails
+**Roadmap progress:** Phases **1–9** ✅, **10A–10E** ✅ · Next: stop-sell schema
+(approval), confirmation email, inquiries UI
 
 ---
 
@@ -148,7 +149,15 @@ admin calendar UI, stop-sell schema (approval), emails
   stay-range `GET /api/bookings/availability` unchanged.
 - Stop-sell / allotment / overbooking allowance **not in schema** — responses
   set `*_supported: false`; migration requires explicit approval.
-- Verified via `npm run verify:phase10d`. No frontend calendar UI yet.
+- Verified via `npm run verify:phase10d`. Admin UI delivered in Phase 10E.
+
+### Phase 10E — Admin Inventory Calendar UI ✅
+
+- `/admin/inventory` monthly PMS calendar over `GET /api/admin/inventory/calendar`.
+- Hotel + room-type selectors, prev/next month, day cells with total / booked /
+  remaining / occupancy %, color coding (available / low / sold out).
+- Loading, empty, and error states; admin nav + dashboard card. No schema or
+  booking-logic changes.
 
 ### Platform foundations ✅
 
@@ -160,17 +169,17 @@ admin calendar UI, stop-sell schema (approval), emails
 
 ## 3. In Progress
 
-- None formally in-flight. Next: admin inventory calendar UI, then schema-
-  approved stop-sell/allotment if product requires persistence.
+- None formally in-flight. Next: schema-approved stop-sell/allotment if product
+  requires persistence; confirmation email; inquiries UI.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Admin inventory calendar UI over `/api/admin/inventory/calendar`.
-2. Persistent stop-sell / allotment / overbooking (needs schema approval).
-3. Booking confirmation email / notification.
-4. Admin Inquiries CRUD UI.
+1. Persistent stop-sell / allotment / overbooking (needs schema approval).
+2. Booking confirmation email / notification.
+3. Admin Inquiries CRUD UI.
+4. Admin create-booking form.
 5. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
 6. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
@@ -191,6 +200,7 @@ admin calendar UI, stop-sell schema (approval), emails
 
 | Date | Update |
 |------|--------|
+| 2026-08-05 | Phase 10E admin inventory calendar UI at `/admin/inventory` |
 | 2026-08-05 | Phase 10D availability & inventory engine (derived calendar APIs; stop-sell pending schema) |
 | 2026-08-05 | Phase 10C verified end-to-end; fixed no_show audit stamp (`cancelled_at`); added `npm run verify:phase10c` |
 | 2026-08-04 | Phase 10C admin bookings module + dashboard stats (`/admin/bookings`, `GET /api/admin/bookings/stats`, list sort) |

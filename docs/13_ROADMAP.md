@@ -118,8 +118,15 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ `GET /api/bookings/availability/calendar` (public; does not replace stay-range
   `/availability`)
 - ✅ Parity checks vs `booking.service.checkAvailability`
-- ⬜ Admin calendar UI
+- ✅ Admin calendar UI at `/admin/inventory` (Phase 10E)
 - ⬜ Persistent stop-sell / allotment / overbooking_allowance (schema approval)
+
+### Phase 10E — Admin Inventory Calendar UI ✅
+
+- ✅ `/admin/inventory` monthly view (prev/next, hotel + room type filters)
+- ✅ Day-wise total / booked / remaining / occupancy % with color coding
+- ✅ Loading, empty, error states; admin nav integration
+- ⬜ Click-through to bookings / day detail drill-down (future polish)
 
 ### Phase 11 — Booking Engine Completion ⬜
 

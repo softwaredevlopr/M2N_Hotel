@@ -171,6 +171,15 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
         <Link
+          href="/admin/inventory"
+          className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
+        >
+          <h2 className="font-display text-2xl text-cream">Inventory</h2>
+          <p className="mt-3 text-sm leading-relaxed text-cream-dim">
+            Monthly availability calendar by hotel and room type.
+          </p>
+        </Link>
+        <Link
           href="/admin/hotels"
           className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
         >

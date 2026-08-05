@@ -25,8 +25,10 @@
       inventory service + calendar/day/overlaps APIs (admin + public calendar).
       Stop-sell/allotment/overbooking **not** in schema — flagged unsupported;
       needs approval before any migration. Smoke: `npm run verify:phase10d`.
-  - [ ] Admin inventory calendar UI (consume `/api/admin/inventory/calendar`).
   - [ ] Persistent stop-sell / allotment / overbooking allowance (schema approval).
+- [x] **Phase 10E — Admin Inventory Calendar UI** — `/admin/inventory` monthly
+      calendar (hotel/room-type filters, color-coded availability). Consumes
+      Phase 10D calendar API. No schema / booking-logic changes.
 
 ---
 
@@ -84,6 +86,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A**, **10B**, **10C admin module** and **10D inventory
-engine** complete — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
-Remaining: calendar UI, stop-sell schema (approval), emails, inquiries.
+Phases **1–9**, **10A–10E** complete (inventory calendar UI) — see
+[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: stop-sell
+schema (approval), emails, inquiries, admin create booking.

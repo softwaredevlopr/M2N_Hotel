@@ -12,6 +12,14 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10E — Admin Inventory Calendar UI (2026-08-05)
+
+- `/admin/inventory` monthly calendar over Phase 10D
+  `GET /api/admin/inventory/calendar`.
+- Hotel and room-type filters, prev/next month, day cells with total / booked /
+  remaining / occupancy %, green/yellow/red coding.
+- Admin nav + dashboard card. No schema or booking-logic changes.
+
 ### Phase 10D — Availability & Inventory Engine (2026-08-05)
 
 - New `inventory.service.js` derives per-day sold/remaining counts and stay-peak

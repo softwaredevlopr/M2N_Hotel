@@ -60,8 +60,9 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 9 | Tariff & Rate Management | ✅ |
 | 10A | Booking engine backend (schema + APIs) | ✅ Complete |
 | 10B | Guest booking UI (`/book` + confirmation) | ✅ Complete |
-| 10C | Admin bookings module + dashboard stats | ✅ Module done (calendar UI pending) |
+| 10C | Admin bookings module + dashboard stats | ✅ Module done |
 | 10D | Availability & inventory engine (derived APIs) | ✅ Complete (stop-sell schema pending) |
+| 10E | Admin inventory calendar UI | ✅ Complete |
 | 11–14 | Booking polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
@@ -139,8 +140,12 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   allotment / overbooking allowance are **not** in the database — API flags
   `*_supported: false` until a migration is explicitly approved.
 
-**Next:** Admin inventory calendar UI; schema-approved stop-sell/allotment if
-needed; confirmation email; Phase 11.
+- ✅ **Phase 10E — Admin inventory calendar UI** — `/admin/inventory` monthly
+  PMS calendar (hotel/room-type selectors, color-coded day cells) consuming
+  `GET /api/admin/inventory/calendar`. No schema or booking-logic changes.
+
+**Next:** Schema-approved stop-sell/allotment if needed; confirmation email;
+Phase 11.
 
 ---
 
@@ -283,7 +288,6 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
-- ⬜ **Admin inventory calendar UI** over Phase 10D APIs.
 - ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
 - ⬜ **Remaining Phase 10C** — confirmation email, dedicated internal-notes
   column, admin create-booking form.

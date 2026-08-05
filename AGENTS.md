@@ -80,7 +80,11 @@ for audit. Verify with `npm run verify:phase10c` in `backend/`.
 `/api/bookings/availability/calendar`. Stop-sell/allotment need schema approval.
 Verify with `npm run verify:phase10d`.
 
-**Upcoming:** admin calendar UI, confirmation emails, Phase 11+.
+**Completed (Phase 10E):** admin inventory calendar UI at `/admin/inventory`
+(monthly grid, hotel/room-type filters, color-coded availability) over Phase 10D
+APIs. No schema change.
+
+**Upcoming:** confirmation emails, stop-sell schema (approval), Phase 11+.
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

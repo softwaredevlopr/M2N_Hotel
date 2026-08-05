@@ -38,6 +38,8 @@ frontend/
     │       ├── login/
     │       └── (protected)/
     │           ├── dashboard/
+    │           ├── bookings/
+    │           ├── inventory/        ← Phase 10E calendar UI
     │           ├── hotels/
     │           ├── room-types/
     │           ├── rooms/
@@ -45,14 +47,13 @@ frontend/
     │           └── tariffs/
     ├── components/           ← Public + admin UI
     │   ├── booking/          ← BookingFlow + step / summary / confirmation
-    │   └── admin/            ← AdminGuard, forms, Toast, …
+    │   └── admin/            ← AdminGuard, InventoryCalendarGrid, forms, Toast, …
     └── lib/
         ├── api.js, images.js, media.js, tariffs.js, brand.js, …
         ├── bookingPricing.js, bookingSession.js
         ├── adminAuth.js
         ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js,
-        │   adminTariffs.js
-```
+        │   adminTariffs.js, adminBookings.js, adminInventory.js
 
 ## 3. Backend
 

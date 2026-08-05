@@ -9,6 +9,24 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10E — Admin Inventory Calendar UI ✅
+
+- **What changed.** Admin PMS inventory calendar at `/admin/inventory` consuming
+  `GET /api/admin/inventory/calendar`. Monthly grid with prev/next, hotel + room
+  type selectors, day-wise total/booked/remaining/occupancy %, and color coding
+  (green available / yellow low / red sold out). Loading, empty, and error states.
+  No schema change; booking logic untouched.
+- **Files created:** `frontend/src/lib/adminInventory.js`,
+  `frontend/src/components/admin/InventoryCalendarGrid.js`,
+  `frontend/src/app/admin/(protected)/inventory/page.js`.
+- **Files modified:** `AdminGuard.js` (nav), `dashboard/page.js` (card), docs.
+- **APIs added:** none (uses Phase 10D calendar endpoint).
+- **Database changes:** none.
+- **Frontend changes:** inventory calendar UI + admin nav/dashboard link.
+- **Backend changes:** none.
+- **Remaining work:** stop-sell/allotment schema (approval); confirmation email;
+  internal notes column; admin create-booking form; inquiries UI.
+
 ### Added — Phase 10D — Availability & Inventory Engine ✅
 
 - **What changed.** Derived inventory engine for per-day sold/remaining counts,

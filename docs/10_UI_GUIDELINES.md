@@ -37,6 +37,14 @@
 - The `/booking/[bookingNumber]` lookup page remains a printable document:
   reference block, stay details, charges, and a print action.
 
+**Admin inventory calendar (`/admin/inventory`)**
+
+- Monthly Monday-first grid; prev/next month controls.
+- Hotel and room-type selectors; “All room types” aggregates day totals.
+- Day cells show total / booked / remaining and occupancy %; colors:
+  emerald available, amber low (≤25% remaining), rose sold out.
+- Loading, empty (no hotel / no room types), and error states required.
+
 **Admin**
 
 - Shared shell: `AdminGuard` (nav + toast provider).
