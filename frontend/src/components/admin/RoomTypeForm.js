@@ -142,7 +142,7 @@ export default function RoomTypeForm({
       <section className="border border-ink-line bg-ink-soft p-6 sm:p-8">
         <h2 className="font-display text-2xl text-cream">Details</h2>
         <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field id="rt-base-price" label="Base price" error={fieldErrors.base_price}>
+          <Field id="rt-base-price" label="Base price (per night)" error={fieldErrors.base_price}>
             <input
               id="rt-base-price"
               type="number"
@@ -152,6 +152,11 @@ export default function RoomTypeForm({
               value={form.base_price}
               onChange={(e) => update("base_price", e.target.value)}
             />
+            <p className="mt-1.5 text-xs text-cream-muted">
+              Overnight indicative rate used by availability and booking totals.
+              Use 0 for on-request. Do not put the ₹999 three-hour couple package
+              here — that package is not a per-night base price.
+            </p>
           </Field>
           <Field
             id="rt-max-occ"

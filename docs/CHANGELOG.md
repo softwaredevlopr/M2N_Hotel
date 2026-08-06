@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Changed — Room type overnight base_price operational setup ✅
+
+- **What changed.** Verified `room_types.base_price` is `NUMERIC(12,2)`. Set
+  overnight rates Deluxe **1999** / Suite **2999** for Zaarang Inn and Aurelia
+  Grand. Left Standard at **0.00** so the ₹999 three-hour couple package is not
+  treated as a per-night rate. Admin Room Type form clarifies base price is
+  overnight; package card resolution skips overnight `base_price` for package
+  rooms. Seed values aligned. No schema change; tariffs/meal plans/photos
+  untouched.
+- **Files created:** `backend/scripts/setRoomTypeBasePrices.js`,
+  `backend/scripts/verifyRoomTypeBasePrices.js`.
+- **Files modified:** `backend/scripts/seed.js`, `RoomTypeForm.js`,
+  `tariffs.js` (`getRoomStartingPrice` package guard), docs/TODO.
+- **APIs added:** none.
+- **Database changes:** data only (`UPDATE room_types.base_price`); no schema.
+- **Frontend changes:** admin helper text; package-safe starting price helper.
+- **Backend changes:** ops scripts + seed defaults.
+- **Remaining work:** stop-sell schema (approval); booking internal notes;
+  deployment.
+
 ### Added — Phase 10H — Admin Inquiries CRUD UI ✅
 
 - **What changed.** Admin inquiries module at `/admin/inquiries` (list + detail):

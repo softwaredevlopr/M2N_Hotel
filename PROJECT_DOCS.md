@@ -308,8 +308,8 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 - ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
 - ⬜ **Remaining Phase 10C** — dedicated booking internal-notes column (schema
   approval).
-- ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
-  total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
+- ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
+  0 (couple package is not nightly).
 - ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ⬜ Production contact details (replace placeholders).
 - ⬜ Phases **11–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).

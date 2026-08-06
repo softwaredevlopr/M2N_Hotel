@@ -216,7 +216,7 @@
 | MED-SEED | Aurelia Grand seed `hotel_media` URLs are flat paths whose files moved to `Photos/` | Low | Renders correctly via filesystem fallback; reconcile seed when convenient. Zaarang Inn reconciled 2026-08-02 |
 | ROOM-HOTEL | `bookings.room_id` consistency with `hotel_id` is enforced in the application, not by a constraint | Low | A composite FK would need `UNIQUE (id, hotel_id)` on `rooms` — an existing-table change requiring approval |
 | CONTACT | Placeholder contact strings in seed/UI | Medium | Replace before launch |
-| BASE-PRICE | Every seeded `room_types.base_price` is `0.00`, so booking quotes and recorded booking amounts read "on request" | Medium | Rates currently live only in `tariff_rates` (Phase 9). Set a nightly base price per room type in Admin → Room Types to enable live totals — no code change needed |
+| BASE-PRICE | Overnight Deluxe ₹1999 / Suite ₹2999 set on both hotels; Standard stays `0.00` (₹999 couple package is not nightly) | Done | Admin Room Types edit + `npm run set:base-prices` / `verify:base-prices`. Package display unchanged |
 
 ---
 
@@ -224,6 +224,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-06 | Operational: set Deluxe/Suite overnight `base_price` (1999/2999); Standard remains 0 for couple package |
 | 2026-08-06 | Phase 10H admin inquiries CRUD UI at `/admin/inquiries` |
 | 2026-08-05 | Phase 10G admin create booking form at `/admin/bookings/new` |
 | 2026-08-05 | Phase 10F booking confirmation email & notification system (console + SMTP providers) |

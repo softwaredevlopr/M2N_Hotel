@@ -484,15 +484,30 @@ export function findTariffRoom(tariff, roomType) {
 
 /**
  * Starting nightly rate for a room card, or null → show On Request.
- * Never falls back to DB base_price placeholders (often 0).
+ * Prefers API/DB `base_price` when published (> 0). Package rooms (e.g. the
+ * ₹999 three-hour couple package) keep base_price at 0 and resolve display
+ * price from package/tariff metadata — never treat the package as overnight.
  */
 export function getRoomStartingPrice(hotel, roomType) {
+  const pkg = getRoomPackage(hotel, roomType);
+  if (pkg?.priceUnit === "package") {
+    const fromMeta = Number(
+      roomType?.metadata?.startingFrom ?? roomType?.metadata?.starting_from
+    );
+    if (Number.isFinite(fromMeta) && fromMeta > 0) return fromMeta;
+    const tariff = getHotelTariff(hotel);
+    const match = findTariffRoom(tariff, roomType);
+    return match?.startingFrom ?? null;
+  }
+
   const basePrice = Number(roomType?.base_price);
   if (Number.isFinite(basePrice) && basePrice > 0) {
     return basePrice;
   }
 
-  const fromMeta = Number(roomType?.metadata?.startingFrom ?? roomType?.metadata?.starting_from);
+  const fromMeta = Number(
+    roomType?.metadata?.startingFrom ?? roomType?.metadata?.starting_from
+  );
   if (Number.isFinite(fromMeta) && fromMeta > 0) {
     return fromMeta;
   }

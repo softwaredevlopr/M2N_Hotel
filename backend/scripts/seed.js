@@ -429,6 +429,7 @@ const ZAARANG_ROOM_TYPES = [
     name: "Standard",
     description:
       "Comfortable standard room with essential amenities for short and extended stays.",
+    // Keep 0: ₹999 Couple / Get Together is a 3-hour package, not a nightly rate.
     base_price: 0,
     max_occupancy: 2,
     bed_type: "Queen",
@@ -442,7 +443,7 @@ const ZAARANG_ROOM_TYPES = [
     name: "Deluxe",
     description:
       "Spacious deluxe room with added comfort for families and business guests.",
-    base_price: 0,
+    base_price: 1999,
     max_occupancy: 3,
     bed_type: "King",
     room_size_sqft: null,
@@ -455,7 +456,7 @@ const ZAARANG_ROOM_TYPES = [
     name: "Suite",
     description:
       "Premium suite with extra space for longer stays and special occasions.",
-    base_price: 0,
+    base_price: 2999,
     max_occupancy: 4,
     bed_type: "King + Sofa Bed",
     room_size_sqft: null,
@@ -525,6 +526,7 @@ const AURELIA_ROOM_TYPES = [
     name: "Standard",
     description:
       "Comfortable standard room with essential amenities for short and extended stays.",
+    // Keep 0: ₹999 Couple / Get Together is a 3-hour package, not a nightly rate.
     base_price: 0,
     max_occupancy: 2,
     bed_type: "Queen",
@@ -538,7 +540,7 @@ const AURELIA_ROOM_TYPES = [
     name: "Deluxe",
     description:
       "Spacious deluxe room with added comfort for families and business guests.",
-    base_price: 0,
+    base_price: 1999,
     max_occupancy: 3,
     bed_type: "King",
     room_size_sqft: null,
@@ -551,7 +553,7 @@ const AURELIA_ROOM_TYPES = [
     name: "Suite",
     description:
       "Premium suite with extra space for longer stays and special occasions.",
-    base_price: 0,
+    base_price: 2999,
     max_occupancy: 4,
     bed_type: "King + Sofa Bed",
     room_size_sqft: null,

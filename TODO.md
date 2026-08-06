@@ -43,10 +43,9 @@
 
 ## High priority
 
-- [ ] Set a nightly `base_price` for each room type in Admin → Room Types. Every
-      seeded value is `0.00`, so the booking flow quotes "Price on request" and
-      records zero amounts. No code change needed — see
-      [ADR-0015](docs/history/DECISIONS.md).
+- [x] Set overnight `base_price` for Deluxe (₹1999) and Suite (₹2999) on Zaarang
+      and Aurelia. Standard stays `0.00` (₹999 is the 3-hour couple package, not
+      nightly). Scripts: `npm run set:base-prices` / `verify:base-prices`.
 - [ ] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 - [ ] Replace placeholder contact details before launch.
 - [ ] Run `npm run migrate` on every environment for `004_bookings.sql`
