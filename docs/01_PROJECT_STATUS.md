@@ -39,11 +39,12 @@
 | Booking engine — admin inventory calendar UI | ✅ Phase 10E |
 | Booking engine — confirmation emails | ✅ Phase 10F |
 | Booking engine — admin create booking form | ✅ Phase 10G |
+| Admin inquiries CRUD UI | ✅ Phase 10H |
 | Booking engine — stop-sell rules | ⬜ Remaining (schema approval) |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10G** ✅ · Next: stop-sell schema
-(approval), inquiries UI, internal notes (schema)
+**Roadmap progress:** Phases **1–9** ✅, **10A–10H** ✅ · Next: stop-sell schema
+(approval), booking internal notes (schema), deployment
 
 ---
 
@@ -176,6 +177,14 @@
   submit (`GET /api/bookings/availability`), indicative price summary, confirmation
   screen. Reuses `POST /api/admin/bookings`. No schema change.
 
+### Phase 10H — Admin Inquiries CRUD UI ✅
+
+- `/admin/inquiries` list: search (name/email/phone), hotel + status filters,
+  pagination, loading/empty/error states, delete with confirmation.
+- `/admin/inquiries/[id]` detail: guest/stay/message, status change, admin notes
+  (`admin_notes`), delete. Public inquiry form (`POST /api/inquiries`) unchanged.
+- List/get/status/delete require admin JWT; no schema change.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -187,17 +196,16 @@
 ## 3. In Progress
 
 - None formally in-flight. Next: schema-approved stop-sell/allotment if product
-  requires persistence; inquiries UI; internal notes column (schema).
+  requires persistence; booking internal notes column (schema); deployment.
 
 ---
 
 ## 4. Pending / Next Up
 
 1. Persistent stop-sell / allotment / overbooking (needs schema approval).
-2. Admin Inquiries CRUD UI.
-3. Dedicated internal-notes column (schema approval).
-4. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-5. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+2. Dedicated booking internal-notes column (schema approval).
+3. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
+4. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -216,6 +224,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-06 | Phase 10H admin inquiries CRUD UI at `/admin/inquiries` |
 | 2026-08-05 | Phase 10G admin create booking form at `/admin/bookings/new` |
 | 2026-08-05 | Phase 10F booking confirmation email & notification system (console + SMTP providers) |
 | 2026-08-05 | Phase 10E admin inventory calendar UI at `/admin/inventory` |

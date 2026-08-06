@@ -19,6 +19,10 @@ const STYLES = {
   partial: "border-sky-500/40 bg-sky-500/10 text-sky-200",
   paid: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
   refunded: "border-ink-line bg-ink-elevated text-cream-muted",
+  // Inquiry statuses (Phase 10H)
+  contacted: "border-sky-500/40 bg-sky-500/10 text-sky-200",
+  quoted: "border-violet-500/40 bg-violet-500/10 text-violet-200",
+  declined: "border-rose-500/40 bg-rose-500/10 text-rose-200",
 };
 
 export default function StatusBadge({ status }) {

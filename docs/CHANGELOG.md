@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10H — Admin Inquiries CRUD UI ✅
+
+- **What changed.** Admin inquiries module at `/admin/inquiries` (list + detail):
+  search by name/email/phone, status/hotel filters, pagination, status update
+  (+ optional `admin_notes`), delete with confirmation. Public `POST /api/inquiries`
+  unchanged. List/get/status/delete now require admin JWT; list gains `q`,
+  `hotel_id`, and `total` for pagination. No schema change.
+- **Files created:** `frontend/src/lib/adminInquiries.js`,
+  `frontend/src/app/admin/(protected)/inquiries/page.js`,
+  `frontend/src/app/admin/(protected)/inquiries/[id]/page.js`.
+- **Files modified:** `inquiry.controller.js`, `inquiry.routes.js`,
+  `AdminGuard.js`, `StatusBadge.js`, dashboard, docs.
+- **APIs added/changed:** `DELETE /api/inquiries/:id` (JWT); list/get/status
+  require JWT; list supports `q` / `hotel_id` / `total`.
+- **Database changes:** none.
+- **Frontend changes:** inquiries list/detail UI + nav.
+- **Backend changes:** inquiry admin auth + search/pagination/delete.
+- **Remaining work:** stop-sell schema (approval); booking internal-notes
+  column (schema); deployment guide; Phases 11–15.
+
 ### Added — Phase 10G — Admin Create Booking Form ✅
 
 - **What changed.** Admin create-booking UI at `/admin/bookings/new` over existing
@@ -25,7 +45,7 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 - **Frontend changes:** admin create booking form + confirmation.
 - **Backend changes:** none.
 - **Remaining work:** stop-sell schema (approval); internal notes column;
-  inquiries UI.
+  deployment / Phase 11+.
 
 ### Added — Phase 10F — Booking Confirmation Email & Notification System ✅
 

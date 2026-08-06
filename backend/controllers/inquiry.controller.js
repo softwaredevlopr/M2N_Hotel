@@ -9,7 +9,9 @@ const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 const INQUIRY_FIELDS = `
   i.id, i.hotel_id, i.room_type_id, i.guest_name, i.guest_email, i.guest_phone,
-  i.check_in_date, i.check_out_date, i.adults_count, i.children_count,
+  to_char(i.check_in_date, 'YYYY-MM-DD') AS check_in_date,
+  to_char(i.check_out_date, 'YYYY-MM-DD') AS check_out_date,
+  i.adults_count, i.children_count,
   i.message, i.source, i.status, i.admin_notes, i.created_at, i.updated_at,
   h.slug AS hotel_slug, h.name AS hotel_name,
   rt.slug AS room_type_slug, rt.name AS room_type_name
@@ -92,7 +94,9 @@ const createInquiry = asyncHandler(async (req, res) => {
      )
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending')
      RETURNING id, hotel_id, room_type_id, guest_name, guest_email, guest_phone,
-               check_in_date, check_out_date, adults_count, children_count,
+               to_char(check_in_date, 'YYYY-MM-DD') AS check_in_date,
+               to_char(check_out_date, 'YYYY-MM-DD') AS check_out_date,
+               adults_count, children_count,
                message, source, status, admin_notes, created_at, updated_at`,
     [
       hotelId,
@@ -112,6 +116,10 @@ const createInquiry = asyncHandler(async (req, res) => {
   return sendSuccess(res, 201, { data: insertResult.rows[0] });
 });
 
+/**
+ * Admin list — supports status filter, hotel_slug, and q search across
+ * guest name / email / phone. Returns total for pagination.
+ */
 const listInquiries = asyncHandler(async (req, res) => {
   const conditions = [];
   const params = [];
@@ -122,11 +130,28 @@ const listInquiries = asyncHandler(async (req, res) => {
   }
 
   if (
+    typeof req.query.hotel_id === "string" &&
+    UUID_REGEX.test(req.query.hotel_id)
+  ) {
+    params.push(req.query.hotel_id);
+    conditions.push(`i.hotel_id = $${params.length}`);
+  }
+
+  if (
     typeof req.query.status === "string" &&
     INQUIRY_STATUSES.includes(req.query.status)
   ) {
     params.push(req.query.status);
     conditions.push(`i.status = $${params.length}`);
+  }
+
+  if (typeof req.query.q === "string" && req.query.q.trim().length > 0) {
+    const term = `%${req.query.q.trim()}%`;
+    params.push(term);
+    const idx = params.length;
+    conditions.push(
+      `(i.guest_name ILIKE $${idx} OR i.guest_email ILIKE $${idx} OR COALESCE(i.guest_phone, '') ILIKE $${idx})`
+    );
   }
 
   const limit = (() => {
@@ -140,12 +165,21 @@ const listInquiries = asyncHandler(async (req, res) => {
     return parsed;
   })();
 
-  params.push(limit);
-  const limitIdx = params.length;
-  params.push(offset);
-  const offsetIdx = params.length;
-
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const countResult = await query(
+    `SELECT COUNT(*)::int AS total
+     FROM inquiries i
+     INNER JOIN hotels h ON h.id = i.hotel_id
+     LEFT JOIN room_types rt ON rt.id = i.room_type_id
+     ${where}`,
+    params
+  );
+  const total = countResult.rows[0]?.total || 0;
+
+  const listParams = [...params, limit, offset];
+  const limitIdx = params.length + 1;
+  const offsetIdx = params.length + 2;
 
   const result = await query(
     `SELECT ${INQUIRY_FIELDS}
@@ -155,11 +189,14 @@ const listInquiries = asyncHandler(async (req, res) => {
      ${where}
      ORDER BY i.created_at DESC
      LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
-    params
+    listParams
   );
 
   return sendSuccess(res, 200, {
     count: result.rows.length,
+    total,
+    limit,
+    offset,
     data: result.rows,
   });
 });
@@ -206,7 +243,9 @@ const updateInquiryStatus = asyncHandler(async (req, res) => {
          admin_notes = COALESCE($2, admin_notes)
      WHERE id = $3
      RETURNING id, hotel_id, room_type_id, guest_name, guest_email, guest_phone,
-               check_in_date, check_out_date, adults_count, children_count,
+               to_char(check_in_date, 'YYYY-MM-DD') AS check_in_date,
+               to_char(check_out_date, 'YYYY-MM-DD') AS check_out_date,
+               adults_count, children_count,
                message, source, status, admin_notes, created_at, updated_at`,
     [req.body.status, adminNotes, id]
   );
@@ -218,9 +257,34 @@ const updateInquiryStatus = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, { data: result.rows[0] });
 });
 
+const deleteInquiry = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!UUID_REGEX.test(id)) {
+    throw new AppError(`Inquiry not found: ${id}`, 404);
+  }
+
+  const result = await query(
+    `DELETE FROM inquiries
+     WHERE id = $1
+     RETURNING id`,
+    [id]
+  );
+
+  if (result.rows.length === 0) {
+    throw new AppError(`Inquiry not found: ${id}`, 404);
+  }
+
+  return sendSuccess(res, 200, {
+    message: "Inquiry deleted",
+    data: { id: result.rows[0].id },
+  });
+});
+
 module.exports = {
   createInquiry,
   listInquiries,
   getInquiryById,
   updateInquiryStatus,
+  deleteInquiry,
 };

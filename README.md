@@ -12,7 +12,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 ---
 
-## Current status (Phases 1–10G complete)
+## Current status (Phases 1–10H complete)
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -32,6 +32,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 10E | Admin Inventory Calendar UI | ✅ |
 | 10F | Booking Confirmation Email & Notifications | ✅ |
 | 10G | Admin Create Booking Form | ✅ |
+| 10H | Admin Inquiries CRUD UI | ✅ |
 | 11–15 | Booking polish, PMS, CRM, payments, SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)
@@ -43,7 +44,7 @@ Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PR
 | `/` · `/about` · `/hotels/[slug]` | Public marketing site |
 | `/book` | Guest booking flow (Stay → Rooms → Guest → Review → Confirm) |
 | `/booking/[bookingNumber]` | Booking confirmation + contact-verified lookup |
-| `/admin/login` → `/admin/*` | Admin console (bookings, inventory, hotels, room types, rooms, media, tariffs) |
+| `/admin/login` → `/admin/*` | Admin console (bookings, inventory, inquiries, hotels, room types, rooms, media, tariffs) |
 
 > Bookings are requests, not prepaid reservations — no payment gateway yet.
 > Booking quotes read "Price on request" until a nightly `base_price` is set per

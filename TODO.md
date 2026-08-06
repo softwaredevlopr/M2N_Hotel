@@ -35,6 +35,9 @@
       guest/stay fields, availability check, price summary, notes
       (`special_requests`), confirmation screen. Reuses existing admin create API.
       No schema change.
+- [x] **Phase 10H — Admin Inquiries CRUD UI** — `/admin/inquiries` list + detail
+      (search, status filter, pagination, status update, delete). Reuses inquiry
+      APIs; JWT on list/get/status/delete; public POST unchanged. No schema change.
 
 ---
 
@@ -44,7 +47,6 @@
       seeded value is `0.00`, so the booking flow quotes "Price on request" and
       records zero amounts. No code change needed — see
       [ADR-0015](docs/history/DECISIONS.md).
-- [ ] Admin Inquiries CRUD UI (list/get/patch APIs already exist).
 - [ ] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 - [ ] Replace placeholder contact details before launch.
 - [ ] Run `npm run migrate` on every environment for `004_bookings.sql`
@@ -92,6 +94,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A–10G** complete (admin create booking) — see
+Phases **1–9**, **10A–10H** complete (admin inquiries UI) — see
 [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: stop-sell
-schema (approval), inquiries, internal notes.
+schema (approval), booking internal notes, deployment.

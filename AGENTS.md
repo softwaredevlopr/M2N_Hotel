@@ -93,7 +93,11 @@ configured). Fire-and-forget; never blocks booking APIs. Verify:
 (availability check, price summary, confirmation screen) over existing admin
 create API. No schema change.
 
-**Upcoming:** stop-sell schema (approval), inquiries UI, Phase 11+.
+**Completed (Phase 10H):** admin inquiries CRUD at `/admin/inquiries` (list,
+detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
+writes require JWT. No schema change.
+
+**Upcoming:** stop-sell schema (approval), Phase 11+.
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

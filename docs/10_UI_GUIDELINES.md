@@ -53,6 +53,12 @@
 - Confirmation screen after create with View booking / Create another actions.
 - Match existing admin form chrome (ink panels, gold CTAs, uppercase labels).
 
+**Admin inquiries (`/admin/inquiries`)**
+
+- List table with search, hotel/status filters, pagination.
+- Detail: guest/stay/message + status/`admin_notes` form; delete via ConfirmDialog.
+- Loading, empty, and error states; toast on success/failure.
+
 **Admin**
 
 - Shared shell: `AdminGuard` (nav + toast provider).

@@ -65,6 +65,7 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 10E | Admin inventory calendar UI | ✅ Complete |
 | 10F | Booking confirmation email & notifications | ✅ Complete |
 | 10G | Admin create booking form | ✅ Complete |
+| 10H | Admin inquiries CRUD UI | ✅ Complete |
 | 11–14 | Booking polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
@@ -156,8 +157,12 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   availability check, price summary, notes (`special_requests`), confirmation
   screen. Reuses `POST /api/admin/bookings`. No schema change.
 
-**Next:** Schema-approved stop-sell/allotment if needed; inquiries UI;
-internal notes column (schema); Phase 11.
+- ✅ **Phase 10H — Admin inquiries CRUD UI** — `/admin/inquiries` list + detail
+  (search, status, pagination, delete). JWT on inquiry list/get/status/delete;
+  public create unchanged. No schema change.
+
+**Next:** Schema-approved stop-sell/allotment if needed; booking internal notes
+column (schema); Phase 11.
 
 ---
 
@@ -301,13 +306,13 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
 - ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
-- ⬜ **Remaining Phase 10C** — dedicated internal-notes column (schema approval).
+- ⬜ **Remaining Phase 10C** — dedicated booking internal-notes column (schema
+  approval).
 - ⬜ Room types ke liye nightly `base_price` set karein taaki booking flow live
   total dikha sake (abhi sabhi `0` hain, isliye "Price on request").
-- ⬜ Admin Inquiries CRUD UI.
 - ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ⬜ Production contact details (replace placeholders).
-- ⬜ Phases **9–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).
+- ⬜ Phases **11–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).
 
 > Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older
 > pending bullets below this section in git history are obsolete.

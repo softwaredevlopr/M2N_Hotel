@@ -145,6 +145,13 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ Post-create confirmation screen; list CTA
 - ⬜ Optional room auto-assign on create (still admin detail action)
 
+### Phase 10H — Admin Inquiries CRUD UI ✅
+
+- ✅ `/admin/inquiries` list (search, status/hotel filters, pagination)
+- ✅ Detail view with status update + `admin_notes`
+- ✅ Delete with confirmation; toasts; loading/empty/error states
+- ✅ JWT on list/get/status/delete; public `POST /api/inquiries` unchanged
+
 ### Phase 11 — Booking Engine Completion ⬜
 
 End-to-end guest journey polish, guest self-service modification/cancellation,

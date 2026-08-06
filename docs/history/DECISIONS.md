@@ -851,6 +851,36 @@ not invent a new column; guests already have `special_requests`.
 - Skip pre-submit availability and rely only on 409. Rejected — poorer UX for
   staff entering phone bookings.
 
+### ADR-0024 — Phase 10H admin inquiries UI; JWT on inquiry reads/writes
+
+**Date:** 2026-08-06
+
+**Status:** Accepted
+
+**Context**
+Inquiry list/get/status existed without authentication, exposing guest PII.
+Admin console needed a CRUD UI (list, search, status, delete) without schema
+changes. Public website only needs `POST /api/inquiries`.
+
+**Decision**
+- Keep public `POST /api/inquiries` unchanged for the guest form.
+- Require admin JWT for `GET /api/inquiries`, `GET /:id`, `PATCH /:id/status`,
+  and new `DELETE /:id`.
+- Extend list with `q` (name/email/phone), `hotel_id`, and `total` for pagination.
+- Ship `/admin/inquiries` + detail UI. Notes use existing `admin_notes` column.
+- No database schema change.
+
+**Consequences**
+- Guest PII is no longer listable anonymously.
+- Admin UI matches other console modules (toasts, ConfirmDialog, StatusBadge).
+- Any unauthenticated list/get callers break (none in the public frontend).
+
+**Alternatives considered**
+- Mirror routes under `/api/admin/inquiries`. Deferred — existing paths already
+  documented; securing them is simpler than duplicating controllers.
+- Soft-delete status only. Rejected — product asked for delete with confirmation;
+  hard delete matches other admin modules and needs no schema.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

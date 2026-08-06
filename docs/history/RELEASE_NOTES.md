@@ -12,6 +12,12 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10H — Admin Inquiries CRUD UI (2026-08-06)
+
+- `/admin/inquiries` list + detail over inquiry APIs (JWT for admin reads/writes).
+- Search, status filter, pagination, status update, delete with confirmation.
+- Public inquiry create unchanged. No schema change.
+
 ### Phase 10G — Admin Create Booking Form (2026-08-05)
 
 - `/admin/bookings/new` over existing `POST /api/admin/bookings`.

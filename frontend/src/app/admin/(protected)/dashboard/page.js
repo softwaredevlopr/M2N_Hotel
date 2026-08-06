@@ -224,12 +224,15 @@ export default function AdminDashboardPage() {
             Manage meal-plan rates, occupancy pricing, and seasonal windows.
           </p>
         </Link>
-        <div className="border border-ink-line bg-ink-soft p-6 opacity-60">
+        <Link
+          href="/admin/inquiries"
+          className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
+        >
           <h2 className="font-display text-2xl text-cream">Inquiries</h2>
           <p className="mt-3 text-sm leading-relaxed text-cream-dim">
-            Guest booking inquiries — coming soon.
+            Review, update status, and manage guest booking inquiries.
           </p>
-        </div>
+        </Link>
       </div>
     </div>
   );

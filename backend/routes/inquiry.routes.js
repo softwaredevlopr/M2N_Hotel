@@ -1,6 +1,7 @@
 const express = require("express");
 const inquiryController = require("../controllers/inquiry.controller");
 const validate = require("../middleware/validate.middleware");
+const { requireAdminAuth } = require("../middleware/adminAuth.middleware");
 const {
   createInquirySchema,
   updateInquiryStatusSchema,
@@ -8,13 +9,18 @@ const {
 
 const router = express.Router();
 
+// Public: guest booking inquiry form.
 router.post("/", validate(createInquirySchema), inquiryController.createInquiry);
-router.get("/", inquiryController.listInquiries);
-router.get("/:id", inquiryController.getInquiryById);
+
+// Admin-only reads/writes (guest PII). JWT required.
+router.get("/", requireAdminAuth, inquiryController.listInquiries);
+router.get("/:id", requireAdminAuth, inquiryController.getInquiryById);
 router.patch(
   "/:id/status",
+  requireAdminAuth,
   validate(updateInquiryStatusSchema),
   inquiryController.updateInquiryStatus
 );
+router.delete("/:id", requireAdminAuth, inquiryController.deleteInquiry);
 
 module.exports = router;

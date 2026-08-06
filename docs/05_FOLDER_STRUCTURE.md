@@ -42,6 +42,7 @@ frontend/
     │           │   ├── [id]/
     │           │   └── new/              ← Phase 10G create form
     │           ├── inventory/        ← Phase 10E calendar UI
+    │           ├── inquiries/        ← Phase 10H list + [id]
     │           ├── hotels/
     │           ├── room-types/
     │           ├── rooms/
@@ -55,7 +56,7 @@ frontend/
         ├── bookingPricing.js, bookingSession.js
         ├── adminAuth.js
         ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js,
-        │   adminTariffs.js, adminBookings.js, adminInventory.js
+        │   adminTariffs.js, adminBookings.js, adminInventory.js, adminInquiries.js
 
 ## 3. Backend
 

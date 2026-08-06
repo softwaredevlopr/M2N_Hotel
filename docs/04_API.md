@@ -44,9 +44,10 @@
 | `GET` | `/api/rooms` | Public | 1 |
 | `GET` | `/api/rooms/:id` | Public | 1 |
 | `POST` | `/api/inquiries` | Public | 2 |
-| `GET` | `/api/inquiries` | Public* | 2 |
-| `GET` | `/api/inquiries/:id` | Public* | 2 |
-| `PATCH` | `/api/inquiries/:id` | Public* | 2 |
+| `GET` | `/api/inquiries` | JWT | 2/10H |
+| `GET` | `/api/inquiries/:id` | JWT | 2/10H |
+| `PATCH` | `/api/inquiries/:id/status` | JWT | 2/10H |
+| `DELETE` | `/api/inquiries/:id` | JWT | 10H |
 | `POST` | `/api/admin/auth/login` | — | 3 |
 | `GET` | `/api/admin/auth/me` | JWT | 3 |
 | `CRUD` | `/api/admin/hotels` | JWT | 4 |
@@ -71,8 +72,6 @@
 | `GET` | `/api/admin/inventory/day` | JWT | 10D |
 | `GET` | `/api/admin/inventory/overlaps` | JWT | 10D |
 
-\*Inquiry list/get/patch exist on the API; admin UI for inquiries is still pending.
-
 Static files: `GET /uploads/...` (admin-uploaded media).
 
 ## 3. Public APIs
@@ -89,10 +88,16 @@ Static files: `GET /uploads/...` (admin-uploaded media).
 - `GET /api/rooms` — optional `hotel_slug`, `room_type_slug`, `status`
 - `GET /api/rooms/:id`
 
-### Inquiries (Phase 2)
+### Inquiries (Phase 2 / 10H)
 
-- `POST /api/inquiries` — create booking inquiry (validated)
-- List / get / patch endpoints available for future admin UI
+- `POST /api/inquiries` — public create (validated; rate-limited). Guest form.
+- `GET /api/inquiries` — JWT. Query: `q` (name/email/phone), `status`,
+  `hotel_id`, `hotel_slug`, `limit`, `offset`. Returns `data`, `total`, `count`.
+- `GET /api/inquiries/:id` — JWT.
+- `PATCH /api/inquiries/:id/status` — JWT. Body: `{ status, admin_notes? }`.
+- `DELETE /api/inquiries/:id` — JWT. Consumed by `/admin/inquiries`.
+
+Statuses: `pending`, `contacted`, `quoted`, `confirmed`, `declined`, `cancelled`.
 
 ### Tariffs (Phase 9)
 
