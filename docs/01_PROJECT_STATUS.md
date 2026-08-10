@@ -41,11 +41,12 @@
 | Booking engine — admin create booking form | ✅ Phase 10G |
 | Admin inquiries CRUD UI | ✅ Phase 10H |
 | Booking engine — persistent inventory dates | ✅ Phase 10I |
+| Admin inventory-date write APIs | ✅ Complete |
 | Admin inventory-date edit UI | ⬜ Remaining |
 | Deployment docs / prod cutover | ⬜ Pending |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: inventory-date
-admin CRUD UI, booking internal notes (schema), deployment
+admin day-edit UI, booking internal notes (schema), deployment
 
 ---
 
@@ -205,14 +206,14 @@ admin CRUD UI, booking internal notes (schema), deployment
 
 ## 3. In Progress
 
-- None formally in-flight. Next: admin inventory-date edit UI; booking internal
-  notes column (schema); deployment.
+- None formally in-flight. Next: admin inventory day-edit UI on
+  `/admin/inventory`; booking internal notes column (schema); deployment.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Admin UI / CRUD for `room_type_inventory_dates` rows.
+1. Admin UI day-edit for `room_type_inventory_dates` (write APIs already shipped).
 2. Dedicated booking internal-notes column (schema approval).
 3. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
 4. Run migration `005` on non-local environments.
@@ -235,6 +236,7 @@ admin CRUD UI, booking internal notes (schema), deployment
 
 | Date | Update |
 |------|--------|
+| 2026-08-10 | Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`) |
 | 2026-08-08 | Phase 10I persistent `room_type_inventory_dates` (stop-sell/allotment/overbooking) |
 | 2026-08-06 | Operational: set Deluxe/Suite overnight `base_price` (1999/2999); Standard remains 0 for couple package |
 | 2026-08-06 | Phase 10H admin inquiries CRUD UI at `/admin/inquiries` |

@@ -408,6 +408,155 @@ async function getInventoryCalendar({
   };
 }
 
+function mapInventoryDateRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    hotel_id: row.hotel_id,
+    room_type_id: row.room_type_id,
+    inventory_date:
+      row.inventory_date_iso ||
+      (row.inventory_date
+        ? String(row.inventory_date).slice(0, 10)
+        : null),
+    allotment: row.allotment === null ? null : Number(row.allotment),
+    stop_sell: Boolean(row.stop_sell),
+    overbooking_allowance: Number(row.overbooking_allowance) || 0,
+    notes: row.notes ?? null,
+    source: row.source,
+    external_ref: row.external_ref ?? null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+async function assertHotelExists(hotelId) {
+  const result = await query(`SELECT id FROM hotels WHERE id = $1 LIMIT 1`, [
+    hotelId,
+  ]);
+  if (result.rows.length === 0) {
+    throw new AppError(`Hotel not found: ${hotelId}`, 404);
+  }
+}
+
+/**
+ * Ensures the room type exists and belongs to hotelId (multi-property isolation).
+ */
+async function assertRoomTypeBelongsToHotel(roomTypeId, hotelId) {
+  const result = await query(
+    `SELECT id, hotel_id FROM room_types WHERE id = $1 LIMIT 1`,
+    [roomTypeId]
+  );
+  if (result.rows.length === 0) {
+    throw new AppError(`Room type not found: ${roomTypeId}`, 404);
+  }
+  if (result.rows[0].hotel_id !== hotelId) {
+    throw new AppError("room_type_id must belong to the selected hotel", 400);
+  }
+}
+
+async function getInventoryDateOverride({
+  hotelId,
+  roomTypeId,
+  inventoryDate,
+}) {
+  const result = await query(
+    `SELECT id, hotel_id, room_type_id,
+            to_char(inventory_date, 'YYYY-MM-DD') AS inventory_date_iso,
+            allotment, stop_sell, overbooking_allowance,
+            notes, source, external_ref, created_at, updated_at
+     FROM room_type_inventory_dates
+     WHERE hotel_id = $1
+       AND room_type_id = $2
+       AND inventory_date = $3::date
+     LIMIT 1`,
+    [hotelId, roomTypeId, inventoryDate]
+  );
+  return mapInventoryDateRow(result.rows[0] || null);
+}
+
+/**
+ * Upsert sparse override by UNIQUE (hotel_id, room_type_id, inventory_date).
+ * Always scopes writes with hotel_id so rows cannot move across properties.
+ */
+async function upsertInventoryDate({
+  hotelId,
+  roomTypeId,
+  inventoryDate,
+  allotment = null,
+  stopSell = false,
+  overbookingAllowance = 0,
+  source = "manual",
+}) {
+  await assertHotelExists(hotelId);
+  await assertRoomTypeBelongsToHotel(roomTypeId, hotelId);
+
+  const existing = await getInventoryDateOverride({
+    hotelId,
+    roomTypeId,
+    inventoryDate,
+  });
+
+  const result = await query(
+    `INSERT INTO room_type_inventory_dates (
+       hotel_id, room_type_id, inventory_date,
+       allotment, stop_sell, overbooking_allowance, source
+     ) VALUES ($1, $2, $3::date, $4, $5, $6, $7)
+     ON CONFLICT (hotel_id, room_type_id, inventory_date)
+     DO UPDATE SET
+       allotment = EXCLUDED.allotment,
+       stop_sell = EXCLUDED.stop_sell,
+       overbooking_allowance = EXCLUDED.overbooking_allowance,
+       source = EXCLUDED.source,
+       updated_at = NOW()
+     RETURNING id, hotel_id, room_type_id,
+               to_char(inventory_date, 'YYYY-MM-DD') AS inventory_date_iso,
+               allotment, stop_sell, overbooking_allowance,
+               notes, source, external_ref, created_at, updated_at`,
+    [
+      hotelId,
+      roomTypeId,
+      inventoryDate,
+      allotment,
+      Boolean(stopSell),
+      overbookingAllowance,
+      source,
+    ]
+  );
+
+  return {
+    row: mapInventoryDateRow(result.rows[0]),
+    created: !existing,
+  };
+}
+
+/**
+ * Delete override by business key. Missing row → 404 (idempotent clear for UI
+ * can treat 404 as already-cleared if desired).
+ */
+async function deleteInventoryDate({ hotelId, roomTypeId, inventoryDate }) {
+  await assertHotelExists(hotelId);
+  await assertRoomTypeBelongsToHotel(roomTypeId, hotelId);
+
+  const result = await query(
+    `DELETE FROM room_type_inventory_dates
+     WHERE hotel_id = $1
+       AND room_type_id = $2
+       AND inventory_date = $3::date
+     RETURNING id, hotel_id, room_type_id,
+               to_char(inventory_date, 'YYYY-MM-DD') AS inventory_date_iso,
+               allotment, stop_sell, overbooking_allowance,
+               notes, source, external_ref, created_at, updated_at`,
+    [hotelId, roomTypeId, inventoryDate]
+  );
+
+  if (result.rows.length === 0) {
+    throw new AppError("Inventory date override not found", 404);
+  }
+
+  return mapInventoryDateRow(result.rows[0]);
+}
+
 module.exports = {
   MAX_CALENDAR_DAYS,
   countSellableRooms,
@@ -416,6 +565,9 @@ module.exports = {
   findOverlappingBookings,
   getInventoryCalendar,
   resolveHotel,
+  getInventoryDateOverride,
+  upsertInventoryDate,
+  deleteInventoryDate,
   // Exported for tests / parity checks
   getNightlySoldCounts,
   buildDayRow,

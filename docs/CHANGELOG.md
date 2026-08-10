@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Admin inventory-date write APIs ✅
+
+- **What changed.** Admin JWT upsert and delete/clear for sparse
+  `room_type_inventory_dates` rows (business key `hotel_id` + `room_type_id` +
+  `inventory_date`). Validates hotel existence, room-type ownership, date,
+  allotment/overbooking bounds, source enum, and rejects unknown fields. No
+  schema change; public availability/booking request bodies unchanged. Frontend
+  day-edit UI not included.
+- **Files created:** `backend/validators/adminInventory.validator.js`,
+  `backend/scripts/verifyInventoryDateWrites.js`.
+- **Files modified:** `inventory.service.js`, `inventory.controller.js`,
+  `adminInventory.routes.js`, `backend/package.json`, docs/TODO/ADR.
+- **APIs added:** `PUT /api/admin/inventory/dates`,
+  `DELETE /api/admin/inventory/dates`.
+- **Database changes:** none.
+- **Frontend changes:** none.
+- **Backend changes:** inventory write service methods + validation.
+- **Remaining work:** `/admin/inventory` day-edit UI; booking internal-notes
+  column; deployment / Phase 11+.
+
 ### Added — Phase 10I — Persistent room-type inventory dates ✅
 
 - **What changed.** Approved sparse table `room_type_inventory_dates` for per
@@ -34,8 +54,8 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
   `(hotel_id, room_type_id, inventory_date)`; CHECKs; indexes; `set_updated_at`).
 - **Frontend changes:** none required (admin calendar consumes updated fields).
 - **Backend changes:** capacity helper + availability integration.
-- **Remaining work:** admin UI to edit inventory date rows; booking
-  internal-notes column; deployment / Phase 11+.
+- **Remaining work:** admin inventory-date write APIs (done above) + day-edit
+  UI; booking internal-notes column; deployment / Phase 11+.
 
 ### Changed — Room type overnight base_price operational setup ✅
 

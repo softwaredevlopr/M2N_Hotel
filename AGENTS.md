@@ -101,8 +101,8 @@ create API. No schema change.
 detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
 writes require JWT. No schema change.
 
-**Upcoming:** admin UI to edit inventory date rows, booking internal notes
-(schema), Phase 11+. See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
+**Upcoming:** admin day-edit UI on `/admin/inventory` (write APIs shipped),
+booking internal notes (schema), Phase 11+. See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares
 another hotel's content or photos.

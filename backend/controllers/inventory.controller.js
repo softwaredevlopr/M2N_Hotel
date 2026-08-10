@@ -6,6 +6,10 @@ const {
   parseUuid,
   trimOrNull,
 } = require("../validators/booking.validator");
+const {
+  parseUpsertInventoryDateBody,
+  parseDeleteInventoryDateQuery,
+} = require("../validators/adminInventory.validator");
 
 function parseCalendarQuery(req, { requireHotelId = false } = {}) {
   const q = req.query || {};
@@ -160,9 +164,83 @@ const getPublicInventoryCalendar = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, { data });
 });
 
+/**
+ * Upsert sparse inventory-date override.
+ * PUT /api/admin/inventory/dates
+ */
+const upsertAdminInventoryDate = asyncHandler(async (req, res) => {
+  const {
+    hotelId,
+    roomTypeId,
+    inventoryDate,
+    allotment,
+    stopSell,
+    overbookingAllowance,
+    source,
+    errors,
+  } = parseUpsertInventoryDateBody(req.body || {});
+  if (errors.length > 0) return sendValidationError(res, errors);
+
+  const { row, created } = await inventoryService.upsertInventoryDate({
+    hotelId,
+    roomTypeId,
+    inventoryDate,
+    allotment,
+    stopSell,
+    overbookingAllowance,
+    source,
+  });
+
+  const day = await inventoryService.getDayInventory({
+    hotelId,
+    roomTypeId,
+    date: inventoryDate,
+  });
+
+  return sendSuccess(res, created ? 201 : 200, {
+    data: {
+      ...row,
+      created,
+      day,
+    },
+  });
+});
+
+/**
+ * Clear inventory-date override (fall back to physical − sold).
+ * DELETE /api/admin/inventory/dates?hotel_id=&room_type_id=&inventory_date=
+ */
+const deleteAdminInventoryDate = asyncHandler(async (req, res) => {
+  const { hotelId, roomTypeId, inventoryDate, errors } =
+    parseDeleteInventoryDateQuery(req.query || {});
+  if (errors.length > 0) return sendValidationError(res, errors);
+
+  const deleted = await inventoryService.deleteInventoryDate({
+    hotelId,
+    roomTypeId,
+    inventoryDate,
+  });
+
+  const day = await inventoryService.getDayInventory({
+    hotelId,
+    roomTypeId,
+    date: inventoryDate,
+  });
+
+  return sendSuccess(res, 200, {
+    data: {
+      deleted: true,
+      override: deleted,
+      day,
+    },
+  });
+});
+
 module.exports = {
   getAdminInventoryCalendar,
   getAdminInventoryDay,
   getAdminInventoryOverlaps,
   getPublicInventoryCalendar,
+  upsertAdminInventoryDate,
+  deleteAdminInventoryDate,
 };

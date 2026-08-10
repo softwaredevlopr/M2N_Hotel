@@ -1,6 +1,6 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-02  
+> **Status:** Living document · **Last updated:** 2026-08-10  
 > **Base URL (local):** `http://localhost:5001`  
 > **Frontend env:** `NEXT_PUBLIC_API_URL`
 
@@ -71,6 +71,8 @@
 | `GET` | `/api/admin/inventory/calendar` | JWT | 10D |
 | `GET` | `/api/admin/inventory/day` | JWT | 10D |
 | `GET` | `/api/admin/inventory/overlaps` | JWT | 10D |
+| `PUT` | `/api/admin/inventory/dates` | JWT | 10I write |
+| `DELETE` | `/api/admin/inventory/dates` | JWT | 10I write |
 
 Static files: `GET /uploads/...` (admin-uploaded media).
 
@@ -325,6 +327,8 @@ are unchanged.
 | `GET` | `/api/admin/inventory/calendar` | JWT |
 | `GET` | `/api/admin/inventory/day` | JWT |
 | `GET` | `/api/admin/inventory/overlaps` | JWT |
+| `PUT` | `/api/admin/inventory/dates` | JWT |
+| `DELETE` | `/api/admin/inventory/dates` | JWT |
 | `GET` | `/api/bookings/availability/calendar` | Public |
 
 **Calendar query:** `hotel_id` or `hotel_slug`, `from`, `to` (`YYYY-MM-DD`,
@@ -348,8 +352,36 @@ keep Phase 10D physical − sold behaviour.
 optional `exclude_booking_id`. Returns stay inventory (with overrides) plus
 `overlapping_bookings[]`.
 
-**Not in scope yet:** admin CRUD for inventory date rows, channel-split
-inventory, per-room closures, PMS/OTA tables.
+### Inventory date writes (admin)
+
+Upsert / clear sparse overrides. No schema change beyond Phase 10I table.
+Smoke: `npm run verify:inventory-dates`.
+
+**`PUT /api/admin/inventory/dates`** — upsert by
+`UNIQUE (hotel_id, room_type_id, inventory_date)`.
+
+Body (unknown keys rejected):
+
+| Field | Required | Notes |
+|-------|----------|--------|
+| `hotel_id` | yes | UUID |
+| `room_type_id` | yes | UUID; must belong to `hotel_id` |
+| `inventory_date` | yes | `YYYY-MM-DD` |
+| `allotment` | one of the four mutable fields required | `null` or integer 0–32767; omit → stored as `null` |
+| `stop_sell` | | boolean; omit → `false` |
+| `overbooking_allowance` | | integer ≥ 0 (max 32767); omit → `0` |
+| `source` | | `manual` \| `system` \| `ota` \| `channel`; omit → `manual` |
+
+Response `201` on insert, `200` on update. Payload includes the row, `created`,
+and computed `day` inventory for that night.
+
+**`DELETE /api/admin/inventory/dates`** — clear override (query:
+`hotel_id`, `room_type_id`, `inventory_date`). Returns `200` with
+`deleted: true` + post-clear `day`, or `404` if no row.
+
+**Not in scope yet:** admin day-edit UI, channel-split inventory, per-room
+closures, PMS/OTA tables. `notes` / `external_ref` are not writable via this
+API yet.
 
 ## 11. Errors & security
 

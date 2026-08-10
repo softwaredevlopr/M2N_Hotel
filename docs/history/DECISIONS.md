@@ -923,6 +923,41 @@ only has `PRIMARY KEY (id)` / `UNIQUE (hotel_id, slug)` — do not invent
 - Dense nightly rows for every room type. Rejected — sparse keeps defaults cheap.
 - Channel / OTA split tables now. Deferred — out of Phase 10I scope.
 
+### ADR-0026 — Admin inventory-date write APIs without schema change
+
+**Date:** 2026-08-10
+
+**Status:** Accepted
+
+**Context**
+Phase 10I persisted `room_type_inventory_dates` and wired availability, but
+staff could only change overrides via SQL. The admin calendar UI needs secure
+write endpoints before a day-edit surface. Public booking request bodies must
+stay unchanged; no further schema work was approved.
+
+**Decision**
+- Add JWT `PUT /api/admin/inventory/dates` (upsert on
+  `UNIQUE (hotel_id, room_type_id, inventory_date)`) and
+  `DELETE /api/admin/inventory/dates` (clear by the same business key).
+- Writable fields only: `allotment`, `stop_sell`, `overbooking_allowance`,
+  `source` (plus required key fields). Reject unknown body/query keys.
+- Enforce hotel existence and `room_type.hotel_id === hotel_id` on every write.
+- Omit → schema defaults for mutable fields on upsert (`allotment` null,
+  `stop_sell` false, `overbooking_allowance` 0, `source` manual).
+- No migration; no public route changes; no frontend UI in this step.
+
+**Consequences**
+- Day-edit UI can call stable admin APIs.
+- `notes` / `external_ref` remain non-writable until a follow-up explicitly
+  allows them.
+- Upsert replaces the four mutable columns (not a sparse PATCH merge).
+
+**Alternatives considered**
+- PATCH-by-id only. Rejected — calendar UX is hotel/type/date keyed; business
+  key upsert matches the unique constraint.
+- Soft-delete flag column. Rejected — needs schema approval; hard delete restores
+  Phase 10D defaults correctly.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

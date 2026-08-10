@@ -128,7 +128,9 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ Stop-sell, allotment, overbooking allowance in availability formula
 - ✅ Calendar/day flags `*_supported: true`; public request bodies unchanged
 - ✅ Smoke: `npm run verify:phase10i` (plus updated `verify:phase10d`)
-- ⬜ Admin UI / CRUD to edit inventory date rows
+- ✅ Admin write APIs — `PUT` / `DELETE /api/admin/inventory/dates`
+  (`npm run verify:inventory-dates`)
+- ⬜ Admin UI / day-edit on `/admin/inventory`
 - ⬜ Channel-split inventory, per-room closures, PMS/OTA tables (later)
 
 ### Phase 10E — Admin Inventory Calendar UI ✅

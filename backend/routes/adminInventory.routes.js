@@ -10,4 +10,7 @@ router.get("/calendar", inventoryController.getAdminInventoryCalendar);
 router.get("/day", inventoryController.getAdminInventoryDay);
 router.get("/overlaps", inventoryController.getAdminInventoryOverlaps);
 
+router.put("/dates", inventoryController.upsertAdminInventoryDate);
+router.delete("/dates", inventoryController.deleteAdminInventoryDate);
+
 module.exports = router;

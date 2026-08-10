@@ -12,6 +12,13 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Admin inventory-date write APIs (2026-08-10)
+
+- JWT `PUT` / `DELETE /api/admin/inventory/dates` for sparse
+  `room_type_inventory_dates` upsert and clear ([ADR-0026](DECISIONS.md)).
+- Hotel-scoped validation; public booking APIs unchanged; no schema change.
+- Smoke: `npm run verify:inventory-dates`. Admin day-edit UI still pending.
+
 ### Phase 10I — Persistent room-type inventory dates (2026-08-08)
 
 - Migration `005_room_type_inventory_dates.sql` — sparse stop-sell / allotment /

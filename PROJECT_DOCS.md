@@ -146,7 +146,9 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   `room_type_inventory_dates` (hotel-scoped sparse overrides). Booking and
   inventory services apply stop-sell / allotment / overbooking allowance;
   missing rows keep Phase 10D behaviour. Public request bodies unchanged.
-  Smoke: `npm run verify:phase10i`. Admin edit UI for date rows still pending.
+  Smoke: `npm run verify:phase10i`. Admin write APIs:
+  `PUT`/`DELETE /api/admin/inventory/dates` (`verify:inventory-dates`); day-edit
+  UI still pending.
 
 - ✅ **Phase 10E — Admin inventory calendar UI** — `/admin/inventory` monthly
   PMS calendar (hotel/room-type selectors, color-coded day cells) consuming
@@ -166,7 +168,7 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   (search, status, pagination, delete). JWT on inquiry list/get/status/delete;
   public create unchanged. No schema change.
 
-**Next:** Admin UI to edit inventory date rows; booking internal notes column
+**Next:** Admin day-edit UI on `/admin/inventory`; booking internal notes column
 (schema); Phase 11.
 
 ---
@@ -312,7 +314,8 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 
 - ✅ **Phase 10I** — persistent stop-sell / allotment / overbooking
   (`room_type_inventory_dates`).
-- ⬜ Admin UI / CRUD for inventory date rows.
+- ✅ Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`).
+- ⬜ Admin UI day-edit on `/admin/inventory`.
 - ⬜ **Remaining Phase 10C** — dedicated booking internal-notes column (schema
   approval).
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays

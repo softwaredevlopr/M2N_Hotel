@@ -26,7 +26,9 @@
       (`room_type_inventory_dates`), stop-sell / allotment / overbooking in
       booking + inventory services. Public request bodies unchanged. Smoke:
       `npm run verify:phase10i`.
-  - [ ] Admin UI / CRUD to create/edit inventory date rows.
+  - [x] Admin write APIs — `PUT`/`DELETE /api/admin/inventory/dates`
+        (upsert + clear). Smoke: `npm run verify:inventory-dates`.
+  - [ ] Admin UI day-edit on `/admin/inventory` over those write APIs.
 - [x] **Phase 10E — Admin Inventory Calendar UI** — `/admin/inventory` monthly
       calendar (hotel/room-type filters, color-coded availability). Consumes
       Phase 10D/10I calendar API.
