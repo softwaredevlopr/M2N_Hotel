@@ -12,6 +12,15 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 10I — Persistent room-type inventory dates (2026-08-08)
+
+- Migration `005_room_type_inventory_dates.sql` — sparse stop-sell / allotment /
+  overbooking allowance per hotel, room type, and night ([ADR-0025](DECISIONS.md)).
+- Booking and inventory availability engines apply the approved night formula;
+  missing rows keep Phase 10D physical − sold behaviour.
+- Calendar/day responses set `*_supported: true`. Public request bodies unchanged.
+- Smoke: `npm run verify:phase10i`. Admin edit UI for date rows still pending.
+
 ### Phase 10H — Admin Inquiries CRUD UI (2026-08-06)
 
 - `/admin/inquiries` list + detail over inquiry APIs (JWT for admin reads/writes).

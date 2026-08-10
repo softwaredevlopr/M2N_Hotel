@@ -9,6 +9,34 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 10I — Persistent room-type inventory dates ✅
+
+- **What changed.** Approved sparse table `room_type_inventory_dates` for per
+  hotel / room type / night overrides (stop-sell, allotment, overbooking
+  allowance). Availability engines (`booking.service`, `inventory.service`) use
+  the formula `available = stop_sell ? 0 : max(0, COALESCE(allotment, physical)
+  + overbooking_allowance - sold)`. Missing rows keep Phase 10D behaviour.
+  Public availability request bodies unchanged; calendar/day responses now set
+  `*_supported: true` and expose override fields. No channel-split / PMS / OTA
+  inventory tables.
+- **Files created:** `backend/migrations/005_room_type_inventory_dates.sql`,
+  `backend/services/inventoryCapacity.js`,
+  `backend/scripts/verifyPhase10I.js`.
+- **Files modified:** `booking.service.js`, `inventory.service.js`,
+  `booking.controller.js`, `inventory.controller.js`, `verifyPhase10D.js`,
+  `backend/package.json`, docs/TODO/ADR.
+- **APIs added:** none (existing inventory + booking availability routes).
+- **APIs changed:** calendar/day payloads gain supported flags and optional
+  allotment / sell_limit / stop_sell values; create/availability still reject
+  stop-sell and oversold stays with `409`.
+- **Database changes:** migration `005` — table `room_type_inventory_dates`
+  (PK `id`; FKs `hotel_id`, `room_type_id` CASCADE; UNIQUE
+  `(hotel_id, room_type_id, inventory_date)`; CHECKs; indexes; `set_updated_at`).
+- **Frontend changes:** none required (admin calendar consumes updated fields).
+- **Backend changes:** capacity helper + availability integration.
+- **Remaining work:** admin UI to edit inventory date rows; booking
+  internal-notes column; deployment / Phase 11+.
+
 ### Changed — Room type overnight base_price operational setup ✅
 
 - **What changed.** Verified `room_types.base_price` is `NUMERIC(12,2)`. Set
@@ -26,8 +54,8 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 - **Database changes:** data only (`UPDATE room_types.base_price`); no schema.
 - **Frontend changes:** admin helper text; package-safe starting price helper.
 - **Backend changes:** ops scripts + seed defaults.
-- **Remaining work:** stop-sell schema (approval); booking internal notes;
-  deployment.
+- **Remaining work:** Phase 10I inventory dates (done in Unreleased above);
+  booking internal notes; deployment.
 
 ### Added — Phase 10H — Admin Inquiries CRUD UI ✅
 

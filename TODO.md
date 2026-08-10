@@ -21,12 +21,15 @@
   - [ ] Dedicated internal-notes column (needs schema approval).
 - [x] **Phase 10D — Availability & Inventory Engine** — derived per-day
       inventory service + calendar/day/overlaps APIs (admin + public calendar).
-      Stop-sell/allotment/overbooking **not** in schema — flagged unsupported;
-      needs approval before any migration. Smoke: `npm run verify:phase10d`.
-  - [ ] Persistent stop-sell / allotment / overbooking allowance (schema approval).
+      Smoke: `npm run verify:phase10d`.
+- [x] **Phase 10I — Persistent inventory dates** — migration `005`
+      (`room_type_inventory_dates`), stop-sell / allotment / overbooking in
+      booking + inventory services. Public request bodies unchanged. Smoke:
+      `npm run verify:phase10i`.
+  - [ ] Admin UI / CRUD to create/edit inventory date rows.
 - [x] **Phase 10E — Admin Inventory Calendar UI** — `/admin/inventory` monthly
       calendar (hotel/room-type filters, color-coded availability). Consumes
-      Phase 10D calendar API. No schema / booking-logic changes.
+      Phase 10D/10I calendar API.
 - [x] **Phase 10F — Booking Confirmation Email & Notification System** —
       email provider abstraction (console + SMTP), branded HTML templates
       (confirmation / cancellation / status update), hooked into booking create
@@ -48,8 +51,8 @@
       nightly). Scripts: `npm run set:base-prices` / `verify:base-prices`.
 - [ ] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 - [ ] Replace placeholder contact details before launch.
-- [ ] Run `npm run migrate` on every environment for `004_bookings.sql`
-      (Phase 10A). Local dev is already migrated and seeded.
+- [ ] Run `npm run migrate` on every environment for `004_bookings.sql` and
+      `005_room_type_inventory_dates.sql`. Local dev is already migrated.
 
 ---
 

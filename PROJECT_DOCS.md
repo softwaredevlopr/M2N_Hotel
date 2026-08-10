@@ -61,11 +61,12 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 10A | Booking engine backend (schema + APIs) | ✅ Complete |
 | 10B | Guest booking UI (`/book` + confirmation) | ✅ Complete |
 | 10C | Admin bookings module + dashboard stats | ✅ Module done |
-| 10D | Availability & inventory engine (derived APIs) | ✅ Complete (stop-sell schema pending) |
+| 10D | Availability & inventory engine (derived APIs) | ✅ Complete |
 | 10E | Admin inventory calendar UI | ✅ Complete |
 | 10F | Booking confirmation email & notifications | ✅ Complete |
 | 10G | Admin create booking form | ✅ Complete |
 | 10H | Admin inquiries CRUD UI | ✅ Complete |
+| 10I | Persistent inventory dates (stop-sell/allotment/overbooking) | ✅ Complete |
 | 11–14 | Booking polish, PMS, CRM, payments | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
@@ -139,13 +140,17 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
 - ✅ **Phase 10D — Availability & inventory engine** — `inventory.service.js`
   with per-day sold/remaining counts, stay-peak parity with booking availability,
   overlap detection, and calendar-ready APIs (`/api/admin/inventory/*`,
-  `GET /api/bookings/availability/calendar`). No schema change. Stop-sell /
-  allotment / overbooking allowance are **not** in the database — API flags
-  `*_supported: false` until a migration is explicitly approved.
+  `GET /api/bookings/availability/calendar`).
+
+- ✅ **Phase 10I — Persistent inventory dates** — migration `005`
+  `room_type_inventory_dates` (hotel-scoped sparse overrides). Booking and
+  inventory services apply stop-sell / allotment / overbooking allowance;
+  missing rows keep Phase 10D behaviour. Public request bodies unchanged.
+  Smoke: `npm run verify:phase10i`. Admin edit UI for date rows still pending.
 
 - ✅ **Phase 10E — Admin inventory calendar UI** — `/admin/inventory` monthly
   PMS calendar (hotel/room-type selectors, color-coded day cells) consuming
-  `GET /api/admin/inventory/calendar`. No schema or booking-logic changes.
+  `GET /api/admin/inventory/calendar`.
 
 - ✅ **Phase 10F — Booking confirmation email & notifications** — provider
   abstraction (`services/email`: console + SMTP), branded HTML templates
@@ -161,8 +166,8 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   (search, status, pagination, delete). JWT on inquiry list/get/status/delete;
   public create unchanged. No schema change.
 
-**Next:** Schema-approved stop-sell/allotment if needed; booking internal notes
-column (schema); Phase 11.
+**Next:** Admin UI to edit inventory date rows; booking internal notes column
+(schema); Phase 11.
 
 ---
 
@@ -305,13 +310,16 @@ Files simple numbered hote hain (`1.jpg`, `2.jpg`, …) aur natural order mein l
 
 Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md)
 
-- ⬜ **Persistent stop-sell / allotment / overbooking** (needs schema approval).
+- ✅ **Phase 10I** — persistent stop-sell / allotment / overbooking
+  (`room_type_inventory_dates`).
+- ⬜ Admin UI / CRUD for inventory date rows.
 - ⬜ **Remaining Phase 10C** — dedicated booking internal-notes column (schema
   approval).
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
   0 (couple package is not nightly).
 - ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ⬜ Production contact details (replace placeholders).
+- ⬜ Run `005_room_type_inventory_dates.sql` on non-local environments.
 - ⬜ Phases **11–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).
 
 > Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older

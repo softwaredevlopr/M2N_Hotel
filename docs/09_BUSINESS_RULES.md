@@ -53,8 +53,11 @@ Domain rules the product must enforce. Schema changes require explicit approval.
   check-out, so the checkout date is immediately resellable.
 - Only `pending`, `confirmed` and `checked_in` hold inventory. Cancelling or
   marking a no-show releases it.
-- Availability is judged on the **busiest single night** of the requested stay,
-  never a total of overlapping reservations ([ADR-0014](history/DECISIONS.md)).
+- Availability is judged per half-open night, then take the **minimum available
+  across nights** of the stay (never a sum of overlapping reservations).
+  Optional `room_type_inventory_dates` overrides apply stop-sell, allotment, and
+  overbooking allowance ([ADR-0014](history/DECISIONS.md),
+  [ADR-0025](history/DECISIONS.md)).
 - Public bookings are always `pending` / `unpaid` / `website`, must be for an
   active hotel and active room type, and cannot start in the past.
 - Public pricing is derived from `room_types.base_price`; a base price of `0`
@@ -97,9 +100,18 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 - Room activate/deactivate maps to inventory statuses `available` /
   `out_of_service` (no separate active flag on `rooms`).
 
-## 8. Upcoming domain areas
+## 8. Inventory date overrides (Phase 10I)
 
-Persistent per-date allotment, stop-sells and overbooking allowances are **not**
-in the database. Phase 10D exposes derived calendars and sets
-`stop_sell_supported` / `allotment_supported` / `overbooking_allowance_supported`
-to `false` until a schema change is approved. Payments/invoicing remain Phase 14.
+- Table `room_type_inventory_dates` stores sparse per hotel / room type / night
+  overrides (`stop_sell`, `allotment`, `overbooking_allowance`).
+- Night formula: `base = COALESCE(allotment, physical)`;
+  `sell_limit = base + overbooking_allowance`;
+  `available_for_sale = stop_sell ? 0 : max(0, sell_limit - sold)`.
+- Any stop-sell night in a stay makes the stay not bookable (`409`).
+- Missing rows keep physical − sold behaviour. Channel-split / PMS / OTA
+  inventory tables are out of scope.
+
+## 9. Upcoming domain areas
+
+Admin UI/CRUD to edit inventory date rows is still pending. Payments/invoicing
+remain Phase 14.

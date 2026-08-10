@@ -81,8 +81,6 @@ const getAdminInventoryDay = asyncHandler(async (req, res) => {
       hotel_name: hotel.name,
       room_type_id: roomTypeId,
       ...day,
-      stop_sell_supported: false,
-      allotment_supported: false,
     },
   });
 });

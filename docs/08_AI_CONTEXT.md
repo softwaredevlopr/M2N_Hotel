@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-02  
+> **Status:** Living document · **Last updated:** 2026-08-08  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -16,13 +16,12 @@
 
 - Frontend Next.js `:3000` · Backend Express `:5001` · PostgreSQL.
 - Hotels: Aurelia Grand, Zaarang Inn (slug-scoped).
-- **Phases 1–9 complete** (public site, inquiries, admin auth + hotels/room types/rooms/media/tariffs).
-- **Phase 10A complete** — booking backend: `bookings` table, availability engine
-  with overbooking protection, public + admin booking APIs.
-- **Phase 10B complete** — guest booking UI: `/book` three-step flow with a live
-  stay summary, and `/booking/[bookingNumber]` confirmation + contact-verified
-  lookup. Frontend only; no new endpoints, no payment gateway.
-- **Next:** Phase 10C — admin bookings module and per-date inventory rules.
+- **Phases 1–9 and 10A–10I complete** (public site, admin console, booking
+  engine, inventory calendar, emails, inquiries, persistent inventory dates).
+- Availability uses physical rooms + blocking bookings, plus optional sparse
+  `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
+- **Next:** admin UI to edit inventory date rows; booking internal notes
+  (schema); Phase 11+.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 
 ## 3. Hard rules

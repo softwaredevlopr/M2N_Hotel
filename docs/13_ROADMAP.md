@@ -119,7 +119,17 @@ Derived inventory (no new tables) for calendar-ready APIs:
   `/availability`)
 - ✅ Parity checks vs `booking.service.checkAvailability`
 - ✅ Admin calendar UI at `/admin/inventory` (Phase 10E)
-- ⬜ Persistent stop-sell / allotment / overbooking_allowance (schema approval)
+- ✅ Persistent stop-sell / allotment / overbooking_allowance (Phase 10I)
+
+### Phase 10I — Persistent room-type inventory dates ✅
+
+- ✅ Migration `005_room_type_inventory_dates.sql` (approved sparse table)
+- ✅ Shared capacity helper + booking/inventory service integration
+- ✅ Stop-sell, allotment, overbooking allowance in availability formula
+- ✅ Calendar/day flags `*_supported: true`; public request bodies unchanged
+- ✅ Smoke: `npm run verify:phase10i` (plus updated `verify:phase10d`)
+- ⬜ Admin UI / CRUD to edit inventory date rows
+- ⬜ Channel-split inventory, per-room closures, PMS/OTA tables (later)
 
 ### Phase 10E — Admin Inventory Calendar UI ✅
 

@@ -147,7 +147,7 @@ models.
 | Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
 | Bookings | ✅ Phase 10C/10G | `/api/admin/bookings` + list/detail/create UI |
 | Inquiries | ✅ Phase 10H | `/api/inquiries` (POST public; admin JWT for rest) + UI |
-| Inventory | ✅ Phase 10D/10E | `/api/admin/inventory/*` + `/admin/inventory` UI |
+| Inventory | ✅ Phase 10D/10E/10I | `/api/admin/inventory/*` + `/admin/inventory` UI; `room_type_inventory_dates` |
 | Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |
 
 Protected by `AdminGuard` (client) + `requireAdminAuth` (server).

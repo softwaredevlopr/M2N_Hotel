@@ -13,6 +13,7 @@
     "verify:phase10c": "node scripts/verifyPhase10C.js",
     "verify:phase10d": "node scripts/verifyPhase10D.js",
     "verify:phase10f": "node scripts/verifyPhase10F.js",
+    "verify:phase10i": "node scripts/verifyPhase10I.js",
     "set:base-prices": "node scripts/setRoomTypeBasePrices.js",
     "verify:base-prices": "node scripts/verifyRoomTypeBasePrices.js"
   },

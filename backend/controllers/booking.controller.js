@@ -187,7 +187,7 @@ const getAvailability = asyncHandler(async (req, res) => {
       total_rooms: availability.total_rooms,
       booked_rooms: availability.booked_rooms,
       available_rooms: availability.available_rooms,
-      is_available: availableEnough && availability.total_rooms > 0,
+      is_available: availableEnough && !availability.stop_sell,
       nightly_rate: amounts.nightly_rate,
       on_request: amounts.on_request,
       subtotal: amounts.subtotal,

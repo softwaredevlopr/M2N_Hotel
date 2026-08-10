@@ -4,20 +4,23 @@ const {
   INVENTORY_BLOCKING_STATUSES,
   SELLABLE_ROOM_STATUSES,
 } = require("../utils/bookingConstants");
+const {
+  computeNightAvailability,
+  loadInventoryOverrides,
+  summarizeStayAvailability,
+} = require("./inventoryCapacity");
 
 /** Soft cap so calendar queries cannot span an unbounded date range. */
 const MAX_CALENDAR_DAYS = 92;
 
 /**
- * Phase 10D inventory engine.
+ * Inventory calendar / day engine (Phase 10D + 10I).
  *
- * Availability is derived (ADR-0014): sellable physical rooms minus rooms held
- * by inventory-blocking bookings on each half-open night. There is no stop-sell
- * / allotment table — those features are documented as pending until a schema
- * change is approved.
- *
- * Night occupancy predicates mirror booking.service peakBookedRooms so calendar
- * day D matches checkAvailability({ checkIn: D, checkOut: D+1 }).
+ * Night D availability uses room_type_inventory_dates overrides when present:
+ *   base = COALESCE(allotment, physical)
+ *   sell_limit = base + overbooking_allowance
+ *   available = stop_sell ? 0 : max(0, sell_limit - sold)
+ * Missing override rows keep Phase 10D physical − sold behaviour.
  */
 
 function assertDateRange(from, to) {
@@ -157,23 +160,31 @@ async function getNightlySoldCounts({
   return map;
 }
 
-function buildDayRow(date, totalRooms, soldCount) {
-  const sold = Number(soldCount) || 0;
-  const total = Number(totalRooms) || 0;
-  const remaining = Math.max(total - sold, 0);
+function buildDayRow(date, physicalTotal, soldCount, override = null) {
+  const night = computeNightAvailability({
+    physical: physicalTotal,
+    sold: soldCount,
+    allotment: override ? override.allotment : null,
+    stopSell: override ? override.stop_sell : false,
+    overbookingAllowance: override ? override.overbooking_allowance : 0,
+  });
+  const available = night.available_for_sale;
   return {
     date,
-    total_rooms: total,
-    sold_count: sold,
-    booked_rooms: sold,
-    remaining_count: remaining,
-    available_rooms: remaining,
-    is_sold_out: total === 0 || remaining === 0,
-    // Stop-sell is not persisted in the schema yet (Phase 10D pending product
-    // decision / migration approval). Always false; clients can key off
-    // stop_sell_supported.
-    stop_sell: false,
-    stop_sell_supported: false,
+    total_rooms: night.physical_total,
+    physical_total: night.physical_total,
+    allotment: night.allotment,
+    overbooking_allowance: night.overbooking_allowance,
+    sell_limit: night.sell_limit,
+    sold_count: night.sold_count,
+    booked_rooms: night.sold_count,
+    remaining_count: available,
+    available_rooms: available,
+    is_sold_out: night.stop_sell || available === 0,
+    stop_sell: night.stop_sell,
+    stop_sell_supported: true,
+    allotment_supported: true,
+    overbooking_allowance_supported: true,
   };
 }
 
@@ -189,12 +200,18 @@ async function getDayInventory({ hotelId, roomTypeId, date }) {
     to: date,
   });
   const sold = soldMap.get(roomTypeId)?.get(date) || 0;
-  return buildDayRow(date, total, sold);
+  const overrides = await loadInventoryOverrides(query, {
+    hotelId,
+    roomTypeIds: [roomTypeId],
+    from: date,
+    to: date,
+  });
+  const override = overrides.get(roomTypeId)?.get(date) || null;
+  return buildDayRow(date, total, sold, override);
 }
 
 /**
- * Peak sold rooms across a multi-night stay (half-open). Same definition as
- * booking.service.getAvailability.booked_rooms.
+ * Stay-window inventory — same definition as booking.service.getAvailability.
  */
 async function getStayPeakSold({
   hotelId,
@@ -207,7 +224,6 @@ async function getStayPeakSold({
     throw new AppError("check_out_date must be after check_in_date", 400);
   }
   const total = await countSellableRooms(hotelId, roomTypeId);
-  // Peak over [checkIn, checkOut) = nights from checkIn through checkOut-1.
   const lastNight = (() => {
     const d = new Date(`${checkOut}T00:00:00Z`);
     d.setUTCDate(d.getUTCDate() - 1);
@@ -217,10 +233,13 @@ async function getStayPeakSold({
   if (lastNight < checkIn) {
     return {
       total_rooms: total,
+      physical_total: total,
       sold_count: 0,
       booked_rooms: 0,
       remaining_count: total,
       available_rooms: total,
+      stop_sell: false,
+      sell_limit: total,
     };
   }
 
@@ -230,18 +249,31 @@ async function getStayPeakSold({
     to: lastNight,
     excludeBookingId,
   });
-  const nights = soldMap.get(roomTypeId) || new Map();
-  let peak = 0;
-  nights.forEach((sold) => {
-    if (sold > peak) peak = sold;
+  const nightsSoldMap = soldMap.get(roomTypeId) || new Map();
+  const overridesByType = await loadInventoryOverrides(query, {
+    hotelId,
+    roomTypeIds: [roomTypeId],
+    from: checkIn,
+    to: lastNight,
   });
-  const remaining = Math.max(total - peak, 0);
+  const overridesByDate = overridesByType.get(roomTypeId) || new Map();
+  const summary = summarizeStayAvailability({
+    physical: total,
+    nightsSoldMap,
+    overridesByDate,
+    checkIn,
+    checkOut,
+  });
+
   return {
-    total_rooms: total,
-    sold_count: peak,
-    booked_rooms: peak,
-    remaining_count: remaining,
-    available_rooms: remaining,
+    total_rooms: summary.total_rooms,
+    physical_total: summary.total_rooms,
+    sold_count: summary.booked_rooms,
+    booked_rooms: summary.booked_rooms,
+    remaining_count: summary.available_rooms,
+    available_rooms: summary.available_rooms,
+    stop_sell: summary.stop_sell,
+    sell_limit: summary.min_sell_limit,
   };
 }
 
@@ -315,6 +347,12 @@ async function getInventoryCalendar({
     to,
     excludeBookingId,
   });
+  const overridesByType = await loadInventoryOverrides(query, {
+    hotelId: hotel.id,
+    roomTypeIds: typeIds,
+    from,
+    to,
+  });
 
   const totals = {};
   await Promise.all(
@@ -323,7 +361,6 @@ async function getInventoryCalendar({
     })
   );
 
-  // Inclusive date list
   const days = [];
   {
     const cursor = new Date(`${from}T00:00:00Z`);
@@ -336,6 +373,7 @@ async function getInventoryCalendar({
 
   const room_types = roomTypes.map((rt) => {
     const nightMap = soldByType.get(rt.id) || new Map();
+    const overrideMap = overridesByType.get(rt.id) || new Map();
     const total = totals[rt.id] || 0;
     return {
       room_type_id: rt.id,
@@ -346,7 +384,12 @@ async function getInventoryCalendar({
       bed_type: rt.bed_type,
       total_rooms: total,
       days: days.map((date) =>
-        buildDayRow(date, total, nightMap.get(date) || 0)
+        buildDayRow(
+          date,
+          total,
+          nightMap.get(date) || 0,
+          overrideMap.get(date) || null
+        )
       ),
     };
   });
@@ -358,9 +401,9 @@ async function getInventoryCalendar({
     currency: hotel.currency_code || "INR",
     from,
     to,
-    stop_sell_supported: false,
-    allotment_supported: false,
-    overbooking_allowance_supported: false,
+    stop_sell_supported: true,
+    allotment_supported: true,
+    overbooking_allowance_supported: true,
     room_types,
   };
 }

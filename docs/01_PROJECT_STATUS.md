@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-04  
+> **Status:** Living document · **Last updated:** 2026-08-08  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -40,11 +40,12 @@
 | Booking engine — confirmation emails | ✅ Phase 10F |
 | Booking engine — admin create booking form | ✅ Phase 10G |
 | Admin inquiries CRUD UI | ✅ Phase 10H |
-| Booking engine — stop-sell rules | ⬜ Remaining (schema approval) |
+| Booking engine — persistent inventory dates | ✅ Phase 10I |
+| Admin inventory-date edit UI | ⬜ Remaining |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10H** ✅ · Next: stop-sell schema
-(approval), booking internal notes (schema), deployment
+**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: inventory-date
+admin CRUD UI, booking internal notes (schema), deployment
 
 ---
 
@@ -185,6 +186,15 @@
   (`admin_notes`), delete. Public inquiry form (`POST /api/inquiries`) unchanged.
 - List/get/status/delete require admin JWT; no schema change.
 
+### Phase 10I — Persistent inventory dates ✅
+
+- Migration `005_room_type_inventory_dates.sql` — sparse per hotel / room type /
+  night overrides (`stop_sell`, `allotment`, `overbooking_allowance`).
+- Booking + inventory services apply the approved availability formula; missing
+  rows keep Phase 10D behaviour. Public request bodies unchanged.
+- Calendar/day APIs set `*_supported: true`. Smoke: `npm run verify:phase10i`.
+- Admin edit UI for inventory date rows still pending.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -195,17 +205,18 @@
 
 ## 3. In Progress
 
-- None formally in-flight. Next: schema-approved stop-sell/allotment if product
-  requires persistence; booking internal notes column (schema); deployment.
+- None formally in-flight. Next: admin inventory-date edit UI; booking internal
+  notes column (schema); deployment.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Persistent stop-sell / allotment / overbooking (needs schema approval).
+1. Admin UI / CRUD for `room_type_inventory_dates` rows.
 2. Dedicated booking internal-notes column (schema approval).
 3. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-4. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+4. Run migration `005` on non-local environments.
+5. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -224,6 +235,7 @@
 
 | Date | Update |
 |------|--------|
+| 2026-08-08 | Phase 10I persistent `room_type_inventory_dates` (stop-sell/allotment/overbooking) |
 | 2026-08-06 | Operational: set Deluxe/Suite overnight `base_price` (1999/2999); Standard remains 0 for couple package |
 | 2026-08-06 | Phase 10H admin inquiries CRUD UI at `/admin/inquiries` |
 | 2026-08-05 | Phase 10G admin create booking form at `/admin/bookings/new` |

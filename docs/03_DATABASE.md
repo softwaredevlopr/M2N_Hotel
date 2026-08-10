@@ -1,7 +1,7 @@
 # 03 — Database
 
-> **Status:** Living document · **Last updated:** 2026-08-02  
-> **Source of truth:** `backend/migrations/001_initial_schema.sql`, `002_admin_users.sql`, `003_tariff_rates.sql`, `004_bookings.sql`  
+> **Status:** Living document · **Last updated:** 2026-08-08  
+> **Source of truth:** `backend/migrations/001_initial_schema.sql` … `005_room_type_inventory_dates.sql`  
 > **Rule:** Do not change schema without explicit approval.
 
 ---
@@ -41,6 +41,7 @@ Template: `backend/.env.example`. Never commit real credentials.
 | `002_admin_users.sql` | Admin authentication accounts |
 | `003_tariff_rates.sql` | Tariff / meal-plan rate rows (Phase 9) |
 | `004_bookings.sql` | Direct reservations — bookings (Phase 10A) |
+| `005_room_type_inventory_dates.sql` | Per-night stop-sell / allotment / overbooking (Phase 10I) |
 
 ```bash
 cd backend
@@ -126,12 +127,37 @@ Statuses and sources are `VARCHAR` + `CHECK` constraints, matching the existing
 project convention (no native PostgreSQL enums). Mirrored in
 `backend/utils/bookingConstants.js` — keep both in sync.
 
-**Availability** is derived, not stored. Sellable inventory is the count of
-`rooms` for the room type with status `available` or `occupied`; committed
-inventory is the busiest single night across the requested stay among bookings
-in `pending`, `confirmed`, or `checked_in`. A partial index
-(`idx_bookings_availability`) covers that lookup. See
-[ADR-0014](history/DECISIONS.md).
+**Availability** starts from physical sellable rooms (`available` \| `occupied`)
+minus blocking bookings (`pending` \| `confirmed` \| `checked_in`) on each
+half-open night. Optional sparse overrides live in
+`room_type_inventory_dates` (Phase 10I). See [ADR-0014](history/DECISIONS.md)
+and [ADR-0025](history/DECISIONS.md).
+
+### `room_type_inventory_dates` (Phase 10I, migration 005)
+
+Sparse per-hotel / room-type / night overrides. Missing row = physical − sold
+(Phase 10D behaviour).
+
+| Column | Notes |
+|--------|--------|
+| `id` | UUID PK, `gen_random_uuid()` |
+| `hotel_id` | FK → `hotels(id)` `ON DELETE CASCADE` |
+| `room_type_id` | FK → `room_types(id)` `ON DELETE CASCADE` |
+| `inventory_date` | Night date (half-open stay night) |
+| `allotment` | Nullable `SMALLINT` — `NULL` = use physical; else ≥ 0 |
+| `stop_sell` | `BOOLEAN NOT NULL DEFAULT FALSE` |
+| `overbooking_allowance` | `SMALLINT NOT NULL DEFAULT 0`, ≥ 0 |
+| `notes` | Nullable free text |
+| `source` | `manual` \| `system` \| `ota` \| `channel` (default `manual`) |
+| `external_ref` | Nullable external id (≤ 120) |
+| `created_at` / `updated_at` | Timestamps; `set_updated_at` trigger |
+
+Constraints: `UNIQUE (hotel_id, room_type_id, inventory_date)`. Indexes on
+`(hotel_id, inventory_date)` and `(room_type_id, inventory_date)`.
+
+Night formula: `base = COALESCE(allotment, physical)`;
+`sell_limit = base + overbooking_allowance`;
+`available = stop_sell ? 0 : max(0, sell_limit - sold)`.
 
 ### `admin_users` (migration 002)
 
@@ -151,6 +177,7 @@ hotels 1──* room_types 1──* rooms
 hotels 1──* inquiries (optional room_type_id)
 hotels 1──* bookings *──1 room_types (optional room_id, optional created_by_admin_id)
 hotels 1──* tariff_rates (optional room_type_id)
+hotels 1──* room_type_inventory_dates *──1 room_types
 admin_users (standalone auth)
 ```
 

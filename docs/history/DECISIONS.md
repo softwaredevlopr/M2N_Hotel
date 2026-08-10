@@ -490,7 +490,7 @@ photos, violating the hard image rule in [`AGENTS.md`](../../AGENTS.md) §8.
 
 **Date:** 2026-08-02
 
-**Status:** Accepted
+**Status:** Accepted (extended by [ADR-0025](#adr-0025--phase-10i-persistent-room_type_inventory_dates))
 
 **Context**
 Phase 10A adds direct reservations. The schema has `rooms` (physical inventory)
@@ -759,7 +759,7 @@ and statuses required. A dedicated audit/notes table would need a schema change.
 
 **Date:** 2026-08-05
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0025](#adr-0025--phase-10i-persistent-room_type_inventory_dates)
 
 **Context**
 Product needs per-day sold/remaining inventory and calendar-ready APIs for a
@@ -782,7 +782,7 @@ blocking `bookings`. There are still no `stop_sell`, `allotment`, or
 **Consequences**
 - Calendar UI can be built against stable APIs without a schema risk.
 - True stop-sell/allotment remain blocked on schema approval (documented in
-  TODO / roadmap).
+  TODO / roadmap). Superseded when Phase 10I landed `room_type_inventory_dates`.
 
 **Alternatives considered**
 - Store allotment rows immediately. Rejected — violates “no schema without
@@ -880,6 +880,48 @@ changes. Public website only needs `POST /api/inquiries`.
   documented; securing them is simpler than duplicating controllers.
 - Soft-delete status only. Rejected — product asked for delete with confirmation;
   hard delete matches other admin modules and needs no schema.
+
+### ADR-0025 — Phase 10I persistent `room_type_inventory_dates`
+
+**Date:** 2026-08-08
+
+**Status:** Accepted
+
+**Context**
+Phase 10D calendars derived availability from physical rooms + blocking
+bookings only (`stop_sell_supported: false`). Product approved a sparse
+per-night override table for stop-sell, allotment, and overbooking allowance.
+A composite FK to `room_types(hotel_id, id)` is illegal because `room_types`
+only has `PRIMARY KEY (id)` / `UNIQUE (hotel_id, slug)` — do not invent
+`UNIQUE (hotel_id, id)`.
+
+**Decision**
+- Add migration `005_room_type_inventory_dates.sql` with PK on `id`, separate
+  FKs `hotel_id → hotels(id)` and `room_type_id → room_types(id)` both
+  `ON DELETE CASCADE`, `UNIQUE (hotel_id, room_type_id, inventory_date)`,
+  approved CHECKs/indexes, and `set_updated_at`.
+- Sparse model: missing row = Phase 10D physical − sold behaviour.
+- Night formula:
+  `base = COALESCE(allotment, physical)`;
+  `sell_limit = base + overbooking_allowance`;
+  `available_for_sale = stop_sell ? 0 : max(0, sell_limit - sold)`.
+  Stay availability = min across half-open nights; any stop-sell ⇒ not bookable.
+- Shared helper `inventoryCapacity.js` used by `booking.service` and
+  `inventory.service`. Public request bodies stay backward compatible.
+- Defer channel-split inventory, per-room closures, PMS Lite, and OTA tables.
+
+**Consequences**
+- Stop-sell / allotment / overbooking are enforceable in booking create and
+  reflected in admin/public calendar day rows (`*_supported: true`).
+- Admin edit UI for override rows is still a follow-up (rows insertable via SQL /
+  future CRUD).
+- Supersedes the “no persistence” clause of ADR-0021.
+
+**Alternatives considered**
+- Composite FK via new `UNIQUE (hotel_id, id)` on `room_types`. Rejected —
+  redundant with PK; unnecessary schema churn.
+- Dense nightly rows for every room type. Rejected — sparse keeps defaults cheap.
+- Channel / OTA split tables now. Deferred — out of Phase 10I scope.
 
 ---
 

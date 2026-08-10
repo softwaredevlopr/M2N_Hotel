@@ -5,6 +5,10 @@ const {
   INVENTORY_BLOCKING_STATUSES,
   SELLABLE_ROOM_STATUSES,
 } = require("../utils/bookingConstants");
+const {
+  loadInventoryOverrides,
+  summarizeStayAvailability,
+} = require("./inventoryCapacity");
 
 const UNIQUE_VIOLATION = "23505";
 const BOOKING_NUMBER_MAX_ATTEMPTS = 5;
@@ -80,7 +84,7 @@ async function countSellableRooms(client, hotelId, roomTypeId) {
  * therefore evaluated per night and the busiest night wins. Nights are
  * half-open — the checkout date is free for the next guest.
  */
-async function peakBookedRooms(
+async function getNightlySoldMap(
   client,
   { roomTypeId, checkIn, checkOut, excludeBookingId = null }
 ) {
@@ -88,18 +92,16 @@ async function peakBookedRooms(
     `WITH nights AS (
        SELECT generate_series($2::date, $3::date - 1, INTERVAL '1 day')::date AS night
      )
-     SELECT COALESCE(MAX(per_night.occupied), 0)::int AS peak
-     FROM (
-       SELECT n.night, COALESCE(SUM(b.number_of_rooms), 0) AS occupied
-       FROM nights n
-       LEFT JOIN bookings b
-         ON b.room_type_id = $1
-        AND b.booking_status = ANY($4::text[])
-        AND b.check_in_date <= n.night
-        AND b.check_out_date > n.night
-        AND ($5::uuid IS NULL OR b.id <> $5::uuid)
-       GROUP BY n.night
-     ) per_night`,
+     SELECT n.night::text AS night,
+            COALESCE(SUM(b.number_of_rooms), 0)::int AS occupied
+     FROM nights n
+     LEFT JOIN bookings b
+       ON b.room_type_id = $1
+      AND b.booking_status = ANY($4::text[])
+      AND b.check_in_date <= n.night
+      AND b.check_out_date > n.night
+      AND ($5::uuid IS NULL OR b.id <> $5::uuid)
+     GROUP BY n.night`,
     [
       roomTypeId,
       checkIn,
@@ -108,7 +110,11 @@ async function peakBookedRooms(
       excludeBookingId,
     ]
   );
-  return result.rows[0].peak;
+  const map = new Map();
+  result.rows.forEach((row) => {
+    map.set(String(row.night).slice(0, 10), row.occupied);
+  });
+  return map;
 }
 
 async function getAvailability(
@@ -116,22 +122,51 @@ async function getAvailability(
   { hotelId, roomTypeId, checkIn, checkOut, excludeBookingId = null }
 ) {
   const totalRooms = await countSellableRooms(client, hotelId, roomTypeId);
-  const bookedRooms = await peakBookedRooms(client, {
+  const nightsSoldMap = await getNightlySoldMap(client, {
     roomTypeId,
     checkIn,
     checkOut,
     excludeBookingId,
   });
 
+  const lastNight = (() => {
+    const d = new Date(`${checkOut}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  const overridesByType = await loadInventoryOverrides(client, {
+    hotelId,
+    roomTypeIds: [roomTypeId],
+    from: checkIn,
+    to: lastNight < checkIn ? checkIn : lastNight,
+  });
+  const overridesByDate = overridesByType.get(roomTypeId) || new Map();
+
+  const summary = summarizeStayAvailability({
+    physical: totalRooms,
+    nightsSoldMap,
+    overridesByDate,
+    checkIn,
+    checkOut,
+  });
+
   return {
-    total_rooms: totalRooms,
-    booked_rooms: bookedRooms,
-    available_rooms: Math.max(totalRooms - bookedRooms, 0),
+    total_rooms: summary.total_rooms,
+    booked_rooms: summary.booked_rooms,
+    available_rooms: summary.available_rooms,
+    stop_sell: summary.stop_sell,
   };
 }
 
 function assertInventoryAvailable(availability, requestedRooms) {
-  if (availability.total_rooms === 0) {
+  if (availability.stop_sell) {
+    throw new AppError(
+      "This room type is not available (stop-sell) for the selected dates",
+      409
+    );
+  }
+  if (availability.total_rooms === 0 && availability.available_rooms === 0) {
     throw new AppError(
       "No bookable rooms are configured for this room type",
       409

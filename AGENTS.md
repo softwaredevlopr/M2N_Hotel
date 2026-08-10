@@ -77,12 +77,16 @@ for audit. Verify with `npm run verify:phase10c` in `backend/`.
 
 **Completed (Phase 10D):** derived availability & inventory engine —
 `inventory.service.js`, admin `/api/admin/inventory/*`, public
-`/api/bookings/availability/calendar`. Stop-sell/allotment need schema approval.
-Verify with `npm run verify:phase10d`.
+`/api/bookings/availability/calendar`. Verify with `npm run verify:phase10d`.
+
+**Completed (Phase 10I):** persistent inventory dates — migration `005`
+`room_type_inventory_dates` (stop-sell / allotment / overbooking allowance).
+Booking + inventory services apply sparse overrides; public request bodies
+unchanged. Verify with `npm run verify:phase10i`.
 
 **Completed (Phase 10E):** admin inventory calendar UI at `/admin/inventory`
-(monthly grid, hotel/room-type filters, color-coded availability) over Phase 10D
-APIs. No schema change.
+(monthly grid, hotel/room-type filters, color-coded availability) over Phase
+10D/10I APIs.
 
 **Completed (Phase 10F):** booking confirmation / cancellation / status-update
 emails via provider abstraction (`console` when SMTP unset, nodemailer SMTP when
@@ -97,8 +101,8 @@ create API. No schema change.
 detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
 writes require JWT. No schema change.
 
-**Upcoming:** stop-sell schema (approval), Phase 11+.
-See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
+**Upcoming:** admin UI to edit inventory date rows, booking internal notes
+(schema), Phase 11+. See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares
 another hotel's content or photos.

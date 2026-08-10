@@ -217,9 +217,9 @@ async function main() {
     calDay &&
       typeof calDay.sold_count === "number" &&
       typeof calDay.remaining_count === "number" &&
-      calDay.stop_sell_supported === false
+      calDay.stop_sell_supported === true
   );
-  check("stop-sell flagged unsupported at hotel level", calendar.body?.data?.stop_sell_supported === false);
+  check("stop-sell flagged supported at hotel level", calendar.body?.data?.stop_sell_supported === true);
 
   const dayApi = await api(
     "GET",
@@ -267,13 +267,25 @@ async function main() {
   );
   check("existing stay availability still works", stayAvail.status === 200);
 
-  section("Schema guard — no stop_sell column");
-  const cols = await query(
+  section("Schema guard — inventory dates table owns stop_sell columns");
+  const legacyCols = await query(
     `SELECT column_name FROM information_schema.columns
      WHERE table_name IN ('bookings','rooms','room_types','hotels')
        AND column_name IN ('stop_sell','allotment','overbooking_allowance')`
   );
-  check("no stop_sell/allotment columns", cols.rows.length === 0);
+  check(
+    "no stop_sell/allotment on legacy booking tables",
+    legacyCols.rows.length === 0
+  );
+  const invCols = await query(
+    `SELECT column_name FROM information_schema.columns
+     WHERE table_name = 'room_type_inventory_dates'
+       AND column_name IN ('stop_sell','allotment','overbooking_allowance')`
+  );
+  check(
+    "room_type_inventory_dates has stop_sell/allotment/overbooking",
+    invCols.rows.length === 3
+  );
 
   console.log(`\n${passed} passed, ${failed} failed`);
   await cleanup();

@@ -314,10 +314,11 @@ refused on terminal bookings.
 `no_show`. **Payment:** `unpaid`, `partial`, `paid`, `refunded`.
 **Sources:** `website`, `admin`, `phone`, `walk_in`, `ota`.
 
-## 10b. Inventory calendar (Phase 10D)
+## 10b. Inventory calendar (Phase 10D + 10I)
 
-Derived inventory — same sellable / blocking rules as ADR-0014. See
-[ADR-0021](history/DECISIONS.md).
+Physical rooms + blocking bookings (ADR-0014), with optional sparse overrides
+from `room_type_inventory_dates` (ADR-0025). Public stay-range request bodies
+are unchanged.
 
 | Method | Path | Auth |
 |--------|------|------|
@@ -329,19 +330,26 @@ Derived inventory — same sellable / blocking rules as ADR-0014. See
 **Calendar query:** `hotel_id` or `hotel_slug`, `from`, `to` (`YYYY-MM-DD`,
 inclusive, max 92 days), optional `room_type_id`.
 
-**Per-day fields:** `date`, `total_rooms`, `sold_count`, `booked_rooms` (alias),
-`remaining_count`, `available_rooms` (alias), `is_sold_out`, `stop_sell` (always
-`false`), `stop_sell_supported` (`false`). Top-level also sets
-`allotment_supported` / `overbooking_allowance_supported` to `false`.
+**Per-day fields:** `date`, `total_rooms` / `physical_total`, `allotment`,
+`overbooking_allowance`, `sell_limit`, `sold_count`, `booked_rooms` (alias),
+`remaining_count`, `available_rooms` (alias), `is_sold_out`, `stop_sell`,
+`stop_sell_supported` / `allotment_supported` /
+`overbooking_allowance_supported` (`true`). Top-level calendar also sets those
+supported flags to `true`.
+
+**Night formula:** `base = COALESCE(allotment, physical)`;
+`sell_limit = base + overbooking_allowance`;
+`available = stop_sell ? 0 : max(0, sell_limit - sold)`. Missing override rows
+keep Phase 10D physical − sold behaviour.
 
 **Day query:** `hotel_id`, `room_type_id`, `date`.
 
 **Overlaps query:** `hotel_id`, `room_type_id`, `check_in_date`, `check_out_date`,
-optional `exclude_booking_id`. Returns peak inventory for the stay plus
+optional `exclude_booking_id`. Returns stay inventory (with overrides) plus
 `overlapping_bookings[]`.
 
-**Not supported without schema approval:** persistent stop-sell, allotment caps,
-overbooking allowance.
+**Not in scope yet:** admin CRUD for inventory date rows, channel-split
+inventory, per-room closures, PMS/OTA tables.
 
 ## 11. Errors & security
 
