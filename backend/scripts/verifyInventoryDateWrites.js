@@ -126,6 +126,19 @@ async function main() {
   const day = isoDaysFromNow(90);
   const day2 = addDays(day, 1);
 
+  section("Day GET — no-row default state");
+  const baselineDay = await api(
+    "GET",
+    `/api/admin/inventory/day?hotel_id=${hotelA.id}&room_type_id=${hotelA.room_type_id}&date=${day}`,
+    { token }
+  );
+  check("baseline day 200", baselineDay.status === 200);
+  check(
+    "baseline has_override false",
+    baselineDay.body?.data?.has_override === false
+  );
+  check("baseline source null", baselineDay.body?.data?.source === null);
+
   section("Auth required");
   const unauth = await api("PUT", "/api/admin/inventory/dates", {
     body: {
@@ -153,6 +166,14 @@ async function main() {
   check("insert returns 201", inserted.status === 201, `got ${inserted.status}`);
   check("insert created flag", inserted.body?.data?.created === true);
   check("insert allotment = 1", inserted.body?.data?.allotment === 1);
+  check(
+    "insert day has_override true",
+    inserted.body?.data?.day?.has_override === true
+  );
+  check(
+    "insert day source present",
+    inserted.body?.data?.day?.source === "manual"
+  );
   trackId(inserted.body);
 
   section("Successful upsert/update");
@@ -337,6 +358,41 @@ async function main() {
   });
   check("invalid calendar date 400", badDate.status === 400);
 
+  section("Defaults-only persisted row still has_override");
+  const defaultsOnly = await api("PUT", "/api/admin/inventory/dates", {
+    token,
+    body: {
+      hotel_id: hotelA.id,
+      room_type_id: hotelA.room_type_id,
+      inventory_date: day,
+      allotment: null,
+      stop_sell: false,
+      overbooking_allowance: 0,
+      source: "manual",
+    },
+  });
+  check("defaults-only upsert ok", defaultsOnly.status === 200 || defaultsOnly.status === 201);
+  check(
+    "defaults-only day has_override true",
+    defaultsOnly.body?.data?.day?.has_override === true
+  );
+  check(
+    "defaults-only day source manual",
+    defaultsOnly.body?.data?.day?.source === "manual"
+  );
+  trackId(defaultsOnly.body);
+
+  const dayReload = await api(
+    "GET",
+    `/api/admin/inventory/day?hotel_id=${hotelA.id}&room_type_id=${hotelA.room_type_id}&date=${day}`,
+    { token }
+  );
+  check(
+    "reload preserves source",
+    dayReload.body?.data?.source === "manual" &&
+      dayReload.body?.data?.has_override === true
+  );
+
   section("Delete / clear override");
   const cleared = await api(
     "DELETE",
@@ -345,6 +401,11 @@ async function main() {
   );
   check("delete returns 200", cleared.status === 200, `got ${cleared.status}`);
   check("delete deleted=true", cleared.body?.data?.deleted === true);
+  check(
+    "post-clear day has_override false",
+    cleared.body?.data?.day?.has_override === false
+  );
+  check("post-clear day source null", cleared.body?.data?.day?.source === null);
 
   const afterClear = await bookingService.checkAvailability({
     hotelId: hotelA.id,

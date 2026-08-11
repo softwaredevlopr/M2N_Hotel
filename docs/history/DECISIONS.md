@@ -958,6 +958,35 @@ stay unchanged; no further schema work was approved.
 - Soft-delete flag column. Rejected — needs schema approval; hard delete restores
   Phase 10D defaults correctly.
 
+### ADR-0027 — Admin inventory day-edit UI over existing write APIs
+
+**Date:** 2026-08-11
+
+**Status:** Accepted
+
+**Context**
+Write APIs for `room_type_inventory_dates` exist (ADR-0026). Staff still needed
+a console surface on `/admin/inventory` without schema or public API changes.
+`notes` / `external_ref` remain non-writable.
+
+**Decision**
+- Extend the calendar so a selected hotel + room type day opens a side panel
+  editing only `allotment`, `stop_sell`, `overbooking_allowance`, and `source`.
+- Save via `PUT /api/admin/inventory/dates`; clear via ConfirmDialog +
+  `DELETE /api/admin/inventory/dates`; refresh calendar after success.
+- “All room types” stays read-only aggregate; toast prompts selecting a room
+  type before edit (prevents ambiguous multi-type writes).
+- No schema change; no public booking/availability contract change.
+
+**Consequences**
+- Operators can manage stop-sell / allotment / overbooking from the calendar.
+- Defaults-only DB rows are hard to distinguish visually from missing rows;
+  Clear still attempts DELETE and explains 404 as already-default.
+
+**Alternatives considered**
+- Separate CRUD list page. Deferred — calendar is the primary inventory surface.
+- Expose `notes`/`external_ref` in the form. Rejected — not in the write API.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

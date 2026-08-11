@@ -56,9 +56,9 @@ async function loadInventoryOverrides(
       : (sql, params) => executor.query(sql, params);
 
   const result = await run(
-    `SELECT room_type_id,
+    `SELECT id, room_type_id,
             to_char(inventory_date, 'YYYY-MM-DD') AS inventory_date,
-            allotment, stop_sell, overbooking_allowance
+            allotment, stop_sell, overbooking_allowance, source
      FROM room_type_inventory_dates
      WHERE hotel_id = $1
        AND room_type_id = ANY($2::uuid[])
@@ -71,9 +71,11 @@ async function loadInventoryOverrides(
     const typeId = row.room_type_id;
     if (!map.has(typeId)) map.set(typeId, new Map());
     map.get(typeId).set(row.inventory_date, {
+      id: row.id,
       allotment: row.allotment === null ? null : Number(row.allotment),
       stop_sell: Boolean(row.stop_sell),
       overbooking_allowance: Number(row.overbooking_allowance) || 0,
+      source: row.source || "manual",
     });
   });
 

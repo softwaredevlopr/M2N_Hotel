@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-08  
+> **Status:** Living document · **Last updated:** 2026-08-11  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -20,9 +20,9 @@
   engine, inventory calendar, emails, inquiries, persistent inventory dates).
 - Availability uses physical rooms + blocking bookings, plus optional sparse
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
-  Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`.
-- **Next:** admin day-edit UI on `/admin/inventory`; booking internal notes
-  (schema); Phase 11+.
+  Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
+  `/admin/inventory`.
+- **Next:** booking internal notes (schema); Phase 11+.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 
 ## 3. Hard rules

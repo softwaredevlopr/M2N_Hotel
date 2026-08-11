@@ -28,7 +28,8 @@
       `npm run verify:phase10i`.
   - [x] Admin write APIs — `PUT`/`DELETE /api/admin/inventory/dates`
         (upsert + clear). Smoke: `npm run verify:inventory-dates`.
-  - [ ] Admin UI day-edit on `/admin/inventory` over those write APIs.
+  - [x] Admin UI day-edit on `/admin/inventory` over those write APIs.
+  - [x] Day GET returns `has_override` / `source`; Clear only when a row exists.
 - [x] **Phase 10E — Admin Inventory Calendar UI** — `/admin/inventory` monthly
       calendar (hotel/room-type filters, color-coded availability). Consumes
       Phase 10D/10I calendar API.

@@ -9,6 +9,40 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Fixed — Inventory day-edit override presence + source on day GET ✅
+
+- **What changed.** Day/calendar inventory payloads now include `has_override`,
+  `override_id`, and persisted `source` from `room_type_inventory_dates` so the
+  admin day-edit UI can distinguish no-row vs defaults-only vs custom overrides.
+  Clear is offered only when `has_override` is true. No schema change; public
+  request bodies unchanged.
+- **Files modified:** `inventoryCapacity.js`, `inventory.service.js`,
+  `adminInventory.js`, inventory day-edit UI components/page,
+  `verifyInventoryDateWrites.js`, docs.
+- **APIs changed:** day/calendar day objects gain additive fields
+  (`has_override`, `override_id`, `source`).
+- **Database changes:** none.
+- **Frontend changes:** Clear gated on persisted row; state copy updated.
+- **Backend changes:** override loader selects `id` + `source`.
+- **Remaining work:** commit this fix; booking internal-notes; deployment.
+
+### Added — Admin inventory day-edit UI ✅
+
+- **What changed.** `/admin/inventory` day click opens a side panel to upsert
+  sparse `room_type_inventory_dates` overrides (allotment, stop-sell,
+  overbooking allowance, source) and clear them via ConfirmDialog. Uses existing
+  `PUT`/`DELETE /api/admin/inventory/dates`. Hotel + room-type scoped; aggregated
+  “All room types” view requires selecting a room type before edit. No schema
+  change; public APIs untouched.
+- **Files created:** `frontend/src/components/admin/InventoryDayEditPanel.js`.
+- **Files modified:** `inventory/page.js`, `InventoryCalendarGrid.js`,
+  `adminInventory.js`, docs/TODO/ADR.
+- **APIs added:** none (consumes existing write APIs).
+- **Database changes:** none.
+- **Frontend changes:** day-edit panel, selectable calendar cells, clear confirm.
+- **Backend changes:** none.
+- **Remaining work:** booking internal-notes column; deployment / Phase 11+.
+
 ### Added — Admin inventory-date write APIs ✅
 
 - **What changed.** Admin JWT upsert and delete/clear for sparse
@@ -26,8 +60,8 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 - **Database changes:** none.
 - **Frontend changes:** none.
 - **Backend changes:** inventory write service methods + validation.
-- **Remaining work:** `/admin/inventory` day-edit UI; booking internal-notes
-  column; deployment / Phase 11+.
+- **Remaining work:** `/admin/inventory` day-edit UI (done above); booking
+  internal-notes column; deployment / Phase 11+.
 
 ### Added — Phase 10I — Persistent room-type inventory dates ✅
 

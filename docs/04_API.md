@@ -337,7 +337,9 @@ inclusive, max 92 days), optional `room_type_id`.
 **Per-day fields:** `date`, `total_rooms` / `physical_total`, `allotment`,
 `overbooking_allowance`, `sell_limit`, `sold_count`, `booked_rooms` (alias),
 `remaining_count`, `available_rooms` (alias), `is_sold_out`, `stop_sell`,
-`stop_sell_supported` / `allotment_supported` /
+`has_override` (true when a `room_type_inventory_dates` row exists, including
+defaults-only rows), `override_id`, `source` (`null` when no row; otherwise
+the persisted source), `stop_sell_supported` / `allotment_supported` /
 `overbooking_allowance_supported` (`true`). Top-level calendar also sets those
 supported flags to `true`.
 
@@ -379,9 +381,9 @@ and computed `day` inventory for that night.
 `hotel_id`, `room_type_id`, `inventory_date`). Returns `200` with
 `deleted: true` + post-clear `day`, or `404` if no row.
 
-**Not in scope yet:** admin day-edit UI, channel-split inventory, per-room
-closures, PMS/OTA tables. `notes` / `external_ref` are not writable via this
-API yet.
+**Not in scope yet:** channel-split inventory, per-room closures, PMS/OTA
+tables. `notes` / `external_ref` are not writable via this API yet. Admin
+day-edit UI on `/admin/inventory` consumes these write endpoints.
 
 ## 11. Errors & security
 

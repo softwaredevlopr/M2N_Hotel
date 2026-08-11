@@ -130,7 +130,7 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ Smoke: `npm run verify:phase10i` (plus updated `verify:phase10d`)
 - ✅ Admin write APIs — `PUT` / `DELETE /api/admin/inventory/dates`
   (`npm run verify:inventory-dates`)
-- ⬜ Admin UI / day-edit on `/admin/inventory`
+- ✅ Admin UI / day-edit on `/admin/inventory`
 - ⬜ Channel-split inventory, per-room closures, PMS/OTA tables (later)
 
 ### Phase 10E — Admin Inventory Calendar UI ✅
@@ -138,7 +138,8 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ `/admin/inventory` monthly view (prev/next, hotel + room type filters)
 - ✅ Day-wise total / booked / remaining / occupancy % with color coding
 - ✅ Loading, empty, error states; admin nav integration
-- ⬜ Click-through to bookings / day detail drill-down (future polish)
+- ✅ Click day → edit panel (stop-sell / allotment / overbooking / source) + clear
+  override via ConfirmDialog (uses inventory-date write APIs)
 
 ### Phase 10F — Booking Confirmation Email & Notification System ✅
 

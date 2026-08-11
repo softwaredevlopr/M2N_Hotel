@@ -6,12 +6,16 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /**
  * Monday-first month grid. `dayMap` is ISO date → day inventory object.
+ * When `selectable`, days are buttons that call `onDaySelect(iso, dayData)`.
  */
 export default function InventoryCalendarGrid({
   year,
   monthIndex,
   dayMap,
   loading,
+  selectable = false,
+  selectedDate = null,
+  onDaySelect,
 }) {
   const first = new Date(Date.UTC(year, monthIndex, 1));
   // JS getUTCDay: 0=Sun … convert to Mon=0
@@ -78,18 +82,46 @@ export default function InventoryCalendarGrid({
 
           const tone = inventoryTone(cell.data);
           const occ = occupancyPct(cell.data);
+          const selected = selectedDate === cell.iso;
+          const hasOverride = Boolean(cell.data.has_override);
+          const customOverride =
+            hasOverride &&
+            ((cell.data.allotment !== null &&
+              cell.data.allotment !== undefined) ||
+              Boolean(cell.data.stop_sell) ||
+              Number(cell.data.overbooking_allowance) > 0);
 
-          return (
-            <div
-              key={cell.key}
-              className={`min-h-[7.5rem] border-b border-r border-ink-line p-2 transition-colors sm:p-2.5 ${TONE_STYLES[tone]}`}
-            >
+          const className = `min-h-[7.5rem] w-full border-b border-r border-ink-line p-2 text-left transition-colors sm:p-2.5 ${TONE_STYLES[tone]} ${
+            selectable ? "cursor-pointer focus:outline-none focus:ring-1 focus:ring-gold/60" : ""
+          } ${selected ? "ring-1 ring-inset ring-gold" : ""}`;
+
+          const content = (
+            <>
               <div className="flex items-start justify-between gap-2">
                 <span className="text-sm font-medium text-cream">{cell.day}</span>
                 <span className="text-[10px] tracking-[0.15em] uppercase text-cream-muted">
                   {occ}%
                 </span>
               </div>
+              {(cell.data.stop_sell || hasOverride) && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {cell.data.stop_sell ? (
+                    <span className="text-[9px] tracking-[0.14em] uppercase text-rose-200">
+                      Stop-sell
+                    </span>
+                  ) : null}
+                  {!cell.data.stop_sell && customOverride ? (
+                    <span className="text-[9px] tracking-[0.14em] uppercase text-gold">
+                      Override
+                    </span>
+                  ) : null}
+                  {!cell.data.stop_sell && hasOverride && !customOverride ? (
+                    <span className="text-[9px] tracking-[0.14em] uppercase text-cream-muted">
+                      Row
+                    </span>
+                  ) : null}
+                </div>
+              )}
               <dl className="mt-2 space-y-0.5 text-[11px] leading-snug text-cream-dim">
                 <div className="flex justify-between gap-2">
                   <dt>Total</dt>
@@ -104,6 +136,27 @@ export default function InventoryCalendarGrid({
                   <dd className="text-cream">{cell.data.remaining_count}</dd>
                 </div>
               </dl>
+            </>
+          );
+
+          if (selectable) {
+            return (
+              <button
+                key={cell.key}
+                type="button"
+                className={className}
+                onClick={() => onDaySelect?.(cell.iso, cell.data)}
+                aria-pressed={selected}
+                aria-label={`Edit inventory for ${cell.iso}`}
+              >
+                {content}
+              </button>
+            );
+          }
+
+          return (
+            <div key={cell.key} className={className}>
+              {content}
             </div>
           );
         })}

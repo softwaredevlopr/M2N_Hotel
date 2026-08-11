@@ -169,6 +169,7 @@ function buildDayRow(date, physicalTotal, soldCount, override = null) {
     overbookingAllowance: override ? override.overbooking_allowance : 0,
   });
   const available = night.available_for_sale;
+  const hasOverride = Boolean(override);
   return {
     date,
     total_rooms: night.physical_total,
@@ -182,6 +183,10 @@ function buildDayRow(date, physicalTotal, soldCount, override = null) {
     available_rooms: available,
     is_sold_out: night.stop_sell || available === 0,
     stop_sell: night.stop_sell,
+    // Persistence markers for admin day-edit (additive; safe for public calendar).
+    has_override: hasOverride,
+    override_id: hasOverride ? override.id || null : null,
+    source: hasOverride ? override.source || "manual" : null,
     stop_sell_supported: true,
     allotment_supported: true,
     overbooking_allowance_supported: true,

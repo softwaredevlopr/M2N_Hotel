@@ -7,13 +7,21 @@ import { listAdminHotels, formatApiError } from "@/lib/adminHotels";
 import { listAdminRoomTypes } from "@/lib/adminRoomTypes";
 import { clearAdminSession } from "@/lib/adminAuth";
 import { useToast } from "@/components/admin/Toast";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import InventoryCalendarGrid from "@/components/admin/InventoryCalendarGrid";
+import InventoryDayEditPanel from "@/components/admin/InventoryDayEditPanel";
 import {
   aggregateDay,
+  deleteAdminInventoryDate,
   getAdminInventoryCalendar,
+  getAdminInventoryDay,
   monthBounds,
   monthLabel,
   shiftMonth,
+  upsertAdminInventoryDate,
+  validateInventoryDateForm,
+  dayHasPersistedOverride,
+  INVENTORY_DATE_SOURCES,
   TONE_LABELS,
   TONE_STYLES,
 } from "@/lib/adminInventory";
@@ -23,6 +31,29 @@ function todayUtcParts() {
   return {
     year: now.getUTCFullYear(),
     monthIndex: now.getUTCMonth(),
+  };
+}
+
+function formFromDay({ hotelId, roomTypeId, inventoryDate, day, source }) {
+  const resolvedSource =
+    (source && INVENTORY_DATE_SOURCES.includes(source) && source) ||
+    (day?.source && INVENTORY_DATE_SOURCES.includes(day.source) && day.source) ||
+    "manual";
+  return {
+    hotel_id: hotelId,
+    room_type_id: roomTypeId,
+    inventory_date: inventoryDate,
+    allotment:
+      day?.allotment === null || day?.allotment === undefined
+        ? ""
+        : String(day.allotment),
+    stop_sell: Boolean(day?.stop_sell),
+    overbooking_allowance: String(
+      Number.isFinite(Number(day?.overbooking_allowance))
+        ? Number(day.overbooking_allowance)
+        : 0
+    ),
+    source: resolvedSource,
   };
 }
 
@@ -42,6 +73,16 @@ export default function AdminInventoryPage() {
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [loadingCalendar, setLoadingCalendar] = useState(false);
   const [error, setError] = useState("");
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [editDay, setEditDay] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [loadingDay, setLoadingDay] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +136,9 @@ export default function AdminInventoryPage() {
       const list = result.data?.data || [];
       setRoomTypes(list);
       setRoomTypeId("");
+      setSelectedDate(null);
+      setEditDay(null);
+      setEditForm(null);
     }
     loadRoomTypes();
     return () => {
@@ -111,7 +155,7 @@ export default function AdminInventoryPage() {
     if (!hotelId) {
       setCalendar(null);
       setError("");
-      return;
+      return true;
     }
 
     setLoadingCalendar(true);
@@ -126,18 +170,19 @@ export default function AdminInventoryPage() {
     if (result.unauthorized) {
       clearAdminSession();
       router.replace("/admin/login");
-      return;
+      return false;
     }
 
     if (!result.ok) {
       setCalendar(null);
       setError(formatApiError(result, "Unable to load inventory calendar."));
       setLoadingCalendar(false);
-      return;
+      return false;
     }
 
     setCalendar(result.data?.data || null);
     setLoadingCalendar(false);
+    return true;
   }, [hotelId, roomTypeId, from, to, router]);
 
   useEffect(() => {
@@ -187,10 +232,173 @@ export default function AdminInventoryPage() {
     const next = shiftMonth(year, monthIndex, delta);
     setYear(next.year);
     setMonthIndex(next.monthIndex);
+    closeEditor();
+  }
+
+  function closeEditor() {
+    setSelectedDate(null);
+    setEditDay(null);
+    setEditForm(null);
+    setFieldErrors({});
+    setFormError("");
+    setConfirmClear(false);
+  }
+
+  async function openDayEditor(iso, dayData) {
+    if (!hotelId) return;
+    if (!roomTypeId) {
+      toast.error("Select a room type before editing a day.");
+      return;
+    }
+
+    setSelectedDate(iso);
+    setFieldErrors({});
+    setFormError("");
+    setLoadingDay(true);
+
+    const result = await getAdminInventoryDay({
+      hotel_id: hotelId,
+      room_type_id: roomTypeId,
+      date: iso,
+    });
+
+    if (result.unauthorized) {
+      clearAdminSession();
+      router.replace("/admin/login");
+      return;
+    }
+
+    const day = result.ok ? result.data?.data : dayData;
+    if (!result.ok) {
+      toast.error(
+        formatApiError(result, "Could not refresh day details; using calendar values.")
+      );
+    }
+
+    setEditDay(day || dayData || null);
+    setEditForm(
+      formFromDay({
+        hotelId,
+        roomTypeId,
+        inventoryDate: iso,
+        day: day || dayData,
+      })
+    );
+    setLoadingDay(false);
+  }
+
+  async function handleSave(event) {
+    event.preventDefault();
+    if (!editForm || saving || clearing) return;
+
+    const checked = validateInventoryDateForm(editForm);
+    if (!checked.ok) {
+      setFieldErrors(checked.errors);
+      setFormError("Please fix the highlighted fields.");
+      return;
+    }
+
+    // Enforce scoped keys from page state — never trust stale form hotel/type.
+    const payload = {
+      ...checked.payload,
+      hotel_id: hotelId,
+      room_type_id: roomTypeId,
+      inventory_date: selectedDate,
+    };
+
+    setSaving(true);
+    setFieldErrors({});
+    setFormError("");
+
+    const result = await upsertAdminInventoryDate(payload);
+    if (result.unauthorized) {
+      clearAdminSession();
+      router.replace("/admin/login");
+      return;
+    }
+
+    if (!result.ok) {
+      setFormError(formatApiError(result, "Unable to save inventory override."));
+      setSaving(false);
+      toast.error(formatApiError(result, "Unable to save inventory override."));
+      return;
+    }
+
+    const saved = result.data?.data || {};
+    const savedDay = saved.day || null;
+    setEditDay(savedDay);
+    setEditForm(
+      formFromDay({
+        hotelId,
+        roomTypeId,
+        inventoryDate: selectedDate,
+        day: savedDay,
+        source: saved.source,
+      })
+    );
+    toast.success(
+      result.data?.data?.created
+        ? "Inventory override created."
+        : "Inventory override updated."
+    );
+    setSaving(false);
+    await loadCalendar();
+  }
+
+  async function handleClearConfirm() {
+    if (!hotelId || !roomTypeId || !selectedDate || clearing) return;
+    if (!dayHasPersistedOverride(editDay)) {
+      toast.error("No override row for this date — already using defaults.");
+      setConfirmClear(false);
+      return;
+    }
+
+    setClearing(true);
+    const result = await deleteAdminInventoryDate({
+      hotel_id: hotelId,
+      room_type_id: roomTypeId,
+      inventory_date: selectedDate,
+    });
+
+    if (result.unauthorized) {
+      clearAdminSession();
+      router.replace("/admin/login");
+      return;
+    }
+
+    if (!result.ok) {
+      // 404 here means a race (row already gone) after UI believed it existed.
+      if (result.status === 404) {
+        toast.success(
+          "Override already cleared — this date uses default availability."
+        );
+        setClearing(false);
+        setConfirmClear(false);
+        await loadCalendar();
+        closeEditor();
+        return;
+      }
+      toast.error(
+        formatApiError(result, "Unable to clear inventory override.")
+      );
+      setClearing(false);
+      setConfirmClear(false);
+      return;
+    }
+
+    toast.success(
+      "Override cleared. This date now uses default availability."
+    );
+    setClearing(false);
+    setConfirmClear(false);
+    await loadCalendar();
+    closeEditor();
   }
 
   const hotelName =
     hotels.find((h) => h.id === hotelId)?.name || calendar?.hotel_name || "—";
+  const roomTypeName =
+    roomTypes.find((rt) => rt.id === roomTypeId)?.name || "Room type";
 
   return (
     <div>
@@ -204,8 +412,8 @@ export default function AdminInventoryPage() {
             Inventory Calendar
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-cream-dim">
-            Monthly availability by hotel and room type. Figures come from live
-            sellable rooms and inventory-blocking bookings — no schema change.
+            Monthly availability by hotel and room type. Select a room type,
+            then click a day to set stop-sell, allotment, or overbooking.
           </p>
         </div>
 
@@ -239,7 +447,10 @@ export default function AdminInventoryPage() {
           </span>
           <select
             value={hotelId}
-            onChange={(e) => setHotelId(e.target.value)}
+            onChange={(e) => {
+              setHotelId(e.target.value);
+              closeEditor();
+            }}
             disabled={loadingMeta}
             className="w-full bg-ink border border-ink-line px-4 py-3 text-sm text-cream focus:border-gold focus:outline-none disabled:opacity-50"
           >
@@ -261,7 +472,10 @@ export default function AdminInventoryPage() {
           </span>
           <select
             value={roomTypeId}
-            onChange={(e) => setRoomTypeId(e.target.value)}
+            onChange={(e) => {
+              setRoomTypeId(e.target.value);
+              closeEditor();
+            }}
             disabled={!hotelId}
             className="w-full bg-ink border border-ink-line px-4 py-3 text-sm text-cream focus:border-gold focus:outline-none disabled:opacity-50"
           >
@@ -308,6 +522,18 @@ export default function AdminInventoryPage() {
           </span>
         ))}
       </div>
+
+      {!roomTypeId ? (
+        <p className="mt-4 text-xs text-cream-muted">
+          Viewing all room types (aggregated). Choose one room type to edit
+          day overrides.
+        </p>
+      ) : (
+        <p className="mt-4 text-xs text-cream-muted">
+          Click a day to edit stop-sell, allotment, overbooking, or source for{" "}
+          <span className="text-cream-dim">{roomTypeName}</span>.
+        </p>
+      )}
 
       {!hotelId && !loadingMeta ? (
         <div className="mt-8 border border-ink-line bg-ink-soft p-10 text-center">
@@ -378,7 +604,10 @@ export default function AdminInventoryPage() {
               year={year}
               monthIndex={monthIndex}
               dayMap={dayMap}
-              loading={loadingCalendar}
+              loading={loadingCalendar || loadingDay}
+              selectable
+              selectedDate={selectedDate}
+              onDaySelect={openDayEditor}
             />
           </div>
 
@@ -387,8 +616,7 @@ export default function AdminInventoryPage() {
               Viewing:{" "}
               <span className="text-cream-dim">
                 {roomTypeId
-                  ? roomTypes.find((rt) => rt.id === roomTypeId)?.name ||
-                    "Room type"
+                  ? roomTypeName
                   : "All room types (aggregated)"}
               </span>
             </span>
@@ -401,6 +629,44 @@ export default function AdminInventoryPage() {
           </div>
         </>
       )}
+
+      <InventoryDayEditPanel
+        open={Boolean(editForm && selectedDate && roomTypeId)}
+        hotelName={hotelName}
+        roomTypeName={roomTypeName}
+        inventoryDate={selectedDate}
+        day={editDay}
+        form={editForm || {}}
+        fieldErrors={fieldErrors}
+        formError={formError}
+        saving={saving}
+        clearing={clearing}
+        onChange={setEditForm}
+        onClose={() => (!saving && !clearing ? closeEditor() : null)}
+        onSave={handleSave}
+        onClearRequest={() => {
+          if (!dayHasPersistedOverride(editDay)) {
+            toast.error("No override row for this date — already using defaults.");
+            return;
+          }
+          setConfirmClear(true);
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmClear}
+        title="Clear inventory override?"
+        message={
+          selectedDate
+            ? `Remove the override for ${selectedDate} (${roomTypeName})? Availability will fall back to physical rooms minus blocking bookings for this night.`
+            : ""
+        }
+        confirmLabel="Clear override"
+        cancelLabel="Keep override"
+        busy={clearing}
+        onConfirm={handleClearConfirm}
+        onCancel={() => (!clearing ? setConfirmClear(false) : null)}
+      />
     </div>
   );
 }

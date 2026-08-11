@@ -42,11 +42,11 @@
 | Admin inquiries CRUD UI | ✅ Phase 10H |
 | Booking engine — persistent inventory dates | ✅ Phase 10I |
 | Admin inventory-date write APIs | ✅ Complete |
-| Admin inventory-date edit UI | ⬜ Remaining |
+| Admin inventory-date edit UI | ✅ Complete |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: inventory-date
-admin day-edit UI, booking internal notes (schema), deployment
+**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: booking
+internal notes (schema), deployment
 
 ---
 
@@ -206,18 +206,17 @@ admin day-edit UI, booking internal notes (schema), deployment
 
 ## 3. In Progress
 
-- None formally in-flight. Next: admin inventory day-edit UI on
-  `/admin/inventory`; booking internal notes column (schema); deployment.
+- None formally in-flight. Next: booking internal notes column (schema);
+  deployment.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Admin UI day-edit for `room_type_inventory_dates` (write APIs already shipped).
-2. Dedicated booking internal-notes column (schema approval).
-3. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-4. Run migration `005` on non-local environments.
-5. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+1. Dedicated booking internal-notes column (schema approval).
+2. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
+3. Run migration `005` on non-local environments.
+4. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -236,6 +235,7 @@ admin day-edit UI, booking internal notes (schema), deployment
 
 | Date | Update |
 |------|--------|
+| 2026-08-11 | Admin inventory day-edit UI on `/admin/inventory` |
 | 2026-08-10 | Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`) |
 | 2026-08-08 | Phase 10I persistent `room_type_inventory_dates` (stop-sell/allotment/overbooking) |
 | 2026-08-06 | Operational: set Deluxe/Suite overnight `base_price` (1999/2999); Standard remains 0 for couple package |

@@ -12,6 +12,13 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Admin inventory day-edit UI (2026-08-11)
+
+- `/admin/inventory` day click → side panel for allotment / stop-sell /
+  overbooking / source; clear override with confirmation.
+- Uses existing `PUT`/`DELETE /api/admin/inventory/dates` ([ADR-0027](DECISIONS.md)).
+- No schema change; public booking APIs unchanged.
+
 ### Admin inventory-date write APIs (2026-08-10)
 
 - JWT `PUT` / `DELETE /api/admin/inventory/dates` for sparse

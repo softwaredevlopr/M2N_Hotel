@@ -42,7 +42,10 @@
 - Monthly Monday-first grid; prev/next month controls.
 - Hotel and room-type selectors; “All room types” aggregates day totals.
 - Day cells show total / booked / remaining and occupancy %; colors:
-  emerald available, amber low (≤25% remaining), rose sold out.
+  emerald available, amber low (≤25% remaining), rose sold out / stop-sell.
+- With a room type selected, click a day to open the day-edit panel
+  (allotment / stop-sell / overbooking / source). Clear override uses
+  ConfirmDialog and explains fallback to default availability.
 - Loading, empty (no hotel / no room types), and error states required.
 
 **Admin create booking (`/admin/bookings/new`)**
