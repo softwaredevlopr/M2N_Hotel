@@ -352,10 +352,20 @@ export default function NewAdminBookingPage() {
             {created.special_requests ? (
               <div className="sm:col-span-2">
                 <dt className="text-[11px] tracking-[0.22em] uppercase text-cream-muted">
-                  Notes
+                  Guest special requests
                 </dt>
                 <dd className="mt-1 whitespace-pre-wrap text-cream-dim">
                   {created.special_requests}
+                </dd>
+              </div>
+            ) : null}
+            {created.admin_notes ? (
+              <div className="sm:col-span-2">
+                <dt className="text-[11px] tracking-[0.22em] uppercase text-cream-muted">
+                  Internal notes (staff only)
+                </dt>
+                <dd className="mt-1 whitespace-pre-wrap text-cream-dim">
+                  {created.admin_notes}
                 </dd>
               </div>
             ) : null}

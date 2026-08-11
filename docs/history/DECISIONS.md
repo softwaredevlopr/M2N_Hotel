@@ -987,6 +987,40 @@ a console surface on `/admin/inventory` without schema or public API changes.
 - Separate CRUD list page. Deferred — calendar is the primary inventory surface.
 - Expose `notes`/`external_ref` in the form. Rejected — not in the write API.
 
+### ADR-0028 — Dedicated bookings.admin_notes for private staff notes
+
+**Date:** 2026-08-11
+
+**Status:** Accepted
+
+**Context**
+Phase 10C temporarily stored operational notes in guest-visible
+`special_requests`. Cancel/no-show reasons stay on `cancellation_reason`
+(which may be emailed). Staff need a private notes field without exposing it on
+public booking APIs. Schema change required explicit approval (`AGENTS.md` §14).
+
+**Decision**
+- Add migration `006_booking_admin_notes.sql`:
+  `ALTER TABLE bookings ADD COLUMN admin_notes TEXT` (nullable, no index).
+- Name matches `inquiries.admin_notes` and prior deferred ADR language.
+- Admin JWT create/update/read may use `admin_notes` (API max 2000; empty clears
+  to NULL). Public create rejects `admin_notes`; public lookup/availability and
+  guest emails never select or render it.
+- Keep `special_requests` guest-visible; keep `cancellation_reason` for
+  cancel/no-show only. Admin UI presents Internal notes separately.
+
+**Consequences**
+- Private staff notes no longer pollute guest-facing special requests.
+- Phase 10C schema guard inverted: column must exist.
+- Future hotel_admin scoping / audit logs can key off the booking row without
+  redesign.
+
+**Alternatives considered**
+- `internal_notes` column name. Rejected — breaks platform naming with inquiries.
+- Reuse `special_requests` with a visibility flag. Rejected — unclear contracts
+  and guest-leak risk.
+- Separate notes table / audit log. Deferred — not required for v1.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

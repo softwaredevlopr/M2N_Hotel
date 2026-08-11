@@ -101,7 +101,7 @@ create API. No schema change.
 detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
 writes require JWT. No schema change.
 
-**Upcoming:** booking internal notes (schema), Phase 11+.
+**Upcoming:** Phase 11+ (deployment docs / non-local migrate for `005`–`006`).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

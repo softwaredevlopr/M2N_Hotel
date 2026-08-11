@@ -115,7 +115,8 @@ export default function AdminBookingDetailPage() {
 
   const [pendingAction, setPendingAction] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
-  const [staffNotes, setStaffNotes] = useState("");
+  const [guestRequests, setGuestRequests] = useState("");
+  const [internalNotes, setInternalNotes] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState("");
 
   const load = useCallback(async () => {
@@ -137,7 +138,8 @@ export default function AdminBookingDetailPage() {
 
     const data = result.data?.data || null;
     setBooking(data);
-    setStaffNotes(data?.special_requests || "");
+    setGuestRequests(data?.special_requests || "");
+    setInternalNotes(data?.admin_notes || "");
     setSelectedRoomId(data?.room_id || "");
     setError("");
     setLoading(false);
@@ -206,17 +208,17 @@ export default function AdminBookingDetailPage() {
         pendingAction.value === "no_show") &&
       !cancelReason.trim()
     ) {
-      toast.error("Please add a reason / internal note for this action.");
+      toast.error("Please add a cancellation / no-show reason.");
       return;
     }
     await applyStatus(pendingAction.value, cancelReason.trim() || undefined);
   }
 
-  async function saveNotes() {
+  async function saveGuestRequests() {
     if (!booking || busy) return;
     setBusy(true);
     const result = await updateAdminBooking(booking.id, {
-      special_requests: staffNotes.trim() || null,
+      special_requests: guestRequests.trim() || null,
     });
     setBusy(false);
 
@@ -227,12 +229,37 @@ export default function AdminBookingDetailPage() {
     }
 
     if (!result.ok) {
-      toast.error(formatApiError(result, "Unable to save notes."));
+      toast.error(formatApiError(result, "Unable to save guest requests."));
       return;
     }
 
     setBooking(result.data?.data || null);
-    toast.success("Notes saved.");
+    setGuestRequests(result.data?.data?.special_requests || "");
+    toast.success("Guest special requests saved.");
+  }
+
+  async function saveInternalNotes() {
+    if (!booking || busy) return;
+    setBusy(true);
+    const result = await updateAdminBooking(booking.id, {
+      admin_notes: internalNotes.trim() || null,
+    });
+    setBusy(false);
+
+    if (result.unauthorized) {
+      clearAdminSession();
+      router.replace("/admin/login");
+      return;
+    }
+
+    if (!result.ok) {
+      toast.error(formatApiError(result, "Unable to save internal notes."));
+      return;
+    }
+
+    setBooking(result.data?.data || null);
+    setInternalNotes(result.data?.data?.admin_notes || "");
+    toast.success("Internal notes saved.");
   }
 
   async function saveRoomAssignment() {
@@ -438,17 +465,17 @@ export default function AdminBookingDetailPage() {
           </dl>
         </Section>
 
-        <Section title="Notes">
+        <Section title="Guest special requests">
           <label className="block text-[10px] tracking-[0.22em] uppercase text-cream-muted">
-            Guest special requests / staff notes
+            Guest-visible requests
           </label>
           <textarea
             rows={4}
-            value={staffNotes}
-            onChange={(e) => setStaffNotes(e.target.value)}
+            value={guestRequests}
+            onChange={(e) => setGuestRequests(e.target.value)}
             maxLength={2000}
             className="mt-2 w-full resize-y bg-ink border border-ink-line px-4 py-3 text-sm text-cream placeholder:text-cream-muted/60 focus:border-gold focus:outline-none"
-            placeholder="Guest requests or operational notes for this stay."
+            placeholder="Guest preferences or operational requests for this stay."
           />
           {booking.cancellation_reason && (
             <p className="mt-3 text-sm text-cream-dim">
@@ -461,15 +488,39 @@ export default function AdminBookingDetailPage() {
           <button
             type="button"
             disabled={busy}
-            onClick={saveNotes}
+            onClick={saveGuestRequests}
             className="mt-4 inline-flex items-center justify-center border border-cream/30 px-5 py-2.5 text-[11px] tracking-[0.2em] uppercase text-cream hover:border-gold hover:text-gold disabled:opacity-50"
           >
-            Save notes
+            Save guest requests
           </button>
           <p className="mt-3 text-xs leading-relaxed text-cream-muted">
-            Notes are stored on the reservation&apos;s special-requests field
-            (guest-visible on lookup). Dedicated internal-only notes require a
-            future schema column.
+            Stored on special_requests and shown on guest booking lookup.
+          </p>
+        </Section>
+
+        <Section title="Internal notes">
+          <p className="text-[10px] tracking-[0.22em] uppercase text-cream-muted">
+            Private — visible to hotel staff only
+          </p>
+          <textarea
+            rows={4}
+            value={internalNotes}
+            onChange={(e) => setInternalNotes(e.target.value)}
+            maxLength={2000}
+            className="mt-2 w-full resize-y border border-dashed border-ink-line bg-ink/50 px-4 py-3 text-sm text-cream placeholder:text-cream-muted/60 focus:border-gold focus:outline-none"
+            placeholder="Staff-only notes. Never shown to guests."
+          />
+          <button
+            type="button"
+            disabled={busy}
+            onClick={saveInternalNotes}
+            className="mt-4 inline-flex items-center justify-center border border-cream/30 px-5 py-2.5 text-[11px] tracking-[0.2em] uppercase text-cream hover:border-gold hover:text-gold disabled:opacity-50"
+          >
+            Save internal notes
+          </button>
+          <p className="mt-3 text-xs leading-relaxed text-cream-muted">
+            Cleared by saving an empty field. Not included in public booking APIs
+            or guest emails.
           </p>
         </Section>
 
@@ -539,7 +590,7 @@ export default function AdminBookingDetailPage() {
           pendingAction?.value === "no_show") && (
           <div className="mt-4">
             <label className="block text-[10px] tracking-[0.22em] uppercase text-cream-muted">
-              Reason / internal note <span className="text-gold">*</span>
+              Cancellation / no-show reason <span className="text-gold">*</span>
             </label>
             <textarea
               rows={3}
@@ -549,6 +600,10 @@ export default function AdminBookingDetailPage() {
               className="mt-2 w-full resize-y bg-ink border border-ink-line px-4 py-3 text-sm text-cream focus:border-gold focus:outline-none"
               placeholder="Why is this booking being cancelled or marked no-show?"
             />
+            <p className="mt-2 text-xs text-cream-muted">
+              Stored as cancellation_reason. May appear in guest cancellation
+              emails — not the same as private internal notes.
+            </p>
           </div>
         )}
       </ConfirmDialog>

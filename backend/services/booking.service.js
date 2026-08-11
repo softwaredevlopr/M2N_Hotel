@@ -194,7 +194,8 @@ async function insertBookingWithNumber(client, values) {
            check_in_date, check_out_date,
            adults, children, number_of_rooms,
            booking_source, booking_status, payment_status,
-           special_requests, subtotal, tax_amount, total_amount, currency,
+           special_requests, admin_notes,
+           subtotal, tax_amount, total_amount, currency,
            created_by_admin_id, confirmed_at
          )
          VALUES (
@@ -203,8 +204,9 @@ async function insertBookingWithNumber(client, values) {
            $8, $9,
            $10, $11, $12,
            $13, $14, $15,
-           $16, $17, $18, $19, $20,
-           $21, $22
+           $16, $17,
+           $18, $19, $20, $21,
+           $22, $23
          )
          RETURNING id`,
         [
@@ -224,6 +226,7 @@ async function insertBookingWithNumber(client, values) {
           values.booking_status,
           values.payment_status,
           values.special_requests,
+          values.admin_notes ?? null,
           values.subtotal,
           values.tax_amount,
           values.total_amount,

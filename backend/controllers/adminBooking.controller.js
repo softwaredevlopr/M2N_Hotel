@@ -41,6 +41,7 @@ const BOOKING_FIELDS = `
   to_char(b.check_out_date, 'YYYY-MM-DD') AS check_out_date,
   b.adults, b.children, b.number_of_rooms,
   b.booking_source, b.booking_status, b.payment_status, b.special_requests,
+  b.admin_notes,
   b.subtotal, b.tax_amount, b.total_amount, b.currency,
   b.created_by_admin_id, b.confirmed_at, b.cancelled_at, b.cancellation_reason,
   b.created_at, b.updated_at,
@@ -371,6 +372,14 @@ const createBooking = asyncHandler(async (req, res) => {
   }
 
   const specialRequests = trimOrNull(body.special_requests);
+  if (specialRequests && specialRequests.length > 2000) {
+    errors.push("special_requests must be at most 2000 characters");
+  }
+
+  const adminNotes = trimOrNull(body.admin_notes);
+  if (adminNotes && adminNotes.length > 2000) {
+    errors.push("admin_notes must be at most 2000 characters");
+  }
 
   if (errors.length > 0) {
     return sendValidationError(res, errors);
@@ -392,6 +401,7 @@ const createBooking = asyncHandler(async (req, res) => {
     booking_status: bookingStatus,
     payment_status: paymentStatus,
     special_requests: specialRequests,
+    admin_notes: adminNotes,
     subtotal,
     tax_amount: taxAmount,
     total_amount:
@@ -636,6 +646,15 @@ const updateBooking = asyncHandler(async (req, res) => {
       errors.push("special_requests must be at most 2000 characters");
     } else {
       updates.special_requests = value;
+    }
+  }
+
+  if (body.admin_notes !== undefined) {
+    const value = trimOrNull(body.admin_notes);
+    if (value && value.length > 2000) {
+      errors.push("admin_notes must be at most 2000 characters");
+    } else {
+      updates.admin_notes = value;
     }
   }
 

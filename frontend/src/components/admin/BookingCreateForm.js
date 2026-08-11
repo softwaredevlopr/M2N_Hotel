@@ -39,7 +39,8 @@ function sourceLabel(value) {
 }
 
 /**
- * Admin create-booking form. Notes map to existing `special_requests` only.
+ * Admin create-booking form. Guest notes map to `special_requests`;
+ * private staff notes map to `admin_notes`.
  */
 export default function BookingCreateForm({
   form,
@@ -305,7 +306,7 @@ export default function BookingCreateForm({
 
         <Field
           id="bk-notes"
-          label="Booking notes"
+          label="Guest special requests"
           error={fieldErrors.special_requests}
           className="mt-5"
         >
@@ -315,7 +316,30 @@ export default function BookingCreateForm({
             className={inputClass(fieldErrors.special_requests)}
             value={form.special_requests}
             onChange={(e) => update("special_requests", e.target.value)}
-            placeholder="Guest preferences, arrival notes… (stored as special_requests)"
+            placeholder="Guest preferences, arrival notes… (guest-visible)"
+            maxLength={2000}
+          />
+          <p className="mt-2 text-xs text-cream-muted">
+            Stored as special requests — visible on guest booking lookup.
+          </p>
+        </Field>
+
+        <Field
+          id="bk-admin-notes"
+          label="Internal notes"
+          error={fieldErrors.admin_notes}
+          className="mt-5 border border-dashed border-ink-line bg-ink/40 p-4"
+        >
+          <p className="mb-2 text-[10px] tracking-[0.2em] uppercase text-cream-muted">
+            Private — visible to hotel staff only
+          </p>
+          <textarea
+            id="bk-admin-notes"
+            rows={3}
+            className={inputClass(fieldErrors.admin_notes)}
+            value={form.admin_notes}
+            onChange={(e) => update("admin_notes", e.target.value)}
+            placeholder="Staff-only notes for this reservation…"
             maxLength={2000}
           />
         </Field>

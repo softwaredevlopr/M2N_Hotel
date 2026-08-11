@@ -82,7 +82,9 @@ backend/
 │   ├── 001_initial_schema.sql
 │   ├── 002_admin_users.sql
 │   ├── 003_tariff_rates.sql
-│   └── 004_bookings.sql
+│   ├── 004_bookings.sql
+│   ├── 005_room_type_inventory_dates.sql
+│   └── 006_booking_admin_notes.sql
 └── scripts/
     ├── seed.js, seedAdmin.js, runMigrations.js
 ```

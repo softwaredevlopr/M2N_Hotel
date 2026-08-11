@@ -293,7 +293,17 @@ name, email, or phone digits), `limit` (default 50, max 100), `offset`,
 
 **Create:** staff bookings default to `booking_source=admin` and
 `booking_status=confirmed`, may use past dates (walk-ins recorded after the
-fact), accept explicit amounts, and record `created_by_admin_id`.
+fact), accept explicit amounts, and record `created_by_admin_id`. Optional
+`admin_notes` (private staff text, max 2000) may be set on create.
+
+**Update (`PATCH /:id`):** guest/stay/payment/amounts/`special_requests` /
+`admin_notes` / `cancellation_reason`. Empty `admin_notes` or
+`special_requests` clears to `NULL`. `admin_notes` is admin-JWT only.
+
+**Privacy:** `admin_notes` is never returned or accepted on public
+`POST /api/bookings` / `GET /api/bookings/:bookingNumber`, availability APIs, or
+guest emails. `special_requests` remains guest-visible; `cancellation_reason`
+remains the cancel/no-show reason field.
 
 **Status:** `booking_status` and/or `payment_status`. Transitions are enforced —
 `pending → confirmed | cancelled | no_show`, `confirmed → checked_in | cancelled

@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Booking admin_notes (private internal notes) ✅
+
+- **What changed.** Approved migration `006_booking_admin_notes.sql` adds
+  nullable `bookings.admin_notes TEXT` for private hotel/admin staff notes.
+  Admin create/update/detail/list expose it; public booking create rejects it;
+  public lookup/availability responses and guest emails never include it.
+  `special_requests` and `cancellation_reason` keep their existing roles. Admin
+  UI splits guest requests vs internal notes on detail and create forms.
+- **Files created:** `backend/migrations/006_booking_admin_notes.sql`.
+- **Files modified:** `booking.service.js`, `adminBooking.controller.js`,
+  `booking.controller.js`, `booking.validator.js`, `verifyPhase10C.js`,
+  admin booking detail/create UI + `adminBookings.js`, docs/TODO/ADR.
+- **APIs added/changed:** admin booking create/update/read include
+  `admin_notes`; public create returns 400 if `admin_notes` is sent.
+- **Database changes:** `ALTER TABLE bookings ADD COLUMN admin_notes TEXT`
+  (nullable; no index; existing rows NULL).
+- **Frontend changes:** separate Internal notes field on create + detail.
+- **Backend changes:** admin field projection + validation; public privacy guard.
+- **Remaining work:** commit/push; run `006` on non-local envs; deployment docs.
+
 ### Fixed — Inventory day-edit override presence + source on day GET ✅
 
 - **What changed.** Day/calendar inventory payloads now include `has_override`,

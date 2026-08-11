@@ -148,6 +148,7 @@ export function emptyAdminBookingForm() {
     booking_status: "confirmed",
     payment_status: "unpaid",
     special_requests: "",
+    admin_notes: "",
   };
 }
 
@@ -211,7 +212,13 @@ export function validateAdminBookingForm(form) {
 
   const notes = String(form.special_requests || "");
   if (notes.length > 2000) {
-    fieldErrors.special_requests = "Notes must be at most 2000 characters.";
+    fieldErrors.special_requests =
+      "Guest special requests must be at most 2000 characters.";
+  }
+
+  const adminNotes = String(form.admin_notes || "");
+  if (adminNotes.length > 2000) {
+    fieldErrors.admin_notes = "Internal notes must be at most 2000 characters.";
   }
 
   return {
@@ -240,6 +247,7 @@ export function formToAdminBookingPayload(form, { subtotal = 0, taxAmount = 0, t
     booking_status: form.booking_status || "confirmed",
     payment_status: form.payment_status || "unpaid",
     special_requests: String(form.special_requests || "").trim() || null,
+    admin_notes: String(form.admin_notes || "").trim() || null,
     subtotal: Number(subtotal) || 0,
     tax_amount: Number(taxAmount) || 0,
     total_amount: Number(totalAmount) || 0,

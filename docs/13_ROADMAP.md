@@ -104,7 +104,8 @@ Admin bookings console over `/api/admin/bookings` (module shipped 2026-08-04):
 - ⬜ Availability calendars, per-date allotment, stop-sells, out-of-service
   coordination
 - ⬜ Confirmation email / notification
-- ⬜ Dedicated internal-notes column (schema approval)
+- ✅ Dedicated internal-notes column (`bookings.admin_notes`, migration `006`)
++ ✅ Dedicated internal-notes column (`bookings.admin_notes`, migration `006`)
 - ⬜ Admin create-booking form
 
 (Split out of the original Phase 10B on 2026-08-03.)

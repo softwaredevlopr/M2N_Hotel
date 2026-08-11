@@ -203,7 +203,8 @@ async function main() {
     "detail fields",
     detail.body?.data?.guest_name === "Phase10C Verifier" &&
       detail.body?.data?.special_requests === "Verification booking" &&
-      detail.body?.data?.hotel_name
+      detail.body?.data?.hotel_name &&
+      detail.body?.data?.admin_notes === null
   );
 
   section("Stats");
@@ -300,13 +301,225 @@ async function main() {
     )}&check_in_date=${isoDaysFromNow(60)}&check_out_date=${isoDaysFromNow(62)}`
   );
   check("public availability still work", availability.status === 200);
-
-  section("Schema guard — no admin_notes on bookings");
-  const cols = await query(
-    `SELECT column_name FROM information_schema.columns
-     WHERE table_name = 'bookings' AND column_name = 'admin_notes'`
+  const availabilityJson = JSON.stringify(availability.body || {});
+  check(
+    "availability response omits admin_notes",
+    !availabilityJson.includes("admin_notes")
   );
-  check("bookings.admin_notes does not exist", cols.rows.length === 0);
+
+  section("Schema — bookings.admin_notes");
+  const cols = await query(
+    `SELECT data_type, is_nullable, column_default
+     FROM information_schema.columns
+     WHERE table_schema = 'public'
+       AND table_name = 'bookings'
+       AND column_name = 'admin_notes'`
+  );
+  check("bookings.admin_notes exists", cols.rows.length === 1);
+  check(
+    "admin_notes is TEXT nullable",
+    cols.rows[0]?.data_type === "text" && cols.rows[0]?.is_nullable === "YES"
+  );
+  check(
+    "admin_notes default is NULL",
+    cols.rows[0]?.column_default === null
+  );
+
+  section("admin_notes — create / update / clear / isolation / privacy");
+  const notesBooking = await api("POST", "/api/admin/bookings", {
+    token,
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Phase10C Notes",
+      guest_email: "phase10c-notes@booking-selftest.invalid",
+      guest_phone: "+91 98765 00012",
+      check_in_date: isoDaysFromNow(70),
+      check_out_date: isoDaysFromNow(71),
+      booking_status: "pending",
+      special_requests: "Guest-visible request",
+      admin_notes: "Private staff note",
+    },
+  });
+  if (notesBooking.body?.data?.booking_number) {
+    createdBookingNumbers.push(notesBooking.body.data.booking_number);
+  }
+  check("create with admin_notes 201", notesBooking.status === 201);
+  check(
+    "create returns admin_notes",
+    notesBooking.body?.data?.admin_notes === "Private staff note"
+  );
+  check(
+    "special_requests unchanged on create",
+    notesBooking.body?.data?.special_requests === "Guest-visible request"
+  );
+  check(
+    "create retains hotel_id",
+    notesBooking.body?.data?.hotel_id === fixture.hotel_id
+  );
+
+  const notesId = notesBooking.body?.data?.id;
+  const notesPatch = await api("PATCH", `/api/admin/bookings/${notesId}`, {
+    token,
+    body: { admin_notes: "Updated private note" },
+  });
+  check("patch admin_notes 200", notesPatch.status === 200);
+  check(
+    "patch persists admin_notes",
+    notesPatch.body?.data?.admin_notes === "Updated private note"
+  );
+  check(
+    "patch leaves special_requests alone",
+    notesPatch.body?.data?.special_requests === "Guest-visible request"
+  );
+
+  const notesClear = await api("PATCH", `/api/admin/bookings/${notesId}`, {
+    token,
+    body: { admin_notes: "" },
+  });
+  check("clear admin_notes 200", notesClear.status === 200);
+  check(
+    "clear stores NULL",
+    notesClear.body?.data?.admin_notes === null
+  );
+
+  const notesTooLong = await api("PATCH", `/api/admin/bookings/${notesId}`, {
+    token,
+    body: { admin_notes: "x".repeat(2001) },
+  });
+  check("admin_notes maxLength 2000", notesTooLong.status === 400);
+
+  const secondHotel = await query(
+    `SELECT rt.id AS room_type_id, rt.hotel_id
+     FROM room_types rt
+     INNER JOIN hotels h ON h.id = rt.hotel_id
+     WHERE rt.status = 'active'
+       AND h.status = 'active'
+       AND rt.hotel_id <> $1
+     ORDER BY rt.created_at ASC
+     LIMIT 1`,
+    [fixture.hotel_id]
+  );
+  const hotelB = secondHotel.rows[0];
+  check("second hotel available for isolation", Boolean(hotelB));
+  if (hotelB) {
+    const bookingB = await api("POST", "/api/admin/bookings", {
+      token,
+      body: {
+        hotel_id: hotelB.hotel_id,
+        room_type_id: hotelB.room_type_id,
+        guest_name: "Phase10C HotelB Notes",
+        guest_email: "phase10c-notes-b@booking-selftest.invalid",
+        guest_phone: "+91 98765 00013",
+        check_in_date: isoDaysFromNow(72),
+        check_out_date: isoDaysFromNow(73),
+        booking_status: "pending",
+        admin_notes: "Hotel B private note",
+      },
+    });
+    if (bookingB.body?.data?.booking_number) {
+      createdBookingNumbers.push(bookingB.body.data.booking_number);
+    }
+    check("hotel B create 201", bookingB.status === 201);
+    await api("PATCH", `/api/admin/bookings/${notesId}`, {
+      token,
+      body: { admin_notes: "Hotel A private note" },
+    });
+    const detailA = await api("GET", `/api/admin/bookings/${notesId}`, {
+      token,
+    });
+    const detailB = await api(
+      "GET",
+      `/api/admin/bookings/${bookingB.body?.data?.id}`,
+      { token }
+    );
+    check(
+      "hotel A notes isolated",
+      detailA.body?.data?.admin_notes === "Hotel A private note" &&
+        detailA.body?.data?.hotel_id === fixture.hotel_id
+    );
+    check(
+      "hotel B notes isolated",
+      detailB.body?.data?.admin_notes === "Hotel B private note" &&
+        detailB.body?.data?.hotel_id === hotelB.hotel_id
+    );
+  }
+
+  const publicReject = await api("POST", "/api/bookings", {
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Public Notes Probe",
+      guest_email: "phase10c-public-notes@booking-selftest.invalid",
+      guest_phone: "+91 98765 00014",
+      check_in_date: isoDaysFromNow(80),
+      check_out_date: isoDaysFromNow(81),
+      adults: 1,
+      admin_notes: "should never land",
+    },
+  });
+  check(
+    "public create rejects admin_notes",
+    publicReject.status === 400,
+    `got ${publicReject.status}`
+  );
+
+  const publicCreate = await api("POST", "/api/bookings", {
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Public Notes Probe",
+      guest_email: "phase10c-public-notes@booking-selftest.invalid",
+      guest_phone: "+91 98765 00014",
+      check_in_date: isoDaysFromNow(80),
+      check_out_date: isoDaysFromNow(81),
+      adults: 1,
+      special_requests: "Public guest request",
+    },
+  });
+  if (publicCreate.body?.data?.booking_number) {
+    createdBookingNumbers.push(publicCreate.body.data.booking_number);
+  }
+  check("public create without admin_notes 201", publicCreate.status === 201);
+  check(
+    "public create response omits admin_notes",
+    publicCreate.body?.data &&
+      !Object.prototype.hasOwnProperty.call(publicCreate.body.data, "admin_notes")
+  );
+
+  const publicNumber = publicCreate.body?.data?.booking_number;
+  if (publicNumber) {
+    const adminAfterPublic = await api(
+      "GET",
+      `/api/admin/bookings?search=${encodeURIComponent(publicNumber)}`,
+      { token }
+    );
+    const publicRow = (adminAfterPublic.body?.data || []).find(
+      (b) => b.booking_number === publicNumber
+    );
+    if (publicRow?.id) {
+      await api("PATCH", `/api/admin/bookings/${publicRow.id}`, {
+        token,
+        body: { admin_notes: "Injected after public create" },
+      });
+    }
+    const lookup = await api(
+      "GET",
+      `/api/bookings/${encodeURIComponent(publicNumber)}?email=${encodeURIComponent(
+        "phase10c-public-notes@booking-selftest.invalid"
+      )}`
+    );
+    check("public lookup 200", lookup.status === 200);
+    check(
+      "public lookup omits admin_notes",
+      lookup.body?.data &&
+        !Object.prototype.hasOwnProperty.call(lookup.body.data, "admin_notes")
+    );
+    check(
+      "public lookup keeps special_requests",
+      lookup.body?.data?.special_requests === "Public guest request"
+    );
+  }
 
   console.log(`\n${passed} passed, ${failed} failed`);
   await cleanup();

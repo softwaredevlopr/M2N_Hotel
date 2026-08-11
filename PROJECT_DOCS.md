@@ -132,9 +132,8 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   stay / room / pricing / timeline / notes, status actions (confirm, cancel,
   check-in, check-out, no-show), room assignment, and dashboard stats via
   `GET /api/admin/bookings/stats`. List `sort`/`order` added without schema
-  change. Public site and guest booking UI untouched. Remaining 10C items:
-  availability calendar, allotment/stop-sells, confirmation email, dedicated
-  internal-notes column, admin create form. Verified 2026-08-05
+  change. Public site and guest booking UI untouched. Remaining 10C items were
+  later completed as Phases 10D–10I + admin_notes (`006`). Verified 2026-08-05
   (`verify:phase10c`); no_show stamps `cancelled_at` for audit.
 
 - ✅ **Phase 10D — Availability & inventory engine** — `inventory.service.js`
@@ -160,14 +159,19 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   `npm run verify:phase10f`.
 
 - ✅ **Phase 10G — Admin create booking form** — `/admin/bookings/new` with
-  availability check, price summary, notes (`special_requests`), confirmation
-  screen. Reuses `POST /api/admin/bookings`. No schema change.
+  availability check, price summary, guest special requests + internal notes
+  (`special_requests` / `admin_notes`), confirmation screen. Reuses
+  `POST /api/admin/bookings`.
 
 - ✅ **Phase 10H — Admin inquiries CRUD UI** — `/admin/inquiries` list + detail
   (search, status, pagination, delete). JWT on inquiry list/get/status/delete;
   public create unchanged. No schema change.
 
-**Next:** Booking internal notes column (schema); Phase 11.
+- ✅ **Booking admin_notes** — migration `006_booking_admin_notes.sql` adds
+  nullable private `bookings.admin_notes`; admin APIs/UI only; public APIs reject
+  / omit. Smoke: `verify:phase10c`.
+
+**Next:** Deployment docs / non-local migrate (`005`–`006`); Phase 11.
 
 ---
 
@@ -314,13 +318,12 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
   (`room_type_inventory_dates`).
 - ✅ Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`).
 - ✅ Admin inventory day-edit UI on `/admin/inventory`.
-- ⬜ **Remaining Phase 10C** — dedicated booking internal-notes column (schema
-  approval).
+- ✅ **Booking admin_notes** — `bookings.admin_notes` (migration `006`).
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
   0 (couple package is not nightly).
 - ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ⬜ Production contact details (replace placeholders).
-- ⬜ Run `005_room_type_inventory_dates.sql` on non-local environments.
+- ⬜ Run `005` / `006` on non-local environments.
 - ⬜ Phases **11–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).
 
 > Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older

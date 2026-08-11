@@ -51,10 +51,17 @@
 **Admin create booking (`/admin/bookings/new`)**
 
 - Sections: guest details, stay (hotel/room type/dates/guests/rooms), options
-  (source/status/payment), notes (`special_requests`), price summary.
+  (source/status/payment), guest special requests (`special_requests`),
+  internal notes (`admin_notes`, private), price summary.
 - Availability check button + blocking submit when inventory probe says sold out.
 - Confirmation screen after create with View booking / Create another actions.
 - Match existing admin form chrome (ink panels, gold CTAs, uppercase labels).
+
+**Admin booking detail (`/admin/bookings/[id]`)**
+
+- Guest special requests and Internal notes are separate sections.
+- Internal notes labelled “Private — visible to hotel staff only”; dashed border.
+- Cancel / no-show dialog uses `cancellation_reason` (not internal notes).
 
 **Admin inquiries (`/admin/inquiries`)**
 

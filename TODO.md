@@ -18,7 +18,8 @@
       (`/admin/bookings` list, filters, pagination, sorting, detail, status
       actions, room assignment) + dashboard booking stats. No schema change.
       Smoke: `npm run verify:phase10c` / `npm run test:bookings`.
-  - [ ] Dedicated internal-notes column (needs schema approval).
+  - [x] Dedicated internal-notes column — `bookings.admin_notes` (migration
+        `006`); admin UI + privacy guards. Smoke: `verify:phase10c`.
 - [x] **Phase 10D — Availability & Inventory Engine** — derived per-day
       inventory service + calendar/day/overlaps APIs (admin + public calendar).
       Smoke: `npm run verify:phase10d`.
@@ -54,8 +55,9 @@
       nightly). Scripts: `npm run set:base-prices` / `verify:base-prices`.
 - [ ] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 - [ ] Replace placeholder contact details before launch.
-- [ ] Run `npm run migrate` on every environment for `004_bookings.sql` and
-      `005_room_type_inventory_dates.sql`. Local dev is already migrated.
+- [ ] Run `npm run migrate` on every environment for `004_bookings.sql`,
+      `005_room_type_inventory_dates.sql`, and `006_booking_admin_notes.sql`.
+      Local dev is already migrated.
 
 ---
 
@@ -99,6 +101,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A–10H** complete (admin inquiries UI) — see
-[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: stop-sell
-schema (approval), booking internal notes, deployment.
+Phases **1–9**, **10A–10I** complete (incl. booking `admin_notes`) — see
+[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: deployment /
+non-local migrate for `005`–`006`.

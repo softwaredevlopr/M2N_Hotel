@@ -122,6 +122,7 @@ Direct reservations, slug/`hotel_id`-scoped for multi-property support.
 | `currency` | `CHAR(3)`, defaults to the hotel's `currency_code` |
 | `created_by_admin_id` | Nullable FK → `admin_users` `ON DELETE SET NULL` |
 | `confirmed_at` / `cancelled_at` / `cancellation_reason` | Stamped on status change |
+| `admin_notes` | Nullable private staff notes (migration `006`); never public |
 
 Statuses and sources are `VARCHAR` + `CHECK` constraints, matching the existing
 project convention (no native PostgreSQL enums). Mirrored in

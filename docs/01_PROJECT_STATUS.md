@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-08  
+> **Status:** Living document · **Last updated:** 2026-08-11  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -43,10 +43,11 @@
 | Booking engine — persistent inventory dates | ✅ Phase 10I |
 | Admin inventory-date write APIs | ✅ Complete |
 | Admin inventory-date edit UI | ✅ Complete |
+| Booking admin_notes (private) | ✅ Complete (migration `006`) |
 | Deployment docs / prod cutover | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: booking
-internal notes (schema), deployment
+**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: deployment /
+non-local migrate (`005`–`006`), Phase 11+
 
 ---
 
@@ -141,8 +142,7 @@ internal notes (schema), deployment
 - Verified 2026-08-05: auth gate, list filters/sort/pagination, detail, status
   transitions + `cancellation_reason`, stats, frontend build; no_show now stamps
   `cancelled_at` for timeline audit (reuses existing column).
-- Still pending under 10C/11: allotment/stop-sells (schema), dedicated internal
-  notes column.
+- Still pending under later phases: deployment / non-local migrate.
 
 ### Phase 10D — Availability & Inventory Engine ✅
 
@@ -206,17 +206,16 @@ internal notes (schema), deployment
 
 ## 3. In Progress
 
-- None formally in-flight. Next: booking internal notes column (schema);
-  deployment.
+- None formally in-flight. Next: deployment docs / non-local migrate
+  (`005`–`006`); Phase 11+.
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Dedicated booking internal-notes column (schema approval).
-2. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-3. Run migration `005` on non-local environments.
-4. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+1. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
+2. Run migrations `005` and `006` on non-local environments.
+3. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -235,6 +234,7 @@ internal notes (schema), deployment
 
 | Date | Update |
 |------|--------|
+| 2026-08-11 | Booking `admin_notes` (migration `006`) — private staff notes + admin UI |
 | 2026-08-11 | Admin inventory day-edit UI on `/admin/inventory` |
 | 2026-08-10 | Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`) |
 | 2026-08-08 | Phase 10I persistent `room_type_inventory_dates` (stop-sell/allotment/overbooking) |

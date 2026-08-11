@@ -11,6 +11,7 @@ SQL migrations for the M2N Hotels PostgreSQL database.
 | `003_tariff_rates.sql` | Tariff / meal-plan rate rows (Phase 9) |
 | `004_bookings.sql` | Direct reservations — bookings table (Phase 10A) |
 | `005_room_type_inventory_dates.sql` | Per-night stop-sell / allotment / overbooking (Phase 10I) |
+| `006_booking_admin_notes.sql` | Private staff notes — `bookings.admin_notes` |
 
 ## Run
 

@@ -22,7 +22,8 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** booking internal notes (schema); Phase 11+.
+- **Next:** deployment docs / non-local migrate (`005`–`006`); Phase 11+.
+- Bookings carry private `admin_notes` (admin JWT only; never public).
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 
 ## 3. Hard rules

@@ -245,6 +245,11 @@ const createBooking = asyncHandler(async (req, res) => {
     errors.push("special_requests must be at most 2000 characters");
   }
 
+  // Private staff notes must never be accepted on the public create path.
+  if (body.admin_notes !== undefined) {
+    errors.push("admin_notes is not accepted on public booking create");
+  }
+
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }

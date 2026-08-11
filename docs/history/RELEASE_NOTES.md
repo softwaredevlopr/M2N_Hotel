@@ -12,6 +12,14 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Booking admin_notes — private internal notes (2026-08-11)
+
+- Migration `006_booking_admin_notes.sql` adds nullable `bookings.admin_notes`
+  ([ADR-0028](DECISIONS.md)).
+- Admin create/detail UI: separate guest special requests vs private internal
+  notes; public booking APIs never accept or return `admin_notes`.
+- Smoke: `npm run verify:phase10c` (schema + privacy + isolation checks).
+
 ### Admin inventory day-edit UI (2026-08-11)
 
 - `/admin/inventory` day click → side panel for allotment / stop-sell /
