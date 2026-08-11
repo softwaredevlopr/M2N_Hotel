@@ -1021,6 +1021,37 @@ public booking APIs. Schema change required explicit approval (`AGENTS.md` §14)
   and guest-leak risk.
 - Separate notes table / audit log. Deferred — not required for v1.
 
+### ADR-0029 — Deployment documentation before staging/production cutover
+
+**Date:** 2026-08-11
+
+**Status:** Accepted
+
+**Context**
+Phases 1–10I and `bookings.admin_notes` are complete on local/main. Operators
+still need a single readiness guide covering architecture, env placeholders,
+migrations `005`/`006`, security, smoke tests, and rollback — without executing
+non-local deploys from the documentation task itself.
+
+**Decision**
+- Expand [`docs/12_DEPLOYMENT.md`](../12_DEPLOYMENT.md) into the canonical
+  deployment / readiness reference.
+- Keep env templates placeholder-only (`.env.example` files).
+- Document 005/006 rollout as an operator checklist only; do not run migrates
+  against staging/production from this ADR’s delivery.
+- Defer CI/CD workflow implementation until explicitly requested.
+
+**Consequences**
+- Cutover work has a written order of operations and security checklist.
+- Remaining blockers (hosts, secrets, non-local migrate, contacts) stay explicit
+  in TODO/status.
+
+**Alternatives considered**
+- Implement GitHub Actions now. Rejected — out of scope; document future shape
+  only.
+- Auto-migrate on container boot. Deferred — risks concurrent migrators and
+  surprise schema changes.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

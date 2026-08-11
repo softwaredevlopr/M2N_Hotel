@@ -1,7 +1,8 @@
 # 06 — Setup Guide
 
-> **Status:** Living document · **Last updated:** 2026-07-14  
-> **Related:** [`../README.md`](../README.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md)
+> **Status:** Living document · **Last updated:** 2026-08-11  
+> **Related:** [`../README.md`](../README.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) ·
+> [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md)
 
 ---
 
@@ -30,19 +31,24 @@ cd ../frontend && npm install
   `console` / `smtp`), `EMAIL_FROM`, and `SMTP_*`. With no `SMTP_HOST`, messages
   are logged to the server console (no credentials required).
 
-**Frontend** — optional `.env.local`:
+**Frontend** — optional `.env.local` (see `frontend/.env.example`):
 
-- `NEXT_PUBLIC_API_URL=http://localhost:5001`
+- `NEXT_PUBLIC_API_BASE_URL=http://localhost:5001` (preferred)
+- Legacy alias: `NEXT_PUBLIC_API_URL`
 - Optional: `NEXT_PUBLIC_SITE_URL` for canonical/SEO
+- Optional: `NEXT_PUBLIC_DEFAULT_HOTEL_SLUG`
 
 ## 4. Database
 
 ```bash
 cd backend
-npm run migrate      # 001 schema + 002 admin_users
+npm run migrate      # applies pending 001–006 (alphabetical via schema_migrations)
 npm run seed         # hotels / rooms / media seed (optional)
 npm run seed:admin   # create first admin
 ```
+
+Non-local migrate checklist (005/006): [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md) §6.
+Do not run staging/production migrates from this setup guide alone.
 
 ## 5. Run
 

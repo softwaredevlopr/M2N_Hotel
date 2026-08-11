@@ -1,6 +1,6 @@
 # 11 — Security
 
-> **Status:** Living document · **Last updated:** 2026-07-14
+> **Status:** Living document · **Last updated:** 2026-08-11
 
 ---
 
@@ -12,7 +12,8 @@
 - [4. Data Protection](#4-data-protection)
 - [5. API Security](#5-api-security)
 - [6. Dependencies](#6-dependencies)
-- [7. TODO](#7-todo)
+- [7. Deployment security checklist](#7-deployment-security-checklist)
+- [8. TODO](#8-todo)
 
 ---
 
@@ -90,7 +91,12 @@ and stricter helmet CSP once the asset origins are finalized.
 
 - TODO: Dependency audit / update policy.
 
-## 7. TODO
+## 7. Deployment security checklist
+
+Canonical cutover checklist (HTTPS, secrets, CORS, DB exposure, `admin_notes`
+privacy, rate limits / helmet): [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md) §7–§8.
+
+## 8. TODO
 
 - [ ] Threat model.
 - [ ] Security review checklist.

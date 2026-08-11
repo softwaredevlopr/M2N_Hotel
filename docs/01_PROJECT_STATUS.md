@@ -44,10 +44,11 @@
 | Admin inventory-date write APIs | ✅ Complete |
 | Admin inventory-date edit UI | ✅ Complete |
 | Booking admin_notes (private) | ✅ Complete (migration `006`) |
-| Deployment docs / prod cutover | ⬜ Pending |
+| Deployment docs / readiness | ✅ Documented ([12 — Deployment](12_DEPLOYMENT.md)) |
+| Staging / production cutover | ⬜ Pending (operator) |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: deployment /
-non-local migrate (`005`–`006`), Phase 11+
+**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: non-local
+migrate `005`–`006` + host cutover (see deployment guide); Phase 11+
 
 ---
 
@@ -206,16 +207,19 @@ non-local migrate (`005`–`006`), Phase 11+
 
 ## 3. In Progress
 
-- None formally in-flight. Next: deployment docs / non-local migrate
-  (`005`–`006`); Phase 11+.
+- None formally in-flight. Next: operator staging/production cutover using
+  [12 — Deployment](12_DEPLOYMENT.md) (non-local migrate still pending).
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Fill deployment guide ([12 — Deployment](12_DEPLOYMENT.md)).
-2. Run migrations `005` and `006` on non-local environments.
-3. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+1. Provision staging/production hosts + secrets; fill final URLs in the
+   deployment guide.
+2. Run migrations `005` and `006` on non-local environments (checklist in
+   [12 — Deployment](12_DEPLOYMENT.md) §6) — **operator only**.
+3. Replace placeholder contact details before public launch.
+4. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -234,8 +238,8 @@ non-local migrate (`005`–`006`), Phase 11+
 
 | Date | Update |
 |------|--------|
+| 2026-08-11 | Deployment documentation & readiness plan (`docs/12_DEPLOYMENT.md`) |
 | 2026-08-11 | Booking `admin_notes` (migration `006`) — private staff notes + admin UI |
-| 2026-08-11 | Admin inventory day-edit UI on `/admin/inventory` |
 | 2026-08-10 | Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`) |
 | 2026-08-08 | Phase 10I persistent `room_type_inventory_dates` (stop-sell/allotment/overbooking) |
 | 2026-08-06 | Operational: set Deluxe/Suite overnight `base_price` (1999/2999); Standard remains 0 for couple package |

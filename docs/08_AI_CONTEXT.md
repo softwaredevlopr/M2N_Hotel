@@ -22,8 +22,10 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** deployment docs / non-local migrate (`005`–`006`); Phase 11+.
+- **Next:** operator staging/production cutover ([12 — Deployment](12_DEPLOYMENT.md));
+  Phase 11+. Non-local migrate for `005`/`006` still pending.
 - Bookings carry private `admin_notes` (admin JWT only; never public).
+- Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 
 ## 3. Hard rules

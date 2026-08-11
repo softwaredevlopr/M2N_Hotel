@@ -9,6 +9,23 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Deployment documentation & readiness plan ✅
+
+- **What changed.** Replaced the stub [`docs/12_DEPLOYMENT.md`](12_DEPLOYMENT.md)
+  with a full readiness guide: architecture, env matrix (placeholders only),
+  backend/frontend/Postgres procedures, safe 005/006 rollout checklist,
+  security + pre-production checklists, rollback guidance, and a future CI/CD
+  outline. No staging/production deploy or non-local migrate was performed.
+- **Files modified:** `docs/12_DEPLOYMENT.md`, `docs/06_SETUP_GUIDE.md`,
+  `backend/.env.example`, `frontend/.env.example` (+ allowlist in
+  `frontend/.gitignore`), status/TODO/changelog/ADR.
+- **APIs added/changed:** none.
+- **Database changes:** none.
+- **Frontend changes:** none (docs / env example only).
+- **Backend changes:** none (docs / env example only).
+- **Remaining work:** commit/push docs; operator-run non-local migrate
+  `005`/`006`; provision hosts/secrets; placeholder contacts; optional CI/CD.
+
 ### Added — Booking admin_notes (private internal notes) ✅
 
 - **What changed.** Approved migration `006_booking_admin_notes.sql` adds

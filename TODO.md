@@ -53,11 +53,13 @@
 - [x] Set overnight `base_price` for Deluxe (₹1999) and Suite (₹2999) on Zaarang
       and Aurelia. Standard stays `0.00` (₹999 is the 3-hour couple package, not
       nightly). Scripts: `npm run set:base-prices` / `verify:base-prices`.
-- [ ] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
+- [x] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
+      (architecture, env matrix, 005/006 rollout checklist, security / rollback).
+      Docs only — no staging/production deploy or non-local migrate yet.
 - [ ] Replace placeholder contact details before launch.
 - [ ] Run `npm run migrate` on every environment for `004_bookings.sql`,
       `005_room_type_inventory_dates.sql`, and `006_booking_admin_notes.sql`.
-      Local dev is already migrated.
+      Local dev is already migrated. Follow [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.
 
 ---
 
@@ -102,5 +104,6 @@
 ## Completed (pointer)
 
 Phases **1–9**, **10A–10I** complete (incl. booking `admin_notes`) — see
-[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: deployment /
-non-local migrate for `005`–`006`.
+[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: non-local
+migrate for `005`–`006` (checklist in deployment docs); placeholder contacts;
+optional CI/CD.

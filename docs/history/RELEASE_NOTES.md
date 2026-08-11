@@ -12,6 +12,14 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Deployment documentation & readiness plan (2026-08-11)
+
+- Full [`docs/12_DEPLOYMENT.md`](../12_DEPLOYMENT.md) readiness guide
+  ([ADR-0029](DECISIONS.md)): architecture, env matrix, 005/006 checklist,
+  security, rollback, future CI/CD outline.
+- No staging/production deploy or non-local migration executed with this release
+  note.
+
 ### Booking admin_notes — private internal notes (2026-08-11)
 
 - Migration `006_booking_admin_notes.sql` adds nullable `bookings.admin_notes`

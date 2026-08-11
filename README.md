@@ -92,6 +92,9 @@ Setup detail: [`docs/06_SETUP_GUIDE.md`](docs/06_SETUP_GUIDE.md)
 | [`docs/03_DATABASE.md`](docs/03_DATABASE.md) | Schema & tables |
 | [`docs/04_API.md`](docs/04_API.md) | API reference |
 | [`docs/05_FOLDER_STRUCTURE.md`](docs/05_FOLDER_STRUCTURE.md) | Repo layout |
+| [`docs/06_SETUP_GUIDE.md`](docs/06_SETUP_GUIDE.md) | Local setup |
+| [`docs/11_SECURITY.md`](docs/11_SECURITY.md) | Security practices |
+| [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) | Deployment & readiness |
 | [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) | Phases 1–15 roadmap |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Detailed changelog |
 | [`docs/history/`](docs/history/) | ADRs & release notes |

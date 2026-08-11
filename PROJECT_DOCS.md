@@ -171,7 +171,11 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   nullable private `bookings.admin_notes`; admin APIs/UI only; public APIs reject
   / omit. Smoke: `verify:phase10c`.
 
-**Next:** Deployment docs / non-local migrate (`005`–`006`); Phase 11.
+- ✅ **Deployment documentation** — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
+  readiness guide (architecture, env matrix, 005/006 rollout checklist). No
+  staging/production cutover yet.
+
+**Next:** Operator non-local migrate (`005`–`006`) + host cutover; Phase 11.
 
 ---
 
@@ -319,11 +323,12 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 - ✅ Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`).
 - ✅ Admin inventory day-edit UI on `/admin/inventory`.
 - ✅ **Booking admin_notes** — `bookings.admin_notes` (migration `006`).
+- ✅ Deployment docs / readiness plan ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
   0 (couple package is not nightly).
-- ⬜ Deployment docs ([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 - ⬜ Production contact details (replace placeholders).
-- ⬜ Run `005` / `006` on non-local environments.
+- ⬜ Run `005` / `006` on non-local environments (operator checklist in
+  deployment docs).
 - ⬜ Phases **11–15** (rates → inventory → booking → PMS → CRM → payments → SaaS).
 
 > Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older

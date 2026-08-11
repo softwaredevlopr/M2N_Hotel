@@ -202,6 +202,7 @@ older labels.
 ## 5. Backlog
 
 - Admin Inquiries CRUD UI (API list/get/patch already exist).
-- Deployment runbooks ([12 — Deployment](12_DEPLOYMENT.md)).
+- Deployment runbooks ([12 — Deployment](12_DEPLOYMENT.md)) — readiness guide
+  complete; staging/production cutover still operator-run.
 - Production contact details (replace placeholders).
 - Automated tests.
