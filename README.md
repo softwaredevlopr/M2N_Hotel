@@ -34,7 +34,8 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 10G | Admin Create Booking Form | ✅ |
 | 10H | Admin Inquiries CRUD UI | ✅ |
 | 10I | Persistent inventory dates (stop-sell/allotment/overbooking) + admin date write APIs | ✅ |
-| 11–15 | Booking polish, PMS, CRM, payments, SaaS | ⬜ Upcoming |
+| 11 | Booking Engine Completion (cancel + stay modify + prefs ✅; polish pending) | ◐ |
+| 12–15 | PMS, CRM, payments, SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)
 

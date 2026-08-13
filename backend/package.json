@@ -14,6 +14,9 @@
     "verify:phase10d": "node scripts/verifyPhase10D.js",
     "verify:phase10f": "node scripts/verifyPhase10F.js",
     "verify:phase10i": "node scripts/verifyPhase10I.js",
+    "verify:admin-stay-modify": "node scripts/verifyAdminStayModify.js",
+    "verify:guest-stay-modify": "node scripts/verifyGuestStayModify.js",
+    "verify:notification-prefs": "node scripts/verifyNotificationPrefs.js",
     "verify:inventory-dates": "node scripts/verifyInventoryDateWrites.js",
     "set:base-prices": "node scripts/setRoomTypeBasePrices.js",
     "verify:base-prices": "node scripts/verifyRoomTypeBasePrices.js"

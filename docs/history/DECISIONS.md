@@ -1052,6 +1052,168 @@ non-local deploys from the documentation task itself.
 - Auto-migrate on container boot. Deferred — risks concurrent migrators and
   surprise schema changes.
 
+### ADR-0030 — Phase 11 admin cancel via dedicated endpoint, existing schema
+
+**Date:** 2026-08-12
+
+**Status:** Accepted
+
+**Context**
+Phase 11 needs a clear cancellation workflow. Bookings already support
+`booking_status=cancelled`, `cancelled_at`, and `cancellation_reason` via
+`PATCH /status`. Staff UI previously required a reason for cancel. No new
+columns are approved.
+
+**Decision**
+- Add `POST /api/admin/bookings/:id/cancel` (JWT) that only transitions eligible
+  statuses to `cancelled`, optionally accepts `cancellation_reason` (max 2000),
+  stamps `cancelled_at`, and reuses existing cancellation email hooks.
+- Keep `PATCH /:id/status` cancel path for compatibility (and no_show).
+- Admin detail: dedicated Cancel booking + ConfirmDialog; reason optional.
+- Do not implement guest self-service cancel or stay modification in this slice.
+
+**Consequences**
+- Cancel semantics are explicit and testable without a migration.
+- Guest-facing cancel remains a follow-up Phase 11 task.
+
+**Alternatives considered**
+- Schema for cancel audit / preferences. Rejected — not approved; reuse fields.
+- Require reason always. Rejected — product asked for optional reason on cancel
+  (no_show still requires a reason in UI).
+
+### ADR-0031 — Phase 11 guest self-service cancel with contact verification
+
+**Date:** 2026-08-12
+
+**Status:** Accepted
+
+**Context**
+Guests can look up a booking with email/phone proof but could not cancel online.
+Admin cancel already exists. Schema additions are not approved.
+
+**Decision**
+- Add `POST /api/bookings/:bookingNumber/cancel` requiring `email` or `phone`
+  with the same 404 indistinguishability as lookup.
+- Guest eligibility: `pending` | `confirmed` only (`canGuestCancelBooking`).
+  Mid-stay / terminal states stay staff-only.
+- Optional `cancellation_reason`; reuse `booking_status=cancelled` /
+  `cancelled_at`; fire existing cancellation email.
+- UI confirm step on `/booking/[bookingNumber]`; refresh cancelled state.
+- Do not implement stay-date modification in this slice.
+
+**Consequences**
+- Guests can release inventory before check-in without admin intervention.
+- checked_in cancellations remain an admin workflow.
+
+**Alternatives considered**
+- Allow guest cancel while checked_in. Rejected — ops risk; staff path exists.
+- Magic-link tokens. Deferred — contact verification already shipped for lookup.
+
+### ADR-0032 — Phase 11 admin stay modification (transactional, no schema)
+
+**Date:** 2026-08-12
+
+**Status:** Accepted
+
+**Context**
+Admin could PATCH stay fields, but inventory revalidation committed before the
+booking `UPDATE` (TOCTOU). Detail UI showed stay as read-only. Guest modify is
+deferred. Schema additions for modification history are not approved.
+
+**Decision**
+- Harden stay changes on existing `PATCH /api/admin/bookings/:id` via
+  `applyBookingStayUpdate`: booking row `FOR UPDATE`, advisory locks on
+  affected room type(s), availability with `excludeBookingId`, then `UPDATE`
+  in one transaction.
+- Auto-reprice from `room_types.base_price` when dates/type/rooms change
+  unless amounts are explicitly provided in the body.
+- Eligible: non-terminal statuses; reject `checked_out` / `cancelled` /
+  `no_show`. Preserve `hotel_id`.
+- Admin detail UI: edit dates / room type / rooms, availability feedback via
+  inventory overlaps (exclude self), confirm before save.
+- Do not implement guest self-service modify in this slice. No migration.
+
+**Consequences**
+- Staff can safely reschedule without overbooking races from the check/update gap.
+- Guest modify remains a follow-up Phase 11 task.
+
+**Alternatives considered**
+- Dedicated `POST /:id/modify` route. Deferred — PATCH already exists; harden it.
+- Modification history table. Rejected for now — not approved; `updated_at` /
+  notes remain sufficient for v1.
+
+### ADR-0033 — Phase 11 guest self-service stay modification (no schema)
+
+**Date:** 2026-08-13
+
+**Status:** Accepted
+
+**Context**
+Guests can look up and cancel bookings but could not reschedule online. Admin
+transactional stay modify already exists (`applyBookingStayUpdate`). Schema
+additions for modification history are not approved.
+
+**Decision**
+- Add contact-verified `POST /api/bookings/:bookingNumber/modify` and
+  `…/modify/preview`.
+- Eligibility: `pending` | `confirmed` only (`canGuestModifyStayBooking`),
+  matching guest cancel.
+- Allowed fields: check-in, check-out, room type, number of rooms. No past
+  check-in. Always server-side reprice from `base_price`.
+- Reuse `applyBookingStayUpdate` with `allowedStatuses` +
+  `requireActiveRoomType` rather than duplicating inventory logic.
+- UI on `/booking/[bookingNumber]`; fire existing status-update email after
+  a successful stay change. No notification-preference schema.
+
+**Consequences**
+- Guests can reschedule before check-in without staff; inventory remains
+  race-safe via the shared locked update path.
+- Notification preferences remain a separate Phase 11 follow-up.
+
+**Alternatives considered**
+- Public `exclude_booking_id` on GET availability. Rejected — requires contact
+  proof; dedicated preview endpoint instead.
+- Allow guest modify while checked_in. Rejected — ops risk; admin path exists.
+
+### ADR-0034 — Phase 11 booking notification preferences (JSONB)
+
+**Date:** 2026-08-13
+
+**Status:** Accepted
+
+**Context**
+Phase 10F sends confirmation, cancellation, and status-update emails without
+per-booking channel preferences. Guests need optional-update control without
+disabling transactional confirm/cancel messages. SMS/WhatsApp providers,
+marketing lists, CRM guest profiles, and hotel From/Reply-To config are not
+approved for this slice.
+
+**Decision**
+- Add additive migration `007_booking_notification_preferences.sql`:
+  `bookings.notification_preferences JSONB NOT NULL DEFAULT
+  '{"email_updates":true,"sms_opt_in":false,"whatsapp_opt_in":false}'`.
+- Allowed keys only: `email_updates`, `sms_opt_in`, `whatsapp_opt_in`.
+- Transactional confirmation and cancellation emails are never gated by prefs.
+- Only `booking_status_update` (including stay-change updates) respects
+  `email_updates`.
+- SMS/WhatsApp values are stored opt-ins only — no providers in this phase.
+- Optional prefs on create; contact-verified guest
+  `POST /api/bookings/:bookingNumber/notification-preferences`; admin
+  create/PATCH/detail payloads include the object.
+- Minimal guest (`/book`, lookup) and admin booking-detail controls.
+
+**Consequences**
+- Existing bookings receive defaults via `NOT NULL DEFAULT`.
+- Reversible with `ALTER TABLE bookings DROP COLUMN notification_preferences`
+  (operator-run; migration runner is forward-only).
+- Marketing / multi-channel delivery remain future work.
+
+**Alternatives considered**
+- Separate guest CRM preference table. Rejected — booking-scoped prefs suffice
+  for Phase 11 and avoid unapproved schema breadth.
+- Gate confirmation email on `email_updates`. Rejected — transactional notices
+  must remain reliable.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

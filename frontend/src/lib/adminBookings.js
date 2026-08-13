@@ -46,6 +46,21 @@ export function canTransitionBookingStatus(from, to) {
   return (BOOKING_STATUS_TRANSITIONS[from] || []).includes(to);
 }
 
+export function canCancelBooking(status) {
+  return canTransitionBookingStatus(status, "cancelled") && status !== "cancelled";
+}
+
+/** Terminal statuses cannot change stay inventory (mirrors backend). */
+export const TERMINAL_BOOKING_STATUSES = [
+  "checked_out",
+  "cancelled",
+  "no_show",
+];
+
+export function canModifyStayBooking(status) {
+  return Boolean(status) && !TERMINAL_BOOKING_STATUSES.includes(status);
+}
+
 export function nextBookingActions(status) {
   const next = BOOKING_STATUS_TRANSITIONS[status] || [];
   return next.map((value) => ({
@@ -102,6 +117,14 @@ export async function getAdminBooking(id) {
 export async function updateAdminBookingStatus(id, payload) {
   return adminApi(`/api/admin/bookings/${encodeURIComponent(id)}/status`, {
     method: "PATCH",
+    body: payload,
+  });
+}
+
+/** Phase 11 dedicated cancel — optional cancellation_reason. */
+export async function cancelAdminBooking(id, payload = {}) {
+  return adminApi(`/api/admin/bookings/${encodeURIComponent(id)}/cancel`, {
+    method: "POST",
     body: payload,
   });
 }

@@ -22,8 +22,15 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** operator staging/production cutover ([12 — Deployment](12_DEPLOYMENT.md));
-  Phase 11+. Non-local migrate for `005`/`006` still pending.
+- **Next:** Phase 11 guest journey polish; operator staging cutover
+  ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`/`006`/`007`
+  still pending.
+- Guest cancel / modify / notification prefs: contact-verified
+  `POST /api/bookings/:bookingNumber/{cancel,modify,notification-preferences}`.
+- Admin cancel: `POST /api/admin/bookings/:id/cancel`; stay modify via hardened
+  `PATCH /api/admin/bookings/:id`.
+- Prefs: migration `007` `notification_preferences` JSONB; status emails gated;
+  confirm/cancel ungated ([ADR-0034](history/DECISIONS.md)).
 - Bookings carry private `admin_notes` (admin JWT only; never public).
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.

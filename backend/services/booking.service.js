@@ -4,11 +4,15 @@ const { generateBookingNumber } = require("../utils/bookingNumber");
 const {
   INVENTORY_BLOCKING_STATUSES,
   SELLABLE_ROOM_STATUSES,
+  TERMINAL_BOOKING_STATUSES,
 } = require("../utils/bookingConstants");
 const {
   loadInventoryOverrides,
   summarizeStayAvailability,
 } = require("./inventoryCapacity");
+const {
+  normalizeNotificationPreferences,
+} = require("../utils/notificationPreferences");
 
 const UNIQUE_VIOLATION = "23505";
 const BOOKING_NUMBER_MAX_ATTEMPTS = 5;
@@ -180,6 +184,83 @@ function assertInventoryAvailable(availability, requestedRooms) {
   }
 }
 
+/**
+ * Indicative pricing from room_types.base_price (same rules as public create).
+ * Guest/staff-supplied totals are never trusted on public create; admin stay
+ * modify uses this when amounts are omitted from the PATCH body.
+ */
+function buildIndicativeAmounts(basePrice, nights, rooms) {
+  const price = Number(basePrice);
+  if (!Number.isFinite(price) || price <= 0) {
+    return {
+      nightly_rate: null,
+      on_request: true,
+      subtotal: 0,
+      tax_amount: 0,
+      total_amount: 0,
+    };
+  }
+  const subtotal = Math.round(price * nights * rooms * 100) / 100;
+  return {
+    nightly_rate: price,
+    on_request: false,
+    subtotal,
+    tax_amount: 0,
+    total_amount: subtotal,
+  };
+}
+
+async function assertRoomAssignableOnClient(
+  client,
+  { bookingId, roomId, hotelId, roomTypeId, checkIn, checkOut }
+) {
+  const roomResult = await client.query(
+    `SELECT id, hotel_id, room_type_id, room_number, status
+     FROM rooms
+     WHERE id = $1
+     LIMIT 1
+     FOR UPDATE`,
+    [roomId]
+  );
+  if (roomResult.rows.length === 0) {
+    throw new AppError(`Room not found: ${roomId}`, 404);
+  }
+
+  const room = roomResult.rows[0];
+  if (room.hotel_id !== hotelId) {
+    throw new AppError("room_id does not belong to the booking's hotel", 400);
+  }
+  if (room.room_type_id !== roomTypeId) {
+    throw new AppError(
+      "room_id does not belong to the booking's room type",
+      400
+    );
+  }
+  if (!SELLABLE_ROOM_STATUSES.includes(room.status)) {
+    throw new AppError(`Room ${room.room_number} is ${room.status}`, 409);
+  }
+
+  const clash = await client.query(
+    `SELECT booking_number
+     FROM bookings
+     WHERE room_id = $1
+       AND id <> $2
+       AND booking_status = ANY($3::text[])
+       AND check_in_date < $5
+       AND check_out_date > $4
+     LIMIT 1`,
+    [roomId, bookingId, INVENTORY_BLOCKING_STATUSES, checkIn, checkOut]
+  );
+  if (clash.rows.length > 0) {
+    throw new AppError(
+      `Room ${room.room_number} is already assigned to booking ${clash.rows[0].booking_number} for overlapping dates`,
+      409
+    );
+  }
+
+  return room;
+}
+
 async function insertBookingWithNumber(client, values) {
   for (let attempt = 0; attempt < BOOKING_NUMBER_MAX_ATTEMPTS; attempt += 1) {
     const bookingNumber = generateBookingNumber();
@@ -187,6 +268,9 @@ async function insertBookingWithNumber(client, values) {
       // Nested savepoint: a duplicate booking_number must not poison the
       // surrounding transaction, so only this INSERT is rolled back on retry.
       await client.query("SAVEPOINT booking_number_attempt");
+      const prefs = normalizeNotificationPreferences(
+        values.notification_preferences
+      );
       const result = await client.query(
         `INSERT INTO bookings (
            booking_number, hotel_id, room_type_id, room_id,
@@ -196,7 +280,8 @@ async function insertBookingWithNumber(client, values) {
            booking_source, booking_status, payment_status,
            special_requests, admin_notes,
            subtotal, tax_amount, total_amount, currency,
-           created_by_admin_id, confirmed_at
+           created_by_admin_id, confirmed_at,
+           notification_preferences
          )
          VALUES (
            $1, $2, $3, $4,
@@ -206,7 +291,8 @@ async function insertBookingWithNumber(client, values) {
            $13, $14, $15,
            $16, $17,
            $18, $19, $20, $21,
-           $22, $23
+           $22, $23,
+           $24::jsonb
          )
          RETURNING id`,
         [
@@ -233,6 +319,7 @@ async function insertBookingWithNumber(client, values) {
           values.currency,
           values.created_by_admin_id,
           values.confirmed_at,
+          JSON.stringify(prefs),
         ]
       );
       await client.query("RELEASE SAVEPOINT booking_number_attempt");
@@ -304,6 +391,8 @@ async function createBooking(payload) {
 /**
  * Re-validates inventory for an existing reservation whose dates, room type or
  * room count are changing. Runs in its own transaction with the same locking.
+ * Prefer applyBookingStayUpdate when the booking row must also be written —
+ * this helper alone leaves a check-then-update race.
  */
 async function revalidateBookingInventory({
   bookingId,
@@ -340,6 +429,157 @@ async function revalidateBookingInventory({
 }
 
 /**
+ * Stay modification: lock booking + room-type inventory, re-check the complete
+ * revised stay (excluding this booking's own reserved inventory), optionally
+ * re-assert room assignment, then UPDATE in the same transaction.
+ *
+ * `columnUpdates` is the full SET map prepared by the controller (stay fields,
+ * auto-priced amounts, cleared room_id, plus any co-patched non-stay fields).
+ *
+ * `allowedStatuses` — when set (guest self-service), status must be in that
+ * list. When omitted (admin), any non-terminal status is accepted.
+ */
+async function applyBookingStayUpdate({
+  bookingId,
+  hotelId,
+  previousRoomTypeId,
+  roomTypeId,
+  checkIn,
+  checkOut,
+  numberOfRooms,
+  columnUpdates,
+  roomIdToKeep = null,
+  allowedStatuses = null,
+  requireActiveRoomType = false,
+}) {
+  const columns = Object.keys(columnUpdates || {});
+  if (columns.length === 0) {
+    throw new AppError("No fields provided to update", 400);
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const bookingResult = await client.query(
+      `SELECT id, hotel_id, room_type_id, room_id, booking_status
+       FROM bookings
+       WHERE id = $1
+       LIMIT 1
+       FOR UPDATE`,
+      [bookingId]
+    );
+    if (bookingResult.rows.length === 0) {
+      throw new AppError(`Booking not found: ${bookingId}`, 404);
+    }
+
+    const booking = bookingResult.rows[0];
+    if (booking.hotel_id !== hotelId) {
+      throw new AppError("hotel_id mismatch for booking stay update", 400);
+    }
+
+    if (Array.isArray(allowedStatuses) && allowedStatuses.length > 0) {
+      if (!allowedStatuses.includes(booking.booking_status)) {
+        throw new AppError(
+          booking.booking_status === "cancelled"
+            ? "Booking is already cancelled"
+            : `Stay details cannot be changed online while the booking is ${String(
+                booking.booking_status
+              ).replace(/_/g, " ")}`,
+          400
+        );
+      }
+    } else if (TERMINAL_BOOKING_STATUSES.includes(booking.booking_status)) {
+      throw new AppError(
+        `Stay details cannot be changed on a ${booking.booking_status} booking`,
+        409
+      );
+    }
+
+    // Deterministic lock order when room type changes (avoids deadlocks).
+    const lockTypeIds = [
+      ...new Set(
+        [previousRoomTypeId, roomTypeId].filter(Boolean).map(String)
+      ),
+    ].sort();
+    for (const typeId of lockTypeIds) {
+      await lockRoomTypeInventory(client, hotelId, typeId);
+    }
+
+    const roomType = await loadRoomTypeForBooking(client, roomTypeId, hotelId);
+    if (requireActiveRoomType && roomType.status !== "active") {
+      throw new AppError("This room type is not open for online booking", 409);
+    }
+
+    const availability = await getAvailability(client, {
+      hotelId,
+      roomTypeId,
+      checkIn,
+      checkOut,
+      excludeBookingId: bookingId,
+    });
+    assertInventoryAvailable(availability, numberOfRooms);
+
+    if (roomIdToKeep) {
+      await assertRoomAssignableOnClient(client, {
+        bookingId,
+        roomId: roomIdToKeep,
+        hotelId,
+        roomTypeId,
+        checkIn,
+        checkOut,
+      });
+    }
+
+    const sets = [];
+    const params = [];
+    columns.forEach((column) => {
+      params.push(columnUpdates[column]);
+      if (column === "notification_preferences") {
+        sets.push(`${column} = $${params.length}::jsonb`);
+      } else {
+        sets.push(`${column} = $${params.length}`);
+      }
+    });
+    params.push(bookingId);
+
+    let updateResult;
+    if (Array.isArray(allowedStatuses) && allowedStatuses.length > 0) {
+      updateResult = await client.query(
+        `UPDATE bookings
+         SET ${sets.join(", ")}
+         WHERE id = $${params.length}
+           AND booking_status = ANY($${params.length + 1}::text[])`,
+        [...params, allowedStatuses]
+      );
+    } else {
+      updateResult = await client.query(
+        `UPDATE bookings
+         SET ${sets.join(", ")}
+         WHERE id = $${params.length}
+           AND booking_status <> ALL($${params.length + 1}::text[])`,
+        [...params, TERMINAL_BOOKING_STATUSES]
+      );
+    }
+    if (updateResult.rowCount !== 1) {
+      throw new AppError(
+        "Stay details cannot be changed on this booking (status changed)",
+        409
+      );
+    }
+
+    await client.query("COMMIT");
+    return { availability, roomType };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Validates that a physical room can be attached to a reservation: same hotel,
  * same room type, sellable, and not already held by an overlapping reservation.
  */
@@ -355,51 +595,14 @@ async function assertRoomAssignable({
 
   try {
     await client.query("BEGIN");
-
-    const roomResult = await client.query(
-      `SELECT id, hotel_id, room_type_id, room_number, status
-       FROM rooms
-       WHERE id = $1
-       LIMIT 1
-       FOR UPDATE`,
-      [roomId]
-    );
-    if (roomResult.rows.length === 0) {
-      throw new AppError(`Room not found: ${roomId}`, 404);
-    }
-
-    const room = roomResult.rows[0];
-    if (room.hotel_id !== hotelId) {
-      throw new AppError("room_id does not belong to the booking's hotel", 400);
-    }
-    if (room.room_type_id !== roomTypeId) {
-      throw new AppError(
-        "room_id does not belong to the booking's room type",
-        400
-      );
-    }
-    if (!SELLABLE_ROOM_STATUSES.includes(room.status)) {
-      throw new AppError(`Room ${room.room_number} is ${room.status}`, 409);
-    }
-
-    const clash = await client.query(
-      `SELECT booking_number
-       FROM bookings
-       WHERE room_id = $1
-         AND id <> $2
-         AND booking_status = ANY($3::text[])
-         AND check_in_date < $5
-         AND check_out_date > $4
-       LIMIT 1`,
-      [roomId, bookingId, INVENTORY_BLOCKING_STATUSES, checkIn, checkOut]
-    );
-    if (clash.rows.length > 0) {
-      throw new AppError(
-        `Room ${room.room_number} is already assigned to booking ${clash.rows[0].booking_number} for overlapping dates`,
-        409
-      );
-    }
-
+    const room = await assertRoomAssignableOnClient(client, {
+      bookingId,
+      roomId,
+      hotelId,
+      roomTypeId,
+      checkIn,
+      checkOut,
+    });
     await client.query("COMMIT");
     return room;
   } catch (error) {
@@ -435,6 +638,8 @@ async function checkAvailability({
 module.exports = {
   createBooking,
   revalidateBookingInventory,
+  applyBookingStayUpdate,
   assertRoomAssignable,
   checkAvailability,
+  buildIndicativeAmounts,
 };

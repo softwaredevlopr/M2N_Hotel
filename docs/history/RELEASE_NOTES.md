@@ -12,6 +12,46 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 11 — Booking notification preferences (2026-08-13)
+
+- Migration `007` — `bookings.notification_preferences` JSONB
+  ([ADR-0034](DECISIONS.md)); local migrate applied.
+- Optional prefs on create; guest contact-verified update endpoint; admin
+  create/PATCH/detail; public/admin payloads include prefs.
+- Status/stay-update emails gated by `email_updates`; confirm/cancel always on.
+- Minimal UI on `/book`, `/booking/[bookingNumber]`, `/admin/bookings/[id]`.
+- Smoke: `npm run verify:notification-prefs`. No SMS/WhatsApp providers.
+
+### Phase 11 — Guest self-service stay modification (2026-08-13)
+
+- Contact-verified `POST /api/bookings/:bookingNumber/modify` + preview
+  ([ADR-0033](DECISIONS.md)); reuses `applyBookingStayUpdate`; no schema change.
+- Eligible `pending` / `confirmed` only; server-side reprice from `base_price`.
+- Booking lookup “Change stay” UI with availability preview + confirm.
+- Smoke: `npm run verify:guest-stay-modify`.
+
+### Phase 11 — Admin stay modification (2026-08-12)
+
+- Transactional stay updates on `PATCH /api/admin/bookings/:id`
+  (`applyBookingStayUpdate`: exclude-self availability + locked UPDATE)
+  ([ADR-0032](DECISIONS.md)); auto-reprice from `base_price`; no schema change.
+- Admin booking detail stay editors, availability feedback, confirm before save.
+- Smoke: `npm run verify:admin-stay-modify`. Guest self-service modify deferred.
+
+### Phase 11 — Guest self-service booking cancellation (2026-08-12)
+
+- Contact-verified `POST /api/bookings/:bookingNumber/cancel` for
+  pending/confirmed stays ([ADR-0031](DECISIONS.md)); existing schema only.
+- Booking lookup page confirm UI with optional reason; cancelled state refresh.
+- Admin cancel workflow preserved.
+
+### Phase 11 — Admin booking cancellation workflow (2026-08-12)
+
+- `POST /api/admin/bookings/:id/cancel` with optional `cancellation_reason`
+  ([ADR-0030](DECISIONS.md)); existing schema only.
+- Admin booking detail ConfirmDialog cancel action; status-path cancel retained.
+- Smoke covered in `npm run verify:phase10c`.
+
 ### Deployment documentation & readiness plan (2026-08-11)
 
 - Full [`docs/12_DEPLOYMENT.md`](../12_DEPLOYMENT.md) readiness guide

@@ -101,8 +101,9 @@ create API. No schema change.
 detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
 writes require JWT. No schema change.
 
-**Upcoming:** Phase 11+ after operator staging/production cutover
-([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) — non-local migrate still pending).
+**Upcoming:** Phase 11 guest journey polish (cancel, stay modify, and
+notification prefs shipped); staging cutover per
+[`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

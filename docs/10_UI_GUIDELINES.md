@@ -36,6 +36,8 @@
   `role="alert"`.
 - The `/booking/[bookingNumber]` lookup page remains a printable document:
   reference block, stay details, charges, and a print action.
+- Eligible guests (`pending` / `confirmed`) can open an inline cancel confirm
+  panel with optional reason; cancelled state refreshes in place.
 
 **Admin inventory calendar (`/admin/inventory`)**
 
@@ -61,7 +63,9 @@
 
 - Guest special requests and Internal notes are separate sections.
 - Internal notes labelled “Private — visible to hotel staff only”; dashed border.
-- Cancel / no-show dialog uses `cancellation_reason` (not internal notes).
+- **Cancel booking** uses ConfirmDialog; cancellation reason is optional.
+  No-show still requires a reason via the status dialog.
+- Cancel / no-show reasons map to `cancellation_reason` (not internal notes).
 
 **Admin inquiries (`/admin/inquiries`)**
 

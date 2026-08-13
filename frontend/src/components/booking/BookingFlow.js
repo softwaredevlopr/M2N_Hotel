@@ -39,6 +39,9 @@ function initialState(initialHotelSlug, initialRoomTypeSlug) {
     guestEmail: "",
     guestPhone: "",
     specialRequests: "",
+    emailUpdates: true,
+    smsOptIn: false,
+    whatsappOptIn: false,
   };
 }
 
@@ -355,6 +358,12 @@ export default function BookingFlow({
 
     const requests = values.specialRequests.trim();
     if (requests) payload.special_requests = requests;
+
+    payload.notification_preferences = {
+      email_updates: Boolean(values.emailUpdates),
+      sms_opt_in: Boolean(values.smsOptIn),
+      whatsapp_opt_in: Boolean(values.whatsappOptIn),
+    };
 
     return payload;
   }

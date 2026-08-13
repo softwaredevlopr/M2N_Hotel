@@ -99,6 +99,66 @@ export default function GuestDetailsStep({ values, errors, onChange }) {
           />
           <FieldError id="bk-requests-err" message={errors.specialRequests} />
         </div>
+
+        <div className="sm:col-span-2 border border-ink-line bg-ink-soft p-5">
+          <h4 className="text-[11px] tracking-[0.25em] uppercase text-gold">
+            Communication preferences
+          </h4>
+          <p className="mt-3 text-xs leading-relaxed text-cream-muted">
+            Booking confirmation and cancellation emails are always sent to the
+            address above. The options below control optional status and stay
+            update messages only.
+          </p>
+          <div className="mt-4 space-y-3">
+            <label className="flex items-start gap-3 text-sm text-cream-dim">
+              <input
+                type="checkbox"
+                checked={Boolean(values.emailUpdates)}
+                onChange={(event) =>
+                  onChange("emailUpdates", event.target.checked)
+                }
+                className="mt-0.5 h-4 w-4 accent-gold"
+              />
+              <span>
+                Email me about booking status and stay changes
+                <span className="mt-1 block text-xs text-cream-muted">
+                  Turn off to skip optional update emails (confirm and cancel
+                  still send).
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-cream-dim">
+              <input
+                type="checkbox"
+                checked={Boolean(values.smsOptIn)}
+                onChange={(event) => onChange("smsOptIn", event.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-gold"
+              />
+              <span>
+                SMS updates (coming soon)
+                <span className="mt-1 block text-xs text-cream-muted">
+                  Preference is saved; SMS delivery is not active yet.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-cream-dim">
+              <input
+                type="checkbox"
+                checked={Boolean(values.whatsappOptIn)}
+                onChange={(event) =>
+                  onChange("whatsappOptIn", event.target.checked)
+                }
+                className="mt-0.5 h-4 w-4 accent-gold"
+              />
+              <span>
+                WhatsApp updates (coming soon)
+                <span className="mt-1 block text-xs text-cream-muted">
+                  Preference is saved; WhatsApp delivery is not active yet.
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
       </div>
     </section>
   );

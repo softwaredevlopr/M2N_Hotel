@@ -9,6 +9,111 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 11 booking notification preferences ✅
+
+- **What changed.** Migration `007` adds `bookings.notification_preferences`
+  JSONB (`email_updates`, `sms_opt_in`, `whatsapp_opt_in`; defaults
+  true/false/false). Transactional confirm/cancel emails remain ungated;
+  optional status/stay-update emails respect `email_updates`. Optional prefs
+  on create; contact-verified guest
+  `POST …/notification-preferences`; admin create/PATCH/payloads include
+  prefs. Minimal controls on `/book`, booking lookup, and admin booking detail.
+  SMS/WhatsApp providers, marketing, and CRM profiles are out of scope.
+- **Files modified:** `007_booking_notification_preferences.sql`,
+  `notificationPreferences.js`, `bookingNotification.service.js`,
+  `booking.service.js`, `booking.controller.js`, `adminBooking.controller.js`,
+  `booking.routes.js`, `booking.validator.js`, `GuestDetailsStep.js`,
+  `BookingFlow.js`, `BookingReviewStep.js`, `BookingLookup.js`,
+  admin bookings `[id]/page.js`, `api.js`, `verifyNotificationPrefs.js`,
+  `package.json`, docs.
+- **APIs added/changed:** `POST /api/bookings/:bookingNumber/notification-preferences`;
+  create/lookup/admin booking payloads include `notification_preferences`;
+  optional prefs on public/admin create; admin PATCH can update prefs.
+- **Database changes:** migration `007` — additive JSONB column (local applied).
+- **Frontend changes:** guest preference toggles on book + lookup; admin detail
+  preference controls.
+- **Backend changes:** normalize/validate helpers; status-update email gate.
+- **Remaining work:** broader guest journey polish; commit/push; non-local
+  migrate `007` when deploying.
+
+### Added — Phase 11 guest self-service stay modification ✅
+
+- **What changed.** Contact-verified
+  `POST /api/bookings/:bookingNumber/modify` and
+  `…/modify/preview` let guests change dates / room type / room count on
+  `pending` / `confirmed` bookings. Reuses `applyBookingStayUpdate` (exclude-self
+  availability + locked UPDATE). Pricing always recalculated from `base_price`.
+  `/booking/[bookingNumber]` adds change-stay UI with preview + confirm.
+  No schema change. Admin stay modify and guest cancel unchanged.
+- **Files modified:** `booking.controller.js`, `booking.routes.js`,
+  `booking.validator.js`, `bookingConstants.js`, `booking.service.js`,
+  `BookingLookup.js`, `api.js`, `verifyGuestStayModify.js`, docs.
+- **APIs added:** `POST /api/bookings/:bookingNumber/modify`,
+  `POST /api/bookings/:bookingNumber/modify/preview`.
+- **Database changes:** none.
+- **Frontend changes:** stay modify panel on booking lookup.
+- **Backend changes:** `canGuestModifyStayBooking`; guest allowedStatuses on
+  `applyBookingStayUpdate`.
+- **Remaining work:** notification prefs; journey polish; commit/push.
+
+### Added — Phase 11 admin stay modification (transactional) ✅
+
+- **What changed.** Admin `PATCH /api/admin/bookings/:id` stay changes
+  (check-in, check-out, room type, number of rooms) now revalidate the full
+  revised stay and `UPDATE` inside one locked transaction
+  (`applyBookingStayUpdate`), excluding the booking’s own inventory hold.
+  Amounts auto-recalculate from `room_types.base_price` unless amounts are
+  sent explicitly. Terminal statuses rejected. `/admin/bookings/[id]` adds
+  stay editors, availability check (overlaps + exclude self), and confirm
+  before save. Guest self-service modify not implemented. No schema change.
+- **Files modified:** `booking.service.js`, `adminBooking.controller.js`,
+  `bookingConstants.js`, admin booking detail UI, `adminBookings.js`,
+  `adminInventory.js`, `verifyAdminStayModify.js`, docs.
+- **APIs changed:** `PATCH /api/admin/bookings/:id` stay path hardened +
+  auto-reprice.
+- **Database changes:** none.
+- **Frontend changes:** stay edit + availability feedback + confirm on
+  booking detail.
+- **Backend changes:** `applyBookingStayUpdate`; `canModifyStayBooking`.
+- **Remaining work:** guest stay modification; notification prefs; commit/push.
+
+### Added — Phase 11 guest self-service booking cancellation ✅
+
+- **What changed.** Contact-verified
+  `POST /api/bookings/:bookingNumber/cancel` lets guests cancel `pending` /
+  `confirmed` bookings using existing `cancelled` + optional
+  `cancellation_reason` (no schema change). `/booking/[bookingNumber]` adds a
+  confirm step with optional reason and refreshes to the cancelled state.
+  Wrong contact returns the same 404 as lookup; duplicate cancel returns 400.
+  Admin cancel workflow unchanged. Public payloads may include
+  `cancellation_reason`; never `admin_notes`.
+- **Files modified:** `booking.routes.js`, `booking.controller.js`,
+  `booking.validator.js`, `bookingConstants.js`, `BookingLookup.js`, `api.js`,
+  `bookingSession.js`, `verifyPhase10C.js`, docs.
+- **APIs added:** `POST /api/bookings/:bookingNumber/cancel`.
+- **Database changes:** none.
+- **Frontend changes:** cancel confirm UI on booking lookup page.
+- **Backend changes:** guest cancel handler + `canGuestCancelBooking`.
+- **Remaining work:** admin stay modification UI/harden; guest stay modify;
+  notification prefs; commit/push.
+
+### Added — Phase 11 admin booking cancellation workflow ✅
+
+- **What changed.** Dedicated JWT `POST /api/admin/bookings/:id/cancel` cancels
+  eligible bookings using existing `booking_status=cancelled` and optional
+  `cancellation_reason` (no schema change). Admin booking detail uses a confirm
+  dialog with optional reason, then refreshes booking state. Status-path cancel
+  and no-show flows remain. No guest self-service cancel / stay modify yet.
+- **Files modified:** `adminBooking.routes.js`, `adminBooking.controller.js`,
+  `booking.validator.js`, `bookingConstants.js`, admin booking detail UI +
+  `adminBookings.js`, `verifyPhase10C.js`, docs.
+- **APIs added:** `POST /api/admin/bookings/:id/cancel`.
+- **Database changes:** none.
+- **Frontend changes:** Cancel booking action + ConfirmDialog (optional reason).
+- **Backend changes:** cancel handler + `canCancelBooking` helper.
+- **Remaining work:** guest self-service cancel/modify; notification prefs;
+  staging cutover; commit/push this work.
+
 ### Added — Deployment documentation & readiness plan ✅
 
 - **What changed.** Replaced the stub [`docs/12_DEPLOYMENT.md`](12_DEPLOYMENT.md)

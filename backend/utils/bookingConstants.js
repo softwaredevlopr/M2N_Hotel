@@ -41,6 +41,35 @@ function canTransitionBookingStatus(from, to) {
   return (BOOKING_STATUS_TRANSITIONS[from] || []).includes(to);
 }
 
+/** True when admin cancel workflow may move the booking to cancelled. */
+function canCancelBooking(status) {
+  return canTransitionBookingStatus(status, "cancelled") && status !== "cancelled";
+}
+
+/**
+ * Guest self-service cancel is narrower than admin: only before check-in.
+ * checked_in / terminal states require staff.
+ */
+function canGuestCancelBooking(status) {
+  return status === "pending" || status === "confirmed";
+}
+
+/** Admin stay modify (dates / room type / rooms) — blocked on terminal statuses. */
+function canModifyStayBooking(status) {
+  return Boolean(status) && !TERMINAL_BOOKING_STATUSES.includes(status);
+}
+
+/**
+ * Guest self-service stay modify — same eligibility window as guest cancel.
+ * Mid-stay / terminal states require staff (admin applyBookingStayUpdate).
+ */
+function canGuestModifyStayBooking(status) {
+  return status === "pending" || status === "confirmed";
+}
+
+/** Statuses guest modify/cancel may still hold after a concurrent race check. */
+const GUEST_SELF_SERVICE_STATUSES = ["pending", "confirmed"];
+
 module.exports = {
   BOOKING_STATUSES,
   PAYMENT_STATUSES,
@@ -49,6 +78,11 @@ module.exports = {
   INVENTORY_BLOCKING_STATUSES,
   SELLABLE_ROOM_STATUSES,
   TERMINAL_BOOKING_STATUSES,
+  GUEST_SELF_SERVICE_STATUSES,
   BOOKING_STATUS_TRANSITIONS,
   canTransitionBookingStatus,
+  canCancelBooking,
+  canGuestCancelBooking,
+  canModifyStayBooking,
+  canGuestModifyStayBooking,
 };

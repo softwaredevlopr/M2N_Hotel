@@ -5,6 +5,7 @@ const { requireAdminAuth } = require("../middleware/adminAuth.middleware");
 const {
   adminCreateBookingSchema,
   assignRoomSchema,
+  cancelBookingSchema,
   updateBookingSchema,
   updateBookingStatusSchema,
 } = require("../validators/booking.validator");
@@ -22,6 +23,11 @@ router.post(
 );
 // Static paths must be registered before /:id.
 router.get("/:id", adminBookingController.getBookingById);
+router.post(
+  "/:id/cancel",
+  validate(cancelBookingSchema),
+  adminBookingController.cancelBooking
+);
 router.patch(
   "/:id/status",
   validate(updateBookingStatusSchema),

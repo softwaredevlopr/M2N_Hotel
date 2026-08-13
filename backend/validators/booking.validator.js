@@ -185,6 +185,7 @@ const createBookingSchema = {
     children: { type: "number" },
     number_of_rooms: { type: "number" },
     special_requests: { type: "string", maxLength: 2000 },
+    // notification_preferences validated in controller (object shape).
   },
 };
 
@@ -261,6 +262,39 @@ const updateBookingStatusSchema = {
   },
 };
 
+const cancelBookingSchema = {
+  body: {
+    cancellation_reason: { type: "string", maxLength: 2000 },
+  },
+};
+
+const cancelPublicBookingSchema = {
+  body: {
+    email: { type: "string", maxLength: 255 },
+    phone: { type: "string", maxLength: 50 },
+    cancellation_reason: { type: "string", maxLength: 2000 },
+  },
+};
+
+const updatePublicNotificationPreferencesSchema = {
+  body: {
+    email: { type: "string", maxLength: 255 },
+    phone: { type: "string", maxLength: 50 },
+  },
+};
+
+/** Guest stay modify / preview — contact + optional stay fields. */
+const modifyPublicBookingSchema = {
+  body: {
+    email: { type: "string", maxLength: 255 },
+    phone: { type: "string", maxLength: 50 },
+    check_in_date: { type: "string", maxLength: 10 },
+    check_out_date: { type: "string", maxLength: 10 },
+    room_type_id: { type: "string", maxLength: 36 },
+    number_of_rooms: { type: "number" },
+  },
+};
+
 const assignRoomSchema = {
   body: {
     room_id: { type: "string", maxLength: 36 },
@@ -288,5 +322,9 @@ module.exports = {
   adminCreateBookingSchema,
   updateBookingSchema,
   updateBookingStatusSchema,
+  cancelBookingSchema,
+  cancelPublicBookingSchema,
+  updatePublicNotificationPreferencesSchema,
+  modifyPublicBookingSchema,
   assignRoomSchema,
 };

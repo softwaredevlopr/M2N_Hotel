@@ -233,24 +233,144 @@ async function main() {
   check("confirm pending → confirmed", confirm.status === 200);
   check("stamps confirmed_at", Boolean(confirm.body?.data?.confirmed_at));
 
-  const cancel = await api("PATCH", `/api/admin/bookings/${booking.id}/status`, {
+  section("Phase 11 — POST /:id/cancel");
+  const unauthCancel = await api("POST", `/api/admin/bookings/${booking.id}/cancel`, {
+    body: { cancellation_reason: "no auth" },
+  });
+  check("cancel requires auth", unauthCancel.status === 401);
+
+  const cancelNoReason = await api(
+    "POST",
+    `/api/admin/bookings/${booking.id}/cancel`,
+    { token, body: {} }
+  );
+  check("cancel without reason 200", cancelNoReason.status === 200);
+  check(
+    "cancel sets status cancelled",
+    cancelNoReason.body?.data?.booking_status === "cancelled"
+  );
+  check(
+    "cancel stamps cancelled_at",
+    Boolean(cancelNoReason.body?.data?.cancelled_at)
+  );
+  check(
+    "cancel reason optional stays null",
+    cancelNoReason.body?.data?.cancellation_reason == null
+  );
+
+  const cancelAgain = await api(
+    "POST",
+    `/api/admin/bookings/${booking.id}/cancel`,
+    { token, body: { cancellation_reason: "again" } }
+  );
+  check("second cancel rejected", cancelAgain.status === 400);
+
+  // Separate booking for cancel-with-reason + status-path cancel regression
+  const pendingCancel = await api("POST", "/api/admin/bookings", {
     token,
     body: {
-      booking_status: "cancelled",
-      cancellation_reason: "Phase 10C verification cancel",
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Phase11 Cancel Reason",
+      guest_email: "phase11-cancel@booking-selftest.invalid",
+      guest_phone: "+91 98765 00020",
+      check_in_date: isoDaysFromNow(45),
+      check_out_date: isoDaysFromNow(46),
+      booking_status: "pending",
     },
   });
-  check("cancel confirmed → cancelled", cancel.status === 200);
+  if (pendingCancel.body?.data?.booking_number) {
+    createdBookingNumbers.push(pendingCancel.body.data.booking_number);
+  }
+  const cancelWithReason = await api(
+    "POST",
+    `/api/admin/bookings/${pendingCancel.body?.data?.id}/cancel`,
+    {
+      token,
+      body: { cancellation_reason: "Phase 11 verification cancel" },
+    }
+  );
+  check("cancel with reason 200", cancelWithReason.status === 200);
+  check(
+    "persists cancellation_reason via cancel API",
+    cancelWithReason.body?.data?.cancellation_reason ===
+      "Phase 11 verification cancel"
+  );
+
+  const tooLong = await api(
+    "POST",
+    `/api/admin/bookings/${pendingCancel.body?.data?.id}/cancel`,
+    { token, body: { cancellation_reason: "x".repeat(2001) } }
+  );
+  // Already cancelled — expect 400 (not eligible), not length error first
+  check("cancel on cancelled booking 400", tooLong.status === 400);
+
+  const pendingLen = await api("POST", "/api/admin/bookings", {
+    token,
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Phase11 Cancel Len",
+      guest_email: "phase11-cancel-len@booking-selftest.invalid",
+      guest_phone: "+91 98765 00021",
+      check_in_date: isoDaysFromNow(47),
+      check_out_date: isoDaysFromNow(48),
+      booking_status: "pending",
+    },
+  });
+  if (pendingLen.body?.data?.booking_number) {
+    createdBookingNumbers.push(pendingLen.body.data.booking_number);
+  }
+  const cancelTooLong = await api(
+    "POST",
+    `/api/admin/bookings/${pendingLen.body?.data?.id}/cancel`,
+    { token, body: { cancellation_reason: "x".repeat(2001) } }
+  );
+  check("cancel reason maxLength 2000", cancelTooLong.status === 400);
+
+  // Status-path cancel still works (legacy / no_show path neighbour)
+  const cancelViaStatus = await api("POST", "/api/admin/bookings", {
+    token,
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Phase10C Status Cancel",
+      guest_email: "phase10c-status-cancel@booking-selftest.invalid",
+      guest_phone: "+91 98765 00022",
+      check_in_date: isoDaysFromNow(49),
+      check_out_date: isoDaysFromNow(50),
+      booking_status: "confirmed",
+    },
+  });
+  if (cancelViaStatus.body?.data?.booking_number) {
+    createdBookingNumbers.push(cancelViaStatus.body.data.booking_number);
+  }
+  const cancel = await api(
+    "PATCH",
+    `/api/admin/bookings/${cancelViaStatus.body?.data?.id}/status`,
+    {
+      token,
+      body: {
+        booking_status: "cancelled",
+        cancellation_reason: "Phase 10C verification cancel",
+      },
+    }
+  );
+  check("status-path cancel still works", cancel.status === 200);
   check(
     "persists cancellation_reason",
     cancel.body?.data?.cancellation_reason === "Phase 10C verification cancel"
   );
   check("stamps cancelled_at", Boolean(cancel.body?.data?.cancelled_at));
 
-  const terminal = await api("PATCH", `/api/admin/bookings/${booking.id}/status`, {
-    token,
-    body: { booking_status: "confirmed" },
-  });
+  const terminal = await api(
+    "PATCH",
+    `/api/admin/bookings/${cancelViaStatus.body?.data?.id}/status`,
+    {
+      token,
+      body: { booking_status: "confirmed" },
+    }
+  );
   check("blocks transition from cancelled", terminal.status === 400);
 
   // Separate booking for no_show reason path
@@ -288,6 +408,138 @@ async function main() {
       "Guest did not arrive — verification"
   );
   check("no_show stamps cancelled_at", Boolean(noShow.body?.data?.cancelled_at));
+
+  section("Phase 11 — guest self-service cancel");
+  const guestEmail = "phase11-guest-cancel@booking-selftest.invalid";
+  const guestPhone = "+91 98765 00030";
+  const guestCreate = await api("POST", "/api/bookings", {
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Phase11 Guest Cancel",
+      guest_email: guestEmail,
+      guest_phone: guestPhone,
+      check_in_date: isoDaysFromNow(90),
+      check_out_date: isoDaysFromNow(91),
+      adults: 1,
+      special_requests: "Guest cancel fixture",
+    },
+  });
+  if (guestCreate.body?.data?.booking_number) {
+    createdBookingNumbers.push(guestCreate.body.data.booking_number);
+  }
+  check("guest booking create 201", guestCreate.status === 201);
+  const guestNumber = guestCreate.body?.data?.booking_number;
+
+  const guestBadContact = await api(
+    "POST",
+    `/api/bookings/${encodeURIComponent(guestNumber)}/cancel`,
+    {
+      body: {
+        email: "wrong@booking-selftest.invalid",
+        cancellation_reason: "should not apply",
+      },
+    }
+  );
+  check("guest cancel wrong contact 404", guestBadContact.status === 404);
+
+  const guestNoContact = await api(
+    "POST",
+    `/api/bookings/${encodeURIComponent(guestNumber)}/cancel`,
+    { body: { cancellation_reason: "missing contact" } }
+  );
+  check("guest cancel missing contact 400", guestNoContact.status === 400);
+
+  const guestCancel = await api(
+    "POST",
+    `/api/bookings/${encodeURIComponent(guestNumber)}/cancel`,
+    {
+      body: {
+        email: guestEmail,
+        cancellation_reason: "Plans changed — guest cancel verify",
+      },
+    }
+  );
+  check("guest cancel 200", guestCancel.status === 200, `got ${guestCancel.status}`);
+  check(
+    "guest cancel status cancelled",
+    guestCancel.body?.data?.booking_status === "cancelled"
+  );
+  check(
+    "guest cancel reason persisted",
+    guestCancel.body?.data?.cancellation_reason ===
+      "Plans changed — guest cancel verify"
+  );
+  check(
+    "guest cancel response omits admin_notes",
+    guestCancel.body?.data &&
+      !Object.prototype.hasOwnProperty.call(guestCancel.body.data, "admin_notes")
+  );
+  check(
+    "guest cancel response omits guest_email",
+    guestCancel.body?.data &&
+      !Object.prototype.hasOwnProperty.call(guestCancel.body.data, "guest_email")
+  );
+
+  const guestCancelAgain = await api(
+    "POST",
+    `/api/bookings/${encodeURIComponent(guestNumber)}/cancel`,
+    { body: { email: guestEmail } }
+  );
+  check("guest cancel already cancelled 400", guestCancelAgain.status === 400);
+
+  const guestLookup = await api(
+    "GET",
+    `/api/bookings/${encodeURIComponent(guestNumber)}?email=${encodeURIComponent(
+      guestEmail
+    )}`
+  );
+  check(
+    "guest lookup shows cancelled",
+    guestLookup.status === 200 &&
+      guestLookup.body?.data?.booking_status === "cancelled"
+  );
+
+  // Ineligible: checked_in cannot be cancelled by guest (admin still can).
+  const inHouse = await api("POST", "/api/admin/bookings", {
+    token,
+    body: {
+      hotel_id: fixture.hotel_id,
+      room_type_id: fixture.room_type_id,
+      guest_name: "Phase11 InHouse",
+      guest_email: "phase11-inhouse@booking-selftest.invalid",
+      guest_phone: "+91 98765 00031",
+      check_in_date: isoDaysFromNow(92),
+      check_out_date: isoDaysFromNow(93),
+      booking_status: "confirmed",
+    },
+  });
+  if (inHouse.body?.data?.booking_number) {
+    createdBookingNumbers.push(inHouse.body.data.booking_number);
+  }
+  await api("PATCH", `/api/admin/bookings/${inHouse.body?.data?.id}/status`, {
+    token,
+    body: { booking_status: "checked_in" },
+  });
+  const guestInHouseCancel = await api(
+    "POST",
+    `/api/bookings/${encodeURIComponent(
+      inHouse.body?.data?.booking_number
+    )}/cancel`,
+    {
+      body: { email: "phase11-inhouse@booking-selftest.invalid" },
+    }
+  );
+  check("guest cannot cancel checked_in", guestInHouseCancel.status === 400);
+
+  const noShowGuestCancel = await api(
+    "POST",
+    `/api/bookings/${encodeURIComponent(
+      pending2.body?.data?.booking_number
+    )}/cancel`,
+    { body: { email: "phase10c-noshow@booking-selftest.invalid" } }
+  );
+  check("guest cannot cancel no_show", noShowGuestCancel.status === 400);
 
   section("Regression — public surfaces");
   const hotels = await api("GET", "/api/hotels");

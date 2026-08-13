@@ -42,6 +42,8 @@ Template: `backend/.env.example`. Never commit real credentials.
 | `003_tariff_rates.sql` | Tariff / meal-plan rate rows (Phase 9) |
 | `004_bookings.sql` | Direct reservations — bookings (Phase 10A) |
 | `005_room_type_inventory_dates.sql` | Per-night stop-sell / allotment / overbooking (Phase 10I) |
+| `006_booking_admin_notes.sql` | Private staff notes on bookings |
+| `007_booking_notification_preferences.sql` | Guest channel prefs JSONB (Phase 11) |
 
 ```bash
 cd backend
@@ -123,6 +125,7 @@ Direct reservations, slug/`hotel_id`-scoped for multi-property support.
 | `created_by_admin_id` | Nullable FK → `admin_users` `ON DELETE SET NULL` |
 | `confirmed_at` / `cancelled_at` / `cancellation_reason` | Stamped on status change |
 | `admin_notes` | Nullable private staff notes (migration `006`); never public |
+| `notification_preferences` | JSONB NOT NULL (migration `007`); keys `email_updates`, `sms_opt_in`, `whatsapp_opt_in`; default `{"email_updates":true,"sms_opt_in":false,"whatsapp_opt_in":false}`. Confirm/cancel email is not gated; status/stay emails respect `email_updates`. SMS/WhatsApp are store-only. |
 
 Statuses and sources are `VARCHAR` + `CHECK` constraints, matching the existing
 project convention (no native PostgreSQL enums). Mirrored in

@@ -335,6 +335,119 @@ export async function getBookingByNumber(bookingNumber, { email, phone } = {}) {
   }
 }
 
+async function postGuestBookingAction(bookingNumber, pathSuffix, body) {
+  if (!bookingNumber) {
+    return { ok: false, status: 400, data: null };
+  }
+
+  const url = `${API_BASE_URL}/api/bookings/${encodeURIComponent(
+    bookingNumber
+  )}${pathSuffix}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    return {
+      ok: response.ok && data?.success === true,
+      status: response.status,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      networkError: true,
+      message: error?.message || "Network error",
+    };
+  }
+}
+
+/**
+ * Guest self-service cancel — POST /api/bookings/:bookingNumber/cancel.
+ * Requires the email or phone held on the reservation (same proof as lookup).
+ */
+export async function cancelBookingByNumber(
+  bookingNumber,
+  { email, phone, cancellation_reason } = {}
+) {
+  const body = {};
+  if (email) body.email = email;
+  if (phone) body.phone = phone;
+  if (cancellation_reason !== undefined) {
+    body.cancellation_reason = cancellation_reason;
+  }
+  return postGuestBookingAction(bookingNumber, "/cancel", body);
+}
+
+/**
+ * Guest stay-modify preview — POST /api/bookings/:bookingNumber/modify/preview.
+ * Contact-verified; does not write. Uses exclude-self availability server-side.
+ */
+export async function previewModifyBookingByNumber(bookingNumber, payload = {}) {
+  const body = {};
+  if (payload.email) body.email = payload.email;
+  if (payload.phone) body.phone = payload.phone;
+  if (payload.check_in_date) body.check_in_date = payload.check_in_date;
+  if (payload.check_out_date) body.check_out_date = payload.check_out_date;
+  if (payload.room_type_id) body.room_type_id = payload.room_type_id;
+  if (payload.number_of_rooms != null) {
+    body.number_of_rooms = Number(payload.number_of_rooms);
+  }
+  return postGuestBookingAction(bookingNumber, "/modify/preview", body);
+}
+
+/**
+ * Guest stay modification — POST /api/bookings/:bookingNumber/modify.
+ * Contact-verified; server recalculates pricing and revalidates inventory.
+ */
+export async function modifyBookingByNumber(bookingNumber, payload = {}) {
+  const body = {};
+  if (payload.email) body.email = payload.email;
+  if (payload.phone) body.phone = payload.phone;
+  if (payload.check_in_date) body.check_in_date = payload.check_in_date;
+  if (payload.check_out_date) body.check_out_date = payload.check_out_date;
+  if (payload.room_type_id) body.room_type_id = payload.room_type_id;
+  if (payload.number_of_rooms != null) {
+    body.number_of_rooms = Number(payload.number_of_rooms);
+  }
+  return postGuestBookingAction(bookingNumber, "/modify", body);
+}
+
+/**
+ * Guest notification preferences —
+ * POST /api/bookings/:bookingNumber/notification-preferences.
+ * Contact-verified; does not gate confirm/cancel emails.
+ */
+export async function updateNotificationPreferencesByNumber(
+  bookingNumber,
+  { email, phone, notification_preferences } = {}
+) {
+  const body = { notification_preferences };
+  if (email) body.email = email;
+  if (phone) body.phone = phone;
+  return postGuestBookingAction(
+    bookingNumber,
+    "/notification-preferences",
+    body
+  );
+}
+
 /**
  * Admin login — POST /api/admin/auth/login
  * Returns { ok, status, data, networkError?, message? }

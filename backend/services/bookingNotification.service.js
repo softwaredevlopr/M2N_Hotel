@@ -1,6 +1,9 @@
 /**
  * Booking notification orchestration.
  * Email failures never fail the booking API — they are logged and swallowed.
+ *
+ * Transactional kinds (confirmation, cancellation) always attempt email when
+ * guest_email is present. Status/stay updates respect notification_preferences.
  */
 
 const { sendEmail, getEmailConfig } = require("./email");
@@ -9,6 +12,7 @@ const {
   buildCancellationEmail,
   buildStatusUpdateEmail,
 } = require("./email/templates/bookingEmails");
+const { wantsEmailUpdates } = require("../utils/notificationPreferences");
 
 function bookingViewUrl(booking, frontendUrl) {
   if (!booking?.booking_number || !frontendUrl) return null;
@@ -18,6 +22,14 @@ function bookingViewUrl(booking, frontendUrl) {
 async function deliverBookingEmail(kind, booking, buildMessage) {
   if (!booking?.guest_email) {
     return { skipped: true, reason: "missing guest_email" };
+  }
+
+  // Optional updates only — confirm/cancel are transactional and not gated.
+  if (
+    kind === "booking_status_update" &&
+    !wantsEmailUpdates(booking.notification_preferences)
+  ) {
+    return { skipped: true, reason: "email_updates_disabled" };
   }
 
   const config = getEmailConfig();

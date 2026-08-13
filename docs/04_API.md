@@ -61,11 +61,16 @@
 | `GET` | `/api/bookings/availability` | Public | 10B |
 | `GET` | `/api/bookings/availability/calendar` | Public | 10D |
 | `GET` | `/api/bookings/:bookingNumber` | Public + contact check | 10A |
+| `POST` | `/api/bookings/:bookingNumber/cancel` | Public + contact check | 11 |
+| `POST` | `/api/bookings/:bookingNumber/modify` | Public + contact check | 11 |
+| `POST` | `/api/bookings/:bookingNumber/modify/preview` | Public + contact check | 11 |
+| `POST` | `/api/bookings/:bookingNumber/notification-preferences` | Public + contact check | 11 |
 | `GET` | `/api/admin/bookings` | JWT | 10A/10C |
 | `GET` | `/api/admin/bookings/stats` | JWT | 10C |
 | `POST` | `/api/admin/bookings` | JWT | 10A |
 | `GET` | `/api/admin/bookings/:id` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id` | JWT | 10A |
+| `POST` | `/api/admin/bookings/:id/cancel` | JWT | 11 |
 | `PATCH` | `/api/admin/bookings/:id/status` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id/assign-room` | JWT | 10A |
 | `GET` | `/api/admin/inventory/calendar` | JWT | 10D |
@@ -117,6 +122,8 @@ Statuses: `pending`, `contacted`, `quoted`, `confirmed`, `declined`, `cancelled`
 - `POST /api/bookings` — create a reservation request (availability checked).
 - `GET /api/bookings/:bookingNumber?email=` — guest lookup, contact-verified.
   Backs the `/booking/[bookingNumber]` confirmation page.
+- `POST /api/bookings/:bookingNumber/cancel` — guest self-service cancel
+  (contact-verified; pending/confirmed only).
 
 Full detail in [section 10](#10-bookings-phase-10a).
 
@@ -220,10 +227,13 @@ Consumed by the Phase 10B guest booking UI (`/book` and `/booking/[bookingNumber
 through `getBookingAvailability()`, `createBooking()` and `getBookingByNumber()`
 in `frontend/src/lib/api.js`.
 
-**Notifications (Phase 10F):** `POST /api/bookings` and admin create/status
-endpoints trigger guest emails as fire-and-forget side effects (confirmation,
-cancellation, status update). No new HTTP routes; delivery failures never change
-API responses. See [ADR-0022](history/DECISIONS.md).
+**Notifications (Phase 10F + 11 prefs):** `POST /api/bookings` and admin
+create/status endpoints trigger guest emails as fire-and-forget side effects
+(confirmation, cancellation, status update). Confirmation and cancellation are
+always attempted when `guest_email` is present. Status/stay-update emails skip
+when `notification_preferences.email_updates` is false. Delivery failures never
+change API responses. See [ADR-0022](history/DECISIONS.md) and
+[ADR-0034](history/DECISIONS.md).
 
 ### Public
 
@@ -232,6 +242,10 @@ API responses. See [ADR-0022](history/DECISIONS.md).
 | `GET` | `/api/bookings/availability` |
 | `POST` | `/api/bookings` |
 | `GET` | `/api/bookings/:bookingNumber?email=` or `?phone=` |
+| `POST` | `/api/bookings/:bookingNumber/cancel` |
+| `POST` | `/api/bookings/:bookingNumber/modify` |
+| `POST` | `/api/bookings/:bookingNumber/modify/preview` |
+| `POST` | `/api/bookings/:bookingNumber/notification-preferences` |
 
 **`GET /api/bookings/availability`** — query `hotel_id` **or** `hotel_slug`,
 `check_in_date`, `check_out_date` (`YYYY-MM-DD`). Optional `room_type_id`,
@@ -248,7 +262,8 @@ Each room type includes `room_type_id`, `slug`, `name`, `max_occupancy`,
 **`POST /api/bookings`** — required `hotel_id`, `room_type_id`, `guest_name`,
 `guest_email`, `guest_phone`, `check_in_date`, `check_out_date` (`YYYY-MM-DD`).
 Optional `adults` (default 1), `children` (0), `number_of_rooms` (1),
-`special_requests`.
+`special_requests`, `notification_preferences` (object with booleans
+`email_updates`, `sms_opt_in`, `whatsapp_opt_in`; omitted → defaults).
 
 - Always created as `booking_status=pending`, `payment_status=unpaid`,
   `booking_source=website`. Guest-supplied statuses/sources are ignored.
@@ -258,13 +273,49 @@ Optional `adults` (default 1), `children` (0), `number_of_rooms` (1),
 - The hotel and room type must both be `active`, and the room type must belong to
   the hotel. Past arrival dates are rejected; stays are capped at 90 nights.
 - `201` returns a guest-safe payload including the generated `booking_number`
-  (`M2N-YYYYMMDD-XXXXX`). Internal ids and the owning admin are never included.
+  (`M2N-YYYYMMDD-XXXXX`) and normalized `notification_preferences`. Internal ids
+  and the owning admin are never included.
 
 **`GET /api/bookings/:bookingNumber`** — guest self-service lookup. The caller
 must pass the `email` **or** `phone` on the reservation; phone matching ignores
 country-code prefixes. A wrong reference and a failed contact check both return
 an identical `404`, so the endpoint cannot be used to enumerate bookings. Guest
-contact details are omitted from the response.
+contact details are omitted from the response. Payload may include
+`cancellation_reason` when set and `notification_preferences`; never includes
+`admin_notes`.
+
+**`POST /api/bookings/:bookingNumber/cancel`** — guest self-service cancel
+(Phase 11). Body requires `email` **or** `phone` (same verification as lookup);
+optional `cancellation_reason` (max 2000). Eligible only when
+`booking_status` is `pending` or `confirmed`. Sets `cancelled` + `cancelled_at`,
+fires the existing cancellation email hook. Wrong contact / unknown reference →
+identical `404`. Already cancelled or ineligible (e.g. `checked_in`, `no_show`)
+→ `400`. Response is the guest-safe booking payload (no contact, no
+`admin_notes`). Concurrent double-cancel is rejected safely.
+
+**`POST /api/bookings/:bookingNumber/modify/preview`** — guest stay-modify
+preview (Phase 11). Same contact proof as lookup. Body may include
+`check_in_date`, `check_out_date`, `room_type_id`, `number_of_rooms` (at least
+one required). Does not write. Returns availability for the revised stay with
+this booking excluded from sold counts, plus server-calculated indicative
+amounts (`base_price × nights × rooms`). Eligible: `pending` | `confirmed`.
+Past check-in rejected. Never returns `admin_notes` or guest contact.
+
+**`POST /api/bookings/:bookingNumber/modify`** — guest stay modification
+(Phase 11). Same contact + stay fields as preview. Reuses
+`applyBookingStayUpdate` (transactional lock + exclude-self availability +
+`UPDATE`) with guest-eligible statuses only. Amounts always recalculated
+server-side (client totals ignored). `hotel_id` immutable; room type must be
+`active` and belong to the booking’s hotel. Fires a status-update email when
+the stay changes. Wrong contact → identical `404`; ineligible status → `400`;
+inventory conflict → `409`.
+
+**`POST /api/bookings/:bookingNumber/notification-preferences`** — guest
+preference update (Phase 11). Body requires `email` **or** `phone` plus
+`notification_preferences` (full or partial object). Unknown keys rejected.
+Confirm/cancel emails are never gated by these prefs; only optional status /
+stay-update emails use `email_updates`. SMS/WhatsApp values are stored only.
+Wrong contact → identical `404`. Response is the guest-safe booking payload.
 
 ### Admin (JWT)
 
@@ -275,6 +326,7 @@ contact details are omitted from the response.
 | `POST` | `/api/admin/bookings` |
 | `GET` | `/api/admin/bookings/:id` |
 | `PATCH` | `/api/admin/bookings/:id` |
+| `POST` | `/api/admin/bookings/:id/cancel` |
 | `PATCH` | `/api/admin/bookings/:id/status` |
 | `PATCH` | `/api/admin/bookings/:id/assign-room` |
 
@@ -294,11 +346,26 @@ name, email, or phone digits), `limit` (default 50, max 100), `offset`,
 **Create:** staff bookings default to `booking_source=admin` and
 `booking_status=confirmed`, may use past dates (walk-ins recorded after the
 fact), accept explicit amounts, and record `created_by_admin_id`. Optional
-`admin_notes` (private staff text, max 2000) may be set on create.
+`admin_notes` (private staff text, max 2000) and `notification_preferences`
+may be set on create (prefs default when omitted).
 
 **Update (`PATCH /:id`):** guest/stay/payment/amounts/`special_requests` /
-`admin_notes` / `cancellation_reason`. Empty `admin_notes` or
-`special_requests` clears to `NULL`. `admin_notes` is admin-JWT only.
+`admin_notes` / `cancellation_reason` / `notification_preferences`. Empty
+`admin_notes` or `special_requests` clears to `NULL`. `admin_notes` is
+admin-JWT only. Prefs accept full or partial objects (unknown keys rejected).
+
+**Stay modification (Phase 11):** when `check_in_date`, `check_out_date`,
+`room_type_id`, and/or `number_of_rooms` change, the API re-validates the
+**complete revised stay** inside one transaction: `SELECT … FOR UPDATE` on the
+booking, advisory locks on affected room type(s), availability with
+`excludeBookingId` (so the booking’s own hold is not double-counted), then
+`UPDATE`. Terminal statuses (`checked_out`, `cancelled`, `no_show`) are rejected
+(`409`). `hotel_id` cannot change; room type must belong to the booking’s hotel.
+Unless the PATCH body explicitly includes `subtotal` / `tax_amount` /
+`total_amount`, amounts are recalculated as
+`base_price × nights × number_of_rooms` (`tax_amount = 0`), matching public
+indicative pricing. Changing room type or setting `number_of_rooms > 1` clears
+`room_id`. Non-stay patches (e.g. notes only) skip inventory locking.
 
 **Privacy:** `admin_notes` is never returned or accepted on public
 `POST /api/bookings` / `GET /api/bookings/:bookingNumber`, availability APIs, or
@@ -311,6 +378,13 @@ remains the cancel/no-show reason field.
 and `no_show` are terminal. **Confirming** stamps `confirmed_at`. **Cancelling or marking no_show** stamps
 `cancelled_at` (shared terminal-exit audit column; no separate `no_show_at`) and
 may store `cancellation_reason`. Payment status moves freely.
+
+**Cancel (`POST /:id/cancel`, Phase 11):** dedicated cancel for eligible bookings
+(`pending` / `confirmed` / `checked_in`). Optional body
+`cancellation_reason` (max 2000). Sets `booking_status=cancelled`, stamps
+`cancelled_at`, fires the existing cancellation notification. Already-cancelled
+or ineligible statuses return `400`. Legacy
+`PATCH /:id/status` with `booking_status=cancelled` remains supported.
 
 **Assign room:** attaches a physical room, or clears it with `room_id: null`.
 The room must belong to the booking's hotel *and* room type, be sellable, and

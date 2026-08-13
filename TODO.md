@@ -8,8 +8,20 @@
 
 ## Current focus
 
-- [x] **Phase 10A** — Booking Engine Backend Foundation (schema, availability
-      engine, public + admin APIs). Backend only, no UI.
+- [x] **Phase 10A–10I** — booking engine, inventory, emails, inquiries,
+      admin_notes (see completed sections below / status docs).
+- [ ] **Phase 11 — Booking Engine Completion**
+  - [x] Admin cancellation workflow (`POST /api/admin/bookings/:id/cancel` +
+        confirm UI; existing schema only).
+  - [x] Guest self-service cancellation (contact-verified
+        `POST /api/bookings/:bookingNumber/cancel`).
+  - [x] Admin stay modification (transactional inventory revalidate + UPDATE,
+        auto-reprice, detail UI; `npm run verify:admin-stay-modify`).
+  - [x] Guest self-service stay modification / reschedule
+        (`POST …/modify` + preview; `npm run verify:guest-stay-modify`).
+  - [x] Notification preference controls (migration `007`;
+        `npm run verify:notification-prefs`).
+  - [ ] Guest journey polish.
 - [x] **Phase 10B** — Guest booking UI (`/book` five-step flow, availability API,
       live stay summary, review + confirmation, `/booking/[bookingNumber]`
       lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
@@ -58,7 +70,8 @@
       Docs only — no staging/production deploy or non-local migrate yet.
 - [ ] Replace placeholder contact details before launch.
 - [ ] Run `npm run migrate` on every environment for `004_bookings.sql`,
-      `005_room_type_inventory_dates.sql`, and `006_booking_admin_notes.sql`.
+      `005_room_type_inventory_dates.sql`, `006_booking_admin_notes.sql`, and
+      `007_booking_notification_preferences.sql`.
       Local dev is already migrated. Follow [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.
 
 ---
@@ -93,7 +106,8 @@
 
 ## Future (roadmap Phases 11–15)
 
-- [ ] Phase 11 — Booking Engine completion (confirmations, self-service changes)
+- [ ] Phase 11 — Booking Engine completion (cancel + stay modify + prefs ✅;
+      guest journey polish remaining)
 - [ ] Phase 12 — PMS Lite
 - [ ] Phase 13 — CRM
 - [ ] Phase 14 — Payments & Invoice
@@ -103,7 +117,7 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A–10I** complete (incl. booking `admin_notes`) — see
-[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: non-local
-migrate for `005`–`006` (checklist in deployment docs); placeholder contacts;
-optional CI/CD.
+Phases **1–9**, **10A–10I** complete; Phase 11 cancel, stay modify, and
+notification prefs shipped — see
+[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: guest
+journey polish; non-local migrate `005`–`007`; placeholder contacts.

@@ -166,10 +166,24 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ Delete with confirmation; toasts; loading/empty/error states
 - ✅ JWT on list/get/status/delete; public `POST /api/inquiries` unchanged
 
-### Phase 11 — Booking Engine Completion ⬜
+### Phase 11 — Booking Engine Completion ⬜ / ◐
 
 End-to-end guest journey polish, guest self-service modification/cancellation,
 and richer notification preferences.
+
+- ✅ Admin dedicated cancel API + confirm UI (`POST /api/admin/bookings/:id/cancel`,
+  existing schema only; optional `cancellation_reason`)
+- ✅ Guest self-service cancellation (contact-verified
+  `POST /api/bookings/:bookingNumber/cancel`; pending/confirmed only)
+- ✅ Admin stay modification (transactional `PATCH /:id` + detail UI; dates /
+  room type / rooms; exclude-self availability; auto-reprice; no schema change)
+- ✅ Guest self-service stay modification / reschedule (contact-verified
+  `POST …/modify` + preview; pending/confirmed only; reuses
+  `applyBookingStayUpdate`; no schema change)
+- ✅ Notification preference controls (migration `007` JSONB;
+  create/lookup/admin + guest update; status emails gated; confirm/cancel
+  ungated; SMS/WhatsApp store-only)
+- ⬜ Broader guest journey polish
 
 ### Phase 12 — PMS Lite ⬜
 

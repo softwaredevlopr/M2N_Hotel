@@ -1,8 +1,8 @@
-// The guest booking lookup API requires the email or phone held on the
+// The guest booking lookup/cancel APIs require the email or phone held on the
 // reservation. After a booking is created we keep that contact detail in
 // sessionStorage so the confirmation page can load without asking the guest to
 // re-type it. It is scoped to the tab, cleared when the tab closes, and never
-// sent anywhere except the lookup endpoint.
+// sent anywhere except the lookup/cancel endpoints.
 
 const STORAGE_PREFIX = "m2n.booking.";
 

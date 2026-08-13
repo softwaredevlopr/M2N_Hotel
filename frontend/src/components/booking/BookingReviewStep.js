@@ -109,6 +109,18 @@ export default function BookingReviewStep({
             {values.specialRequests.trim() ? (
               <Row label="Special request" value={values.specialRequests} />
             ) : null}
+            <Row
+              label="Status emails"
+              value={values.emailUpdates ? "On" : "Off"}
+            />
+            <Row
+              label="SMS (soon)"
+              value={values.smsOptIn ? "Opted in" : "Off"}
+            />
+            <Row
+              label="WhatsApp (soon)"
+              value={values.whatsappOptIn ? "Opted in" : "Off"}
+            />
           </dl>
         </div>
       </div>

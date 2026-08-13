@@ -12,6 +12,7 @@ const {
   BOOKING_STATUSES,
   PAYMENT_STATUSES,
   TERMINAL_BOOKING_STATUSES,
+  canCancelBooking,
   canTransitionBookingStatus,
   BOOKING_STATUS_TRANSITIONS,
 } = require("../utils/bookingConstants");
@@ -22,9 +23,14 @@ const {
   parseInteger,
   parseUuid,
   trimOrNull,
+  nightsBetween,
   validateGuestFields,
   validateStayDates,
 } = require("../validators/booking.validator");
+const {
+  normalizeNotificationPreferences,
+  parseNotificationPreferences,
+} = require("../utils/notificationPreferences");
 
 const MAX_ADULTS = 30;
 const MAX_CHILDREN = 30;
@@ -42,6 +48,7 @@ const BOOKING_FIELDS = `
   b.adults, b.children, b.number_of_rooms,
   b.booking_source, b.booking_status, b.payment_status, b.special_requests,
   b.admin_notes,
+  b.notification_preferences,
   b.subtotal, b.tax_amount, b.total_amount, b.currency,
   b.created_by_admin_id, b.confirmed_at, b.cancelled_at, b.cancellation_reason,
   b.created_at, b.updated_at,
@@ -50,6 +57,16 @@ const BOOKING_FIELDS = `
   r.room_number,
   a.full_name AS created_by_admin_name
 `;
+
+function withNormalizedPrefs(booking) {
+  if (!booking) return booking;
+  return {
+    ...booking,
+    notification_preferences: normalizeNotificationPreferences(
+      booking.notification_preferences
+    ),
+  };
+}
 
 const BOOKING_JOINS = `
   FROM bookings b
@@ -70,7 +87,7 @@ async function fetchBookingById(id) {
     `SELECT ${BOOKING_FIELDS} ${BOOKING_JOINS} WHERE b.id = $1 LIMIT 1`,
     [id]
   );
-  return result.rows[0] || null;
+  return withNormalizedPrefs(result.rows[0] || null);
 }
 
 async function requireBooking(id) {
@@ -215,7 +232,9 @@ const listBookings = asyncHandler(async (req, res) => {
   );
 
   const total = result.rows.length > 0 ? result.rows[0].total_count : 0;
-  const data = result.rows.map(({ total_count: _ignored, ...row }) => row);
+  const data = result.rows.map(({ total_count: _ignored, ...row }) =>
+    withNormalizedPrefs(row)
+  );
 
   return sendSuccess(res, 200, {
     count: data.length,
@@ -381,6 +400,11 @@ const createBooking = asyncHandler(async (req, res) => {
     errors.push("admin_notes must be at most 2000 characters");
   }
 
+  const prefsParse = parseNotificationPreferences(body.notification_preferences);
+  if (!prefsParse.ok) {
+    errors.push(...prefsParse.errors);
+  }
+
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
@@ -402,6 +426,7 @@ const createBooking = asyncHandler(async (req, res) => {
     payment_status: paymentStatus,
     special_requests: specialRequests,
     admin_notes: adminNotes,
+    notification_preferences: prefsParse.value,
     subtotal,
     tax_amount: taxAmount,
     total_amount:
@@ -428,6 +453,13 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   const nextBookingStatus = trimOrNull(body.booking_status);
   const nextPaymentStatus = trimOrNull(body.payment_status);
   const cancellationReason = trimOrNull(body.cancellation_reason);
+  if (
+    body.cancellation_reason !== undefined &&
+    cancellationReason &&
+    cancellationReason.length > 2000
+  ) {
+    errors.push("cancellation_reason must be at most 2000 characters");
+  }
 
   if (!nextBookingStatus && !nextPaymentStatus) {
     errors.push("Provide booking_status or payment_status");
@@ -505,6 +537,63 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   }
 
   return sendSuccess(res, 200, { data: updated });
+});
+
+/**
+ * Phase 11 dedicated cancel workflow. Reuses booking_status=cancelled and
+ * optional cancellation_reason — no schema change. Eligible transitions match
+ * BOOKING_STATUS_TRANSITIONS (... → cancelled).
+ */
+const cancelBooking = asyncHandler(async (req, res) => {
+  const booking = await requireBooking(req.params.id);
+  const body = req.body || {};
+  const errors = [];
+
+  if (!canCancelBooking(booking.booking_status)) {
+    throw new AppError(
+      booking.booking_status === "cancelled"
+        ? "Booking is already cancelled"
+        : `Cannot cancel a ${booking.booking_status} booking`,
+      400
+    );
+  }
+
+  let cancellationReason;
+  if (body.cancellation_reason !== undefined) {
+    cancellationReason = trimOrNull(body.cancellation_reason);
+    if (cancellationReason && cancellationReason.length > 2000) {
+      errors.push("cancellation_reason must be at most 2000 characters");
+    }
+  }
+
+  if (errors.length > 0) {
+    return sendValidationError(res, errors);
+  }
+
+  const sets = [
+    "booking_status = 'cancelled'",
+    "cancelled_at = COALESCE(cancelled_at, NOW())",
+  ];
+  const params = [];
+
+  if (body.cancellation_reason !== undefined) {
+    params.push(cancellationReason);
+    sets.push(`cancellation_reason = $${params.length}`);
+  }
+
+  params.push(booking.id);
+  await query(
+    `UPDATE bookings SET ${sets.join(", ")} WHERE id = $${params.length}`,
+    params
+  );
+
+  const updated = await fetchBookingById(booking.id);
+  notifyBookingStatusChange(booking, updated);
+
+  return sendSuccess(res, 200, {
+    message: "Booking cancelled",
+    data: updated,
+  });
 });
 
 /**
@@ -658,6 +747,18 @@ const updateBooking = asyncHandler(async (req, res) => {
     }
   }
 
+  if (body.notification_preferences !== undefined) {
+    const prefsParse = parseNotificationPreferences(
+      body.notification_preferences,
+      { partial: true, base: booking.notification_preferences }
+    );
+    if (!prefsParse.ok) {
+      errors.push(...prefsParse.errors);
+    } else {
+      updates.notification_preferences = JSON.stringify(prefsParse.value);
+    }
+  }
+
   if (body.cancellation_reason !== undefined) {
     updates.cancellation_reason = trimOrNull(body.cancellation_reason);
   }
@@ -709,39 +810,72 @@ const updateBooking = asyncHandler(async (req, res) => {
     }
 
     const roomTypeId = updates.room_type_id || booking.room_type_id;
-    const numberOfRooms = updates.number_of_rooms || booking.number_of_rooms;
+    const numberOfRooms =
+      updates.number_of_rooms !== undefined
+        ? updates.number_of_rooms
+        : booking.number_of_rooms;
 
-    await bookingService.revalidateBookingInventory({
-      bookingId: booking.id,
-      hotelId: booking.hotel_id,
-      roomTypeId,
-      checkIn,
-      checkOut,
-      numberOfRooms,
-    });
+    // Auto-reprice from base_price unless the caller explicitly sent amounts.
+    const amountsProvided =
+      body.subtotal !== undefined ||
+      body.tax_amount !== undefined ||
+      body.total_amount !== undefined;
 
-    // A room already attached must still be valid for the new type/dates.
+    if (!amountsProvided) {
+      const roomTypeResult = await query(
+        `SELECT base_price
+         FROM room_types
+         WHERE id = $1 AND hotel_id = $2
+         LIMIT 1`,
+        [roomTypeId, booking.hotel_id]
+      );
+      if (roomTypeResult.rows.length === 0) {
+        throw new AppError(`Room type not found: ${roomTypeId}`, 404);
+      }
+      const nights = nightsBetween(checkIn, checkOut);
+      const amounts = bookingService.buildIndicativeAmounts(
+        roomTypeResult.rows[0].base_price,
+        nights,
+        numberOfRooms
+      );
+      updates.subtotal = amounts.subtotal;
+      updates.tax_amount = amounts.tax_amount;
+      updates.total_amount = amounts.total_amount;
+    }
+
+    let roomIdToKeep = null;
     if (booking.room_id) {
       if (numberOfRooms > 1 || updates.room_type_id) {
         updates.room_id = null;
       } else {
-        await bookingService.assertRoomAssignable({
-          bookingId: booking.id,
-          roomId: booking.room_id,
-          hotelId: booking.hotel_id,
-          roomTypeId,
-          checkIn,
-          checkOut,
-        });
+        roomIdToKeep = booking.room_id;
       }
     }
+
+    await bookingService.applyBookingStayUpdate({
+      bookingId: booking.id,
+      hotelId: booking.hotel_id,
+      previousRoomTypeId: booking.room_type_id,
+      roomTypeId,
+      checkIn,
+      checkOut,
+      numberOfRooms,
+      columnUpdates: updates,
+      roomIdToKeep,
+    });
+
+    return sendSuccess(res, 200, { data: await fetchBookingById(booking.id) });
   }
 
   const sets = [];
   const params = [];
   Object.keys(updates).forEach((column) => {
     params.push(updates[column]);
-    sets.push(`${column} = $${params.length}`);
+    if (column === "notification_preferences") {
+      sets.push(`${column} = $${params.length}::jsonb`);
+    } else {
+      sets.push(`${column} = $${params.length}`);
+    }
   });
   params.push(booking.id);
 
@@ -759,6 +893,7 @@ module.exports = {
   getBookingById,
   createBooking,
   updateBookingStatus,
+  cancelBooking,
   assignRoom,
   updateBooking,
 };

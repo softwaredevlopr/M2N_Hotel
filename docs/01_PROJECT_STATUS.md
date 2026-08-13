@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-11  
+> **Status:** Living document · **Last updated:** 2026-08-12  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -46,9 +46,15 @@
 | Booking admin_notes (private) | ✅ Complete (migration `006`) |
 | Deployment docs / readiness | ✅ Documented ([12 — Deployment](12_DEPLOYMENT.md)) |
 | Staging / production cutover | ⬜ Pending (operator) |
+| Phase 11 — admin cancel | ✅ Complete (existing schema) |
+| Phase 11 — guest self-service cancel | ✅ Complete (existing schema) |
+| Phase 11 — admin stay modification | ✅ Complete (existing schema) |
+| Phase 11 — guest stay modification | ✅ Complete (existing schema) |
+| Phase 11 — notification preferences | ✅ Complete (migration `007`) |
+| Phase 11 — guest journey polish | ⬜ Pending |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Next: non-local
-migrate `005`–`006` + host cutover (see deployment guide); Phase 11+
+**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** cancel /
+stay modify / notification prefs ✅ · Next: guest journey polish; staging cutover
 
 ---
 
@@ -207,19 +213,18 @@ migrate `005`–`006` + host cutover (see deployment guide); Phase 11+
 
 ## 3. In Progress
 
-- None formally in-flight. Next: operator staging/production cutover using
-  [12 — Deployment](12_DEPLOYMENT.md) (non-local migrate still pending).
+- Phase 11 remaining: broader guest journey polish. Staging cutover remains
+  operator-run per [12 — Deployment](12_DEPLOYMENT.md).
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Provision staging/production hosts + secrets; fill final URLs in the
-   deployment guide.
-2. Run migrations `005` and `006` on non-local environments (checklist in
-   [12 — Deployment](12_DEPLOYMENT.md) §6) — **operator only**.
+1. Broader guest journey polish — Phase 11.
+2. Provision staging/production hosts + secrets; non-local migrate
+   `005`/`006`/`007`.
 3. Replace placeholder contact details before public launch.
-4. Phases **11–15** per [13 — Roadmap](13_ROADMAP.md).
+4. Remaining Phase 11 items + Phases **12–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -238,8 +243,11 @@ migrate `005`–`006` + host cutover (see deployment guide); Phase 11+
 
 | Date | Update |
 |------|--------|
-| 2026-08-11 | Deployment documentation & readiness plan (`docs/12_DEPLOYMENT.md`) |
-| 2026-08-11 | Booking `admin_notes` (migration `006`) — private staff notes + admin UI |
+| 2026-08-13 | Phase 11 booking notification preferences (migration `007`) |
+| 2026-08-13 | Phase 11 guest self-service stay modification |
+| 2026-08-12 | Phase 11 admin stay modification (transactional + UI) |
+| 2026-08-12 | Phase 11 guest self-service booking cancel (contact-verified) |
+| 2026-08-12 | Phase 11 admin booking cancel API + confirm UI (no schema change) |
 | 2026-08-10 | Admin inventory-date write APIs (`PUT`/`DELETE /api/admin/inventory/dates`) |
 | 2026-08-08 | Phase 10I persistent `room_type_inventory_dates` (stop-sell/allotment/overbooking) |
 | 2026-08-06 | Operational: set Deluxe/Suite overnight `base_price` (1999/2999); Standard remains 0 for couple package |

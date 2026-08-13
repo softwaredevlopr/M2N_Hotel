@@ -6,6 +6,9 @@ const {
   createBookingSchema,
   lookupBookingSchema,
   availabilityQuerySchema,
+  cancelPublicBookingSchema,
+  updatePublicNotificationPreferencesSchema,
+  modifyPublicBookingSchema,
 } = require("../validators/booking.validator");
 
 const router = express.Router();
@@ -21,6 +24,26 @@ router.get(
   bookingController.getAvailability
 );
 router.post("/", validate(createBookingSchema), bookingController.createBooking);
+router.post(
+  "/:bookingNumber/modify/preview",
+  validate(modifyPublicBookingSchema),
+  bookingController.previewModifyBookingByNumber
+);
+router.post(
+  "/:bookingNumber/modify",
+  validate(modifyPublicBookingSchema),
+  bookingController.modifyBookingByNumber
+);
+router.post(
+  "/:bookingNumber/notification-preferences",
+  validate(updatePublicNotificationPreferencesSchema),
+  bookingController.updateNotificationPreferencesByNumber
+);
+router.post(
+  "/:bookingNumber/cancel",
+  validate(cancelPublicBookingSchema),
+  bookingController.cancelBookingByNumber
+);
 router.get(
   "/:bookingNumber",
   validate(lookupBookingSchema),

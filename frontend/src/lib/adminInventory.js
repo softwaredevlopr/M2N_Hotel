@@ -42,6 +42,27 @@ export async function getAdminInventoryDay({
 }
 
 /**
+ * Admin stay-peak inventory (+ overlaps), with optional exclude_booking_id so
+ * a reservation being modified does not double-count itself.
+ * GET /api/admin/inventory/overlaps
+ */
+export async function getAdminInventoryOverlaps({
+  hotel_id,
+  room_type_id,
+  check_in_date,
+  check_out_date,
+  exclude_booking_id,
+} = {}) {
+  const params = new URLSearchParams();
+  if (hotel_id) params.set("hotel_id", hotel_id);
+  if (room_type_id) params.set("room_type_id", room_type_id);
+  if (check_in_date) params.set("check_in_date", check_in_date);
+  if (check_out_date) params.set("check_out_date", check_out_date);
+  if (exclude_booking_id) params.set("exclude_booking_id", exclude_booking_id);
+  return adminApi(`/api/admin/inventory/overlaps?${params.toString()}`);
+}
+
+/**
  * Upsert inventory-date override — PUT /api/admin/inventory/dates
  */
 export async function upsertAdminInventoryDate(payload) {
