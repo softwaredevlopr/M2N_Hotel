@@ -90,7 +90,7 @@ export default function BookingReviewStep({
                   }
                 />
                 <Row
-                  label="Final payable"
+                  label="Estimated stay total"
                   value={formatPrice(selectedOption.total_amount, currency)}
                 />
               </>
@@ -107,7 +107,7 @@ export default function BookingReviewStep({
             <Row label="Email" value={values.guestEmail} />
             <Row label="Mobile" value={values.guestPhone} />
             {values.specialRequests.trim() ? (
-              <Row label="Special request" value={values.specialRequests} />
+              <Row label="Special requests" value={values.specialRequests} />
             ) : null}
             <Row
               label="Status emails"

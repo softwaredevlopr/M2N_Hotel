@@ -82,7 +82,7 @@ export default function GuestDetailsStep({ values, errors, onChange }) {
 
         <div className="sm:col-span-2">
           <label htmlFor="bk-requests" className={LABEL_CLASS}>
-            Special Request
+            Special requests
           </label>
           <textarea
             id="bk-requests"

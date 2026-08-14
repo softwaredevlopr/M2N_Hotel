@@ -2,6 +2,8 @@
 
 import { AlertCircle, BedDouble, Check, Loader2, Users } from "lucide-react";
 import { formatPrice } from "@/lib/format";
+import { occupancyExceeded } from "@/lib/bookingPricing";
+import { SECONDARY_BUTTON_CLASS } from "./formStyles";
 
 export default function AvailableRoomsStep({
   hotel,
@@ -9,13 +11,20 @@ export default function AvailableRoomsStep({
   preferredRoomTypeSlug = "",
   options = [],
   selectedRoomTypeId = "",
+  guestCount = 0,
+  rooms = 1,
   loading = false,
   error = null,
   onSelect,
   onRetry,
+  onChangeDates,
 }) {
   const currency = hotel?.currency_code || "INR";
   const available = options.filter((item) => item.is_available);
+  const preferred = preferredRoomTypeSlug
+    ? options.find((item) => item.slug === preferredRoomTypeSlug)
+    : null;
+  const preferredUnavailable = Boolean(preferred && !preferred.is_available);
 
   if (loading) {
     return (
@@ -57,13 +66,27 @@ export default function AvailableRoomsStep({
   }
 
   if (available.length === 0) {
+    const preferredName = preferred?.name;
     return (
       <div className="border border-ink-line bg-ink-soft p-8 text-center">
         <p className="text-sm leading-relaxed text-cream-dim">
-          No rooms are available for these dates
-          {hotel?.name ? ` at ${hotel.name}` : ""}. Try different dates or
-          another property.
+          {preferredName
+            ? `${preferredName} is not available for these dates${
+                hotel?.name ? ` at ${hotel.name}` : ""
+              }. No other rooms are open either — try different dates.`
+            : `No rooms are available for these dates${
+                hotel?.name ? ` at ${hotel.name}` : ""
+              }. Try different dates or another property.`}
         </p>
+        {onChangeDates && (
+          <button
+            type="button"
+            onClick={onChangeDates}
+            className={`${SECONDARY_BUTTON_CLASS} mt-6 w-full sm:w-auto`}
+          >
+            Change dates
+          </button>
+        )}
       </div>
     );
   }
@@ -79,6 +102,28 @@ export default function AvailableRoomsStep({
         continue.
       </p>
 
+      {preferredUnavailable && (
+        <p
+          role="status"
+          className="mt-5 border border-gold/40 bg-gold/5 p-4 text-sm text-cream-dim"
+        >
+          {preferred.name} is not available for these dates. Choose another
+          room below, or{" "}
+          {onChangeDates ? (
+            <button
+              type="button"
+              onClick={onChangeDates}
+              className="text-gold underline-offset-4 hover:underline"
+            >
+              change dates
+            </button>
+          ) : (
+            "change dates"
+          )}
+          .
+        </p>
+      )}
+
       <fieldset className="mt-6 space-y-4">
         <legend className="sr-only">Available room types</legend>
         {available.map((option) => {
@@ -86,6 +131,12 @@ export default function AvailableRoomsStep({
           const isPreferred =
             preferredRoomTypeSlug && option.slug === preferredRoomTypeSlug;
           const imageSrc = roomImages[option.slug];
+          const overCapacity = occupancyExceeded({
+            adults: guestCount,
+            children: 0,
+            rooms,
+            maxOccupancy: option.max_occupancy,
+          });
 
           return (
             <button
@@ -128,7 +179,7 @@ export default function AvailableRoomsStep({
                     </h4>
                     {isPreferred && (
                       <p className="mt-1 text-[11px] tracking-[0.2em] uppercase text-gold">
-                        Prefill from room page
+                        You selected this room
                       </p>
                     )}
                   </div>
@@ -172,6 +223,13 @@ export default function AvailableRoomsStep({
                   </span>
                 </div>
 
+                {overCapacity && (
+                  <p className="text-xs text-gold">
+                    Guest count exceeds this room type’s capacity for the
+                    rooms selected.
+                  </p>
+                )}
+
                 <div className="mt-auto border-t border-ink-line/70 pt-3 text-sm text-cream-dim">
                   {option.on_request ? (
                     <p>Stay total confirmed by our team.</p>
@@ -186,11 +244,11 @@ export default function AvailableRoomsStep({
                         <dd>
                           {Number(option.tax_amount) > 0
                             ? formatPrice(option.tax_amount, currency)
-                            : "Included at property"}
+                            : "As applicable at property"}
                         </dd>
                       </div>
                       <div className="flex justify-between gap-4 font-medium text-cream">
-                        <dt>Total stay</dt>
+                        <dt>Estimated stay total</dt>
                         <dd>{formatPrice(option.total_amount, currency)}</dd>
                       </div>
                     </dl>

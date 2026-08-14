@@ -60,6 +60,26 @@ export function countSellableRooms(rooms, roomTypeSlug) {
 }
 
 /**
+ * True when adults + children exceed the room type's per-room max occupancy
+ * times the number of rooms. Missing occupancy is treated as unrestricted.
+ */
+export function occupancyExceeded({
+  adults,
+  children,
+  rooms,
+  maxOccupancy,
+} = {}) {
+  const cap = Number(maxOccupancy);
+  const roomCount = Number(rooms) || 1;
+  if (!Number.isFinite(cap) || cap <= 0 || !Number.isFinite(roomCount)) {
+    return false;
+  }
+  const guests = Number(adults) + Number(children);
+  if (!Number.isFinite(guests)) return false;
+  return guests > cap * roomCount;
+}
+
+/**
  * Indicative stay total. Mirrors the server calculation exactly: nightly base
  * price × nights × rooms, with no tax component. A room type without a published
  * base price is quoted on request rather than shown as a placeholder number.

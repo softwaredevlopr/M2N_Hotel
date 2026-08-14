@@ -175,8 +175,7 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   readiness guide (architecture, env matrix, 005/006 rollout checklist). No
   staging/production cutover yet.
 
-**Next:** Phase 11 guest journey polish; operator non-local migrate
-(`005`–`007`) + host cutover.
+**Next:** Phases 12–15; operator non-local migrate (`005`–`007`) + host cutover.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -194,6 +193,11 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   contact-verified update; admin detail controls; status emails gated by
   `email_updates`; confirm/cancel ungated. Smoke:
   `npm run verify:notification-prefs`.
+
+- ✅ **Phase 11 — Broader guest journey polish** — durable post-booking
+  handoff to `/booking/[number]`, find-booking entry, CTA/wording consistency,
+  mobile book chrome, lookup polish, occupancy guard on public create. No
+  schema change.
 
 ---
 

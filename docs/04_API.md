@@ -272,6 +272,7 @@ Optional `adults` (default 1), `children` (0), `number_of_rooms` (1),
   pricing is never trusted.
 - The hotel and room type must both be `active`, and the room type must belong to
   the hotel. Past arrival dates are rejected; stays are capped at 90 nights.
+  Adults + children cannot exceed `max_occupancy × number_of_rooms`.
 - `201` returns a guest-safe payload including the generated `booking_number`
   (`M2N-YYYYMMDD-XXXXX`) and normalized `notification_preferences`. Internal ids
   and the owning admin are never included.

@@ -46,8 +46,8 @@ function buildChannels(hotel) {
   channels.push({
     icon: Calendar,
     label: "Book Online",
-    value: "View room rates",
-    href: "#tariff",
+    value: "Check availability",
+    href: hotel?.slug ? `/book?hotel=${encodeURIComponent(hotel.slug)}` : "/book",
   });
 
   return channels;
@@ -71,7 +71,7 @@ export default function ContactCTA({ hotel, roomTypes = [] }) {
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10 py-28 sm:py-36">
         <div className="mx-auto max-w-3xl text-center">
           <span className="text-xs tracking-[0.45em] uppercase text-gold">
-            Reserve Your Stay
+            Plan Your Stay
           </span>
           <div className="gold-divider mx-auto mt-5" />
           <h2 className="mt-8 font-display text-4xl sm:text-5xl lg:text-6xl leading-tight text-cream">
@@ -115,11 +115,12 @@ export default function ContactCTA({ hotel, roomTypes = [] }) {
           <div className="mt-16 max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <span className="text-xs tracking-[0.45em] uppercase text-gold">
-                Booking Inquiry
+                Prefer a call-back?
               </span>
               <p className="mt-3 text-sm leading-relaxed text-cream-dim">
-                Share a few details and our team will be in touch shortly to
-                confirm availability and tailor your stay.
+                To book online, use Book Online above. Or share a few details
+                and our team will be in touch to confirm availability and
+                tailor your stay.
               </p>
             </div>
             <InquiryForm

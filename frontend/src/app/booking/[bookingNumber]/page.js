@@ -13,8 +13,11 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function BookingConfirmationPage({ params }) {
+export default async function BookingConfirmationPage({ params, searchParams }) {
   const { bookingNumber } = await params;
+  const query = (await searchParams) || {};
+  const justReceived =
+    query.received === "1" || query.received === "true";
   const hotels = await getHotels();
 
   return (
@@ -22,7 +25,10 @@ export default async function BookingConfirmationPage({ params }) {
       <Navbar hotels={hotels} />
       <main className="bg-ink">
         <section className="mx-auto max-w-4xl px-6 py-16 lg:px-10 sm:py-24">
-          <BookingLookup bookingNumber={bookingNumber} />
+          <BookingLookup
+            bookingNumber={bookingNumber}
+            justReceived={justReceived}
+          />
         </section>
       </main>
       <Footer hotel={null} />

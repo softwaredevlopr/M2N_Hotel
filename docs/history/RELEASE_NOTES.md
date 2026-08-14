@@ -12,6 +12,15 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 11 — Broader guest journey polish (2026-08-13)
+
+- Durable post-booking handoff to `/booking/[number]?received=1` with session
+  auto-verify and a received banner.
+- Find-booking entry at `/booking`; hotel-aware Book Now; ContactCTA Book Online
+  → `/book`.
+- Available-rooms recovery, mobile sticky actions, lookup status/modify polish,
+  estimated-total wording, occupancy guard on public create (no schema).
+
 ### Phase 11 — Booking notification preferences (2026-08-13)
 
 - Migration `007` — `bookings.notification_preferences` JSONB

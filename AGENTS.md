@@ -101,8 +101,7 @@ create API. No schema change.
 detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
 writes require JWT. No schema change.
 
-**Upcoming:** Phase 11 guest journey polish (cancel, stay modify, and
-notification prefs shipped); staging cutover per
+**Upcoming:** Phases 12–15; staging cutover per
 [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 

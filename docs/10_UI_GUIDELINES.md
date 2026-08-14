@@ -26,18 +26,23 @@
 **Booking flow (`/book`)**
 
 - Numbered five-step header (Stay Details → Available Rooms → Guest Details →
-  Review → Confirmation); one step visible at a time on mobile.
+  Review → Confirmation); one step visible at a time on mobile. After submit,
+  guests are redirected to `/booking/[bookingNumber]` (session-verified).
 - Two columns from `lg` up: step content left, stay summary sticky on the right
-  (steps 1–4). Confirmation is a centred success panel with Home / View Hotel.
+  (steps 1–4). On smaller screens the Continue/Confirm bar sits above the
+  summary (sticky bottom). Confirmation fallback is a centred success panel
+  whose primary CTA is Manage reservation.
 - Selection tiles (hotels, available rooms) are `<button aria-pressed>` with a
   gold border and check badge when active — not links.
 - Fields reuse the inquiry-form styling via `components/booking/formStyles.js`;
   errors sit inline under the field in gold, and the form-level banner uses
   `role="alert"`.
-- The `/booking/[bookingNumber]` lookup page remains a printable document:
-  reference block, stay details, charges, and a print action.
+- The `/booking` page collects a reference + email/mobile, then opens lookup.
+  `/booking/[bookingNumber]` remains a printable document: reference block,
+  stay details, charges, and a print action (nav/footer/actions hidden in print).
 - Eligible guests (`pending` / `confirmed`) can open an inline cancel confirm
-  panel with optional reason; cancelled state refreshes in place.
+  panel with optional reason; cancelled state refreshes in place. Stay modify
+  requires an availability check before save.
 
 **Admin inventory calendar (`/admin/inventory`)**
 

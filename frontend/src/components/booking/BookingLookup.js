@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Loader2,
   Printer,
+  XCircle,
 } from "lucide-react";
 import {
   cancelBookingByNumber,
@@ -22,7 +23,7 @@ import {
   rememberBookingContact,
 } from "@/lib/bookingSession";
 import { formatPrice, formatTimeOfDay } from "@/lib/format";
-import { formatStayDate, nightsBetween } from "@/lib/bookingPricing";
+import { formatStayDate, nightsBetween, todayIso } from "@/lib/bookingPricing";
 import {
   LABEL_CLASS,
   PRIMARY_BUTTON_CLASS,
@@ -95,7 +96,18 @@ function DetailRow({ label, value }) {
   );
 }
 
-export default function BookingLookup({ bookingNumber }) {
+function statusIcon(bookingStatus) {
+  if (bookingStatus === "cancelled" || bookingStatus === "no_show") {
+    return (
+      <XCircle className="mx-auto h-12 w-12 text-gold" strokeWidth={1.25} />
+    );
+  }
+  return (
+    <CheckCircle2 className="mx-auto h-12 w-12 text-gold" strokeWidth={1.25} />
+  );
+}
+
+export default function BookingLookup({ bookingNumber, justReceived = false }) {
   const [status, setStatus] = useState("loading"); // loading | verify | ready | error
   const [booking, setBooking] = useState(null);
   const [message, setMessage] = useState("");
@@ -127,6 +139,8 @@ export default function BookingLookup({ bookingNumber }) {
   });
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [prefsMessage, setPrefsMessage] = useState("");
+  const [stayUpdatedMessage, setStayUpdatedMessage] = useState("");
+  const [roomTypesError, setRoomTypesError] = useState("");
 
   const load = useCallback(
     async ({ email, phone }) => {
@@ -173,6 +187,8 @@ export default function BookingLookup({ bookingNumber }) {
       setShowModifyConfirm(false);
       setPreview(null);
       setModifyMessage("");
+      setStayUpdatedMessage("");
+      setRoomTypesError("");
       setStatus("ready");
       setMessage("");
       return true;
@@ -213,6 +229,7 @@ export default function BookingLookup({ bookingNumber }) {
         return;
       }
 
+      setRoomTypesError("");
       const result = await getBookingAvailability({
         hotelSlug: booking.hotel_slug,
         checkInDate: stayForm.check_in_date,
@@ -223,6 +240,12 @@ export default function BookingLookup({ bookingNumber }) {
 
       if (!result.ok) {
         setRoomTypeOptions([]);
+        setRoomTypesError(
+          result.networkError
+            ? "Unable to reach the server to load room types."
+            : result.data?.message ||
+                "Unable to load room types for these dates."
+        );
         return;
       }
 
@@ -387,6 +410,9 @@ export default function BookingLookup({ bookingNumber }) {
     if (stayForm.check_out_date <= stayForm.check_in_date) {
       return "Check-out must be after check-in.";
     }
+    if (stayForm.check_in_date < todayIso()) {
+      return "Check-in date cannot be in the past.";
+    }
     if (!stayForm.room_type_id) {
       return "Select a room type.";
     }
@@ -463,7 +489,11 @@ export default function BookingLookup({ bookingNumber }) {
       setModifyMessage("No stay changes to save.");
       return;
     }
-    if (preview && preview.is_available === false) {
+    if (!preview) {
+      setModifyMessage("Check availability before saving stay changes.");
+      return;
+    }
+    if (preview.is_available === false) {
       setModifyMessage(
         preview.stop_sell
           ? "This room type is on stop-sell for the selected dates."
@@ -513,6 +543,7 @@ export default function BookingLookup({ bookingNumber }) {
     setShowModifyConfirm(false);
     setPreview(null);
     setModifyMessage("");
+    setStayUpdatedMessage("Your stay has been updated.");
   }
 
   if (status === "loading") {
@@ -599,6 +630,7 @@ export default function BookingLookup({ bookingNumber }) {
     .join(", ");
   const guestCanCancel = canGuestCancel(booking.booking_status);
   const guestCanModifyStay = canGuestModify(booking.booking_status);
+  const minCheckIn = todayIso();
   const reviseNights = nightsBetween(
     stayForm.check_in_date,
     stayForm.check_out_date
@@ -607,16 +639,32 @@ export default function BookingLookup({ bookingNumber }) {
   return (
     <div className="border border-ink-line bg-ink-soft">
       <div className="border-b border-ink-line p-6 text-center sm:p-10">
-        <CheckCircle2
-          className="mx-auto h-12 w-12 text-gold"
-          strokeWidth={1.25}
-        />
+        {statusIcon(booking.booking_status)}
         <h1 className="mt-6 font-display text-3xl text-cream sm:text-4xl">
           Booking {statusInfo.label}
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-cream-dim">
           {statusInfo.note}
         </p>
+
+        {justReceived && (
+          <p
+            role="status"
+            className="mx-auto mt-6 max-w-lg border border-gold/40 bg-gold/5 p-4 text-sm text-cream-dim"
+          >
+            Booking received. Save your reference{" "}
+            <span className="text-gold">{booking.booking_number}</span>. Our
+            team will confirm shortly — no payment was taken online.
+          </p>
+        )}
+        {stayUpdatedMessage && (
+          <p
+            role="status"
+            className="mx-auto mt-6 max-w-lg border border-gold/40 bg-gold/5 p-4 text-sm text-cream-dim"
+          >
+            {stayUpdatedMessage}
+          </p>
+        )}
 
         <div className="mx-auto mt-8 inline-block border border-gold/40 bg-gold/5 px-8 py-5">
           <p className="text-[11px] tracking-[0.3em] uppercase text-cream-muted">
@@ -737,7 +785,7 @@ export default function BookingLookup({ bookingNumber }) {
         </section>
       </div>
 
-      <div className="border-t border-ink-line p-6 sm:p-10">
+      <div className="print:hidden border-t border-ink-line p-6 sm:p-10">
         <h2 className="text-xs tracking-[0.35em] uppercase text-gold">
           Communication preferences
         </h2>
@@ -809,7 +857,7 @@ export default function BookingLookup({ bookingNumber }) {
       </div>
 
       {guestCanModifyStay && (
-        <div className="border-t border-ink-line p-6 sm:p-10">
+        <div className="print:hidden border-t border-ink-line p-6 sm:p-10">
           {!showModify ? (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-cream-dim">
@@ -825,6 +873,7 @@ export default function BookingLookup({ bookingNumber }) {
                   setPreview(null);
                   setModifyMessage("");
                   setShowModifyConfirm(false);
+                  setStayUpdatedMessage("");
                 }}
                 className={`${SECONDARY_BUTTON_CLASS} w-full sm:w-auto`}
               >
@@ -850,6 +899,7 @@ export default function BookingLookup({ bookingNumber }) {
                   <input
                     id="bk-mod-in"
                     type="date"
+                    min={minCheckIn}
                     value={stayForm.check_in_date}
                     disabled={modifying}
                     onChange={(e) =>
@@ -868,6 +918,7 @@ export default function BookingLookup({ bookingNumber }) {
                   <input
                     id="bk-mod-out"
                     type="date"
+                    min={stayForm.check_in_date || minCheckIn}
                     value={stayForm.check_out_date}
                     disabled={modifying}
                     onChange={(e) =>
@@ -901,7 +952,7 @@ export default function BookingLookup({ bookingNumber }) {
                   {roomTypeOptions.map((rt) => (
                     <option key={rt.room_type_id} value={rt.room_type_id}>
                       {rt.name}
-                      {rt.is_available === false ? " (limited)" : ""}
+                      {rt.is_available === false ? " (unavailable)" : ""}
                     </option>
                   ))}
                 </select>
@@ -927,6 +978,12 @@ export default function BookingLookup({ bookingNumber }) {
                   className={inputClass(false)}
                 />
               </div>
+
+              {roomTypesError && (
+                <p role="alert" className="mt-3 text-sm text-gold">
+                  {roomTypesError}
+                </p>
+              )}
 
               <p className="mt-4 text-xs text-cream-muted">
                 Revised stay:{" "}
@@ -983,7 +1040,7 @@ export default function BookingLookup({ bookingNumber }) {
                     }}
                     className={`${SECONDARY_BUTTON_CLASS} w-full sm:w-auto`}
                   >
-                    Cancel
+                    Discard changes
                   </button>
                   <button
                     type="button"
@@ -1059,7 +1116,7 @@ export default function BookingLookup({ bookingNumber }) {
       )}
 
       {guestCanCancel && (
-        <div className="border-t border-ink-line p-6 sm:p-10">
+        <div className="print:hidden border-t border-ink-line p-6 sm:p-10">
           {!showCancelConfirm ? (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-cream-dim">
@@ -1149,7 +1206,7 @@ export default function BookingLookup({ bookingNumber }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-4 border-t border-ink-line p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+      <div className="print:hidden flex flex-col gap-4 border-t border-ink-line p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
         <Link
           href={`/hotels/${booking.hotel_slug}`}
           className={`${SECONDARY_BUTTON_CLASS} w-full sm:w-auto`}

@@ -10,7 +10,7 @@
 
 - [x] **Phase 10A–10I** — booking engine, inventory, emails, inquiries,
       admin_notes (see completed sections below / status docs).
-- [ ] **Phase 11 — Booking Engine Completion**
+- [x] **Phase 11 — Booking Engine Completion**
   - [x] Admin cancellation workflow (`POST /api/admin/bookings/:id/cancel` +
         confirm UI; existing schema only).
   - [x] Guest self-service cancellation (contact-verified
@@ -21,7 +21,8 @@
         (`POST …/modify` + preview; `npm run verify:guest-stay-modify`).
   - [x] Notification preference controls (migration `007`;
         `npm run verify:notification-prefs`).
-  - [ ] Guest journey polish.
+  - [x] Guest journey polish (durable confirmation, find-booking, CTA/wording,
+        occupancy guard).
 - [x] **Phase 10B** — Guest booking UI (`/book` five-step flow, availability API,
       live stay summary, review + confirmation, `/booking/[bookingNumber]`
       lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
@@ -104,10 +105,10 @@
 
 ---
 
-## Future (roadmap Phases 11–15)
+## Future (roadmap Phases 12–15)
 
-- [ ] Phase 11 — Booking Engine completion (cancel + stay modify + prefs ✅;
-      guest journey polish remaining)
+- [x] Phase 11 — Booking Engine completion (cancel, stay modify, prefs, journey
+      polish)
 - [ ] Phase 12 — PMS Lite
 - [ ] Phase 13 — CRM
 - [ ] Phase 14 — Payments & Invoice
@@ -117,7 +118,6 @@
 
 ## Completed (pointer)
 
-Phases **1–9**, **10A–10I** complete; Phase 11 cancel, stay modify, and
-notification prefs shipped — see
-[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: guest
-journey polish; non-local migrate `005`–`007`; placeholder contacts.
+Phases **1–11** complete (10A–10I + Phase 11 booking-engine completion) — see
+[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: non-local
+migrate `005`–`007`; placeholder contacts; Phases 12–15.

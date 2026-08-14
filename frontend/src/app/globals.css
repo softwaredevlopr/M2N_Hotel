@@ -111,3 +111,10 @@ body {
   transform-origin: center;
   will-change: transform;
 }
+
+@media print {
+  header,
+  footer {
+    display: none !important;
+  }
+}

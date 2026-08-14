@@ -9,6 +9,28 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 11 broader guest journey polish ✅
+
+- **What changed.** Post-booking redirects to contact-verified lookup with a
+  received banner. Available-rooms empty/preferred-unavailable recovery, mobile
+  sticky actions, lookup status/modify polish, hotel-aware Book Now, ContactCTA
+  Book Online → `/book`, estimated-total wording, `/booking` find-reservation
+  entry, and occupancy guard (client + public create validation). No schema
+  change.
+- **Files modified:** `BookingFlow.js`, `BookingConfirmation.js`,
+  `AvailableRoomsStep.js`, `BookingLookup.js`, `BookingReviewStep.js`,
+  `FindBookingForm.js`, `book/page.js`, `booking/page.js`,
+  `booking/[bookingNumber]/page.js`, `Navbar.js`, `Footer.js`, `ContactCTA.js`,
+  `bookingPricing.js`, `booking.controller.js`, docs.
+- **APIs added/changed:** public `POST /api/bookings` rejects guest counts over
+  `max_occupancy × rooms`.
+- **Database changes:** none.
+- **Frontend changes:** durable confirmation handoff, find-booking page, CTA
+  and wording consistency, mobile book chrome, lookup polish.
+- **Backend changes:** occupancy validation on public create.
+- **Remaining work:** Phases 12–15; non-local migrate `005`–`007`; placeholder
+  contacts.
+
 ### Added — Phase 11 booking notification preferences ✅
 
 - **What changed.** Migration `007` adds `bookings.notification_preferences`
@@ -33,8 +55,7 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 - **Frontend changes:** guest preference toggles on book + lookup; admin detail
   preference controls.
 - **Backend changes:** normalize/validate helpers; status-update email gate.
-- **Remaining work:** broader guest journey polish; commit/push; non-local
-  migrate `007` when deploying.
+- **Remaining work:** Phases 12–15; non-local migrate `007` when deploying.
 
 ### Added — Phase 11 guest self-service stay modification ✅
 

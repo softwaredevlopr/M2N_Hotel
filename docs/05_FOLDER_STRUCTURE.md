@@ -33,6 +33,7 @@ frontend/
     ├── app/
     │   ├── page.js, about/, hotels/[slug]/
     │   ├── book/                    ← Guest booking flow (Phase 10B)
+    │   ├── booking/                 ← Find reservation (reference + contact)
     │   ├── booking/[bookingNumber]/ ← Confirmation + guest lookup (noindex)
     │   └── admin/
     │       ├── login/

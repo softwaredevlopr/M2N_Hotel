@@ -166,7 +166,7 @@ Derived inventory (no new tables) for calendar-ready APIs:
 - ✅ Delete with confirmation; toasts; loading/empty/error states
 - ✅ JWT on list/get/status/delete; public `POST /api/inquiries` unchanged
 
-### Phase 11 — Booking Engine Completion ⬜ / ◐
+### Phase 11 — Booking Engine Completion ✅ / ◐
 
 End-to-end guest journey polish, guest self-service modification/cancellation,
 and richer notification preferences.
@@ -183,7 +183,8 @@ and richer notification preferences.
 - ✅ Notification preference controls (migration `007` JSONB;
   create/lookup/admin + guest update; status emails gated; confirm/cancel
   ungated; SMS/WhatsApp store-only)
-- ⬜ Broader guest journey polish
+- ✅ Broader guest journey polish (durable confirmation handoff, find-booking
+  entry, CTA/wording consistency, occupancy guard)
 
 ### Phase 12 — PMS Lite ⬜
 

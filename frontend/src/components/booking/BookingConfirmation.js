@@ -91,8 +91,11 @@ export default function BookingConfirmation({ booking, hotelSlug }) {
       </div>
 
       <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
-        <Link href="/" className={`${PRIMARY_BUTTON_CLASS} w-full sm:w-auto`}>
-          Back to Home
+        <Link
+          href={`/booking/${encodeURIComponent(booking.booking_number)}`}
+          className={`${PRIMARY_BUTTON_CLASS} w-full sm:w-auto`}
+        >
+          Manage reservation
         </Link>
         {viewHotelSlug && (
           <Link
@@ -106,15 +109,13 @@ export default function BookingConfirmation({ booking, hotelSlug }) {
 
       <p className="mt-8 text-xs leading-relaxed text-cream-muted">
         Save your reference{" "}
-        <span className="text-cream-dim">{booking.booking_number}</span>. You can
-        also look it up later at{" "}
-        <Link
-          href={`/booking/${encodeURIComponent(booking.booking_number)}`}
-          className="text-gold underline-offset-4 hover:underline"
-        >
-          the booking page
-        </Link>{" "}
-        with the email or mobile used above.
+        <span className="text-cream-dim">{booking.booking_number}</span>. A
+        confirmation email is sent when email is configured. You can look this
+        booking up later with the email or mobile used above.{" "}
+        <Link href="/" className="text-gold underline-offset-4 hover:underline">
+          Back to home
+        </Link>
+        .
       </p>
     </section>
   );

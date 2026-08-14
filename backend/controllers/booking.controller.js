@@ -479,6 +479,17 @@ const createBooking = asyncHandler(async (req, res) => {
     numberOfRooms
   );
 
+  const maxOccupancy = Number(roomTypeResult.rows[0]?.max_occupancy);
+  if (
+    Number.isFinite(maxOccupancy) &&
+    maxOccupancy > 0 &&
+    adults + children > maxOccupancy * numberOfRooms
+  ) {
+    return sendValidationError(res, [
+      `This room type sleeps up to ${maxOccupancy} guests per room. Reduce the guest count or add rooms.`,
+    ]);
+  }
+
   const { bookingId } = await bookingService.createBooking({
     hotel_id: hotelId,
     room_type_id: roomTypeId,

@@ -39,6 +39,15 @@ export default async function BookPage({ searchParams }) {
       ? requestedRoom
       : "";
 
+  let unmatchedDeepLink = "";
+  if (requestedHotel && !initialHotelSlug) {
+    unmatchedDeepLink =
+      "We couldn’t match that hotel. Choose a property below to continue.";
+  } else if (requestedRoom && initialHotelSlug && !initialRoomTypeSlug) {
+    unmatchedDeepLink =
+      "We couldn’t match that room. Choose from the available options for your dates.";
+  }
+
   // Image resolution reads the photo folders on disk, so it has to happen here
   // on the server; the interactive steps receive plain URLs.
   const hotelImages = {};
@@ -91,6 +100,7 @@ export default async function BookPage({ searchParams }) {
               roomImagesByHotel={roomImagesByHotel}
               initialHotelSlug={initialHotelSlug}
               initialRoomTypeSlug={initialRoomTypeSlug}
+              unmatchedDeepLink={unmatchedDeepLink}
             />
           )}
         </section>

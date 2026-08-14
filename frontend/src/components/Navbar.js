@@ -37,13 +37,13 @@ export default function Navbar({ hotels = [], currentSlug = "" }) {
   }, []);
 
   const hasHotels = Array.isArray(hotels) && hotels.length > 0;
-  // Always start booking at hotel selection (/book) so we never auto-open a
-  // single property. Scalable for: Select Hotel → Room → Guest Details → Payment.
-  const bookHref = "/book";
+  const bookHref = currentSlug
+    ? `/book?hotel=${encodeURIComponent(currentSlug)}`
+    : "/book";
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-black/[0.08] bg-[#FFFDF8]/95 backdrop-blur-md transition-shadow duration-300 ${
+      className={`print:hidden sticky top-0 z-50 border-b border-black/[0.08] bg-[#FFFDF8]/95 backdrop-blur-md transition-shadow duration-300 ${
         scrolled
           ? "shadow-[0_8px_24px_-14px_rgba(0,0,0,0.35)]"
           : "shadow-[0_2px_10px_-8px_rgba(0,0,0,0.25)]"
@@ -141,10 +141,16 @@ export default function Navbar({ hotels = [], currentSlug = "" }) {
 
         <div className="hidden lg:flex items-center gap-5">
           <a
+            href="/booking"
+            className="text-xs font-semibold tracking-[0.12em] uppercase text-[#222222] transition-colors hover:text-[#D71920]"
+          >
+            Find booking
+          </a>
+          <a
             href="/login"
             className="text-xs font-semibold tracking-[0.12em] uppercase text-[#222222] transition-colors hover:text-[#D71920]"
           >
-            Login
+            Staff login
           </a>
           <a
             href={bookHref}
@@ -235,11 +241,19 @@ export default function Navbar({ hotels = [], currentSlug = "" }) {
             </a>
 
             <a
+              href="/booking"
+              onClick={() => setOpen(false)}
+              className="border-b border-black/10 py-3 text-xs font-semibold tracking-[0.12em] uppercase text-[#222222] transition-colors hover:text-[#D71920]"
+            >
+              Find booking
+            </a>
+
+            <a
               href="/login"
               onClick={() => setOpen(false)}
               className="border-b border-black/10 py-3 text-xs font-semibold tracking-[0.12em] uppercase text-[#222222] transition-colors hover:text-[#D71920]"
             >
-              Login
+              Staff login
             </a>
 
             <a

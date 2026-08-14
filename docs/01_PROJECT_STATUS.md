@@ -51,10 +51,10 @@
 | Phase 11 — admin stay modification | ✅ Complete (existing schema) |
 | Phase 11 — guest stay modification | ✅ Complete (existing schema) |
 | Phase 11 — notification preferences | ✅ Complete (migration `007`) |
-| Phase 11 — guest journey polish | ⬜ Pending |
+| Phase 11 — guest journey polish | ✅ Complete (no schema) |
 
-**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** cancel /
-stay modify / notification prefs ✅ · Next: guest journey polish; staging cutover
+**Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
+Next: Phases 12–15; staging cutover
 
 ---
 
@@ -213,18 +213,18 @@ stay modify / notification prefs ✅ · Next: guest journey polish; staging cuto
 
 ## 3. In Progress
 
-- Phase 11 remaining: broader guest journey polish. Staging cutover remains
-  operator-run per [12 — Deployment](12_DEPLOYMENT.md).
+- Phase 11 booking-engine completion (cancel, stay modify, prefs, journey
+  polish) is shipped. Staging cutover remains operator-run per
+  [12 — Deployment](12_DEPLOYMENT.md).
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Broader guest journey polish — Phase 11.
-2. Provision staging/production hosts + secrets; non-local migrate
+1. Provision staging/production hosts + secrets; non-local migrate
    `005`/`006`/`007`.
-3. Replace placeholder contact details before public launch.
-4. Remaining Phase 11 items + Phases **12–15** per [13 — Roadmap](13_ROADMAP.md).
+2. Replace placeholder contact details before public launch.
+3. Phases **12–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -243,6 +243,7 @@ stay modify / notification prefs ✅ · Next: guest journey polish; staging cuto
 
 | Date | Update |
 |------|--------|
+| 2026-08-13 | Phase 11 broader guest journey polish |
 | 2026-08-13 | Phase 11 booking notification preferences (migration `007`) |
 | 2026-08-13 | Phase 11 guest self-service stay modification |
 | 2026-08-12 | Phase 11 admin stay modification (transactional + UI) |

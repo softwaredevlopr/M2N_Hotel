@@ -52,12 +52,21 @@ function TwitterIcon(props) {
   );
 }
 
-const QUICK_LINKS = [
+const HOTEL_QUICK_LINKS = [
   { label: "About", href: "#about" },
   { label: "Rooms", href: "#rooms" },
   { label: "Amenities", href: "#amenities" },
   { label: "Gallery", href: "#gallery" },
   { label: "Contact", href: "#contact" },
+  { label: "Find booking", href: "/booking" },
+];
+
+const BRAND_QUICK_LINKS = [
+  { label: "About", href: "/about" },
+  { label: "Hotels", href: "/#hotels" },
+  { label: "Book", href: "/book" },
+  { label: "Find booking", href: "/booking" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 const DEFAULT_SOCIALS = [
@@ -77,6 +86,7 @@ export default function Footer({ hotel }) {
   const address = formatAddress(hotel) || BRAND_LOCATION;
   const policies = getHotelPolicyLinks(hotel);
   const apiSocials = getHotelSocialLinks(hotel);
+  const discoverLinks = hotel ? HOTEL_QUICK_LINKS : BRAND_QUICK_LINKS;
   const socials =
     apiSocials.length > 0
       ? apiSocials.map((social) => ({
@@ -93,7 +103,7 @@ export default function Footer({ hotel }) {
       : DEFAULT_SOCIALS;
 
   return (
-    <footer className="bg-ink border-t border-ink-line">
+    <footer className="print:hidden bg-ink border-t border-ink-line">
       <div className="mx-auto max-w-7xl px-6 lg:px-10 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div>
@@ -122,7 +132,7 @@ export default function Footer({ hotel }) {
               Discover
             </h3>
             <ul className="mt-6 space-y-3">
-              {QUICK_LINKS.map((link) => (
+              {discoverLinks.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}

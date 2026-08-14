@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { createBooking, getBookingAvailability } from "@/lib/api";
 import {
@@ -11,6 +12,7 @@ import {
   addDays,
   getTariffSettings,
   nightsBetween,
+  occupancyExceeded,
   todayIso,
 } from "@/lib/bookingPricing";
 import { rememberBookingContact } from "@/lib/bookingSession";
@@ -160,7 +162,9 @@ export default function BookingFlow({
   roomImagesByHotel = {},
   initialHotelSlug = "",
   initialRoomTypeSlug = "",
+  unmatchedDeepLink = "",
 }) {
+  const router = useRouter();
   const topRef = useRef(null);
   const [step, setStep] = useState(1);
   const [values, setValues] = useState(() =>
@@ -327,6 +331,19 @@ export default function BookingFlow({
         setFormError("Please select an available room to continue.");
         return;
       }
+      if (
+        occupancyExceeded({
+          adults: values.adults,
+          children: values.children,
+          rooms: values.rooms,
+          maxOccupancy: selectedOption.max_occupancy,
+        })
+      ) {
+        setFormError(
+          `This room type sleeps up to ${selectedOption.max_occupancy} guests per room. Reduce the guest count or add rooms.`
+        );
+        return;
+      }
       goToStep(3);
       return;
     }
@@ -381,6 +398,20 @@ export default function BookingFlow({
     }
     if (!selectedOption?.room_type_id) {
       setFormError("Please select an available room to continue.");
+      goToStep(2, { preserveError: true });
+      return;
+    }
+    if (
+      occupancyExceeded({
+        adults: values.adults,
+        children: values.children,
+        rooms: values.rooms,
+        maxOccupancy: selectedOption.max_occupancy,
+      })
+    ) {
+      setFormError(
+        `This room type sleeps up to ${selectedOption.max_occupancy} guests per room. Reduce the guest count or add rooms.`
+      );
       goToStep(2, { preserveError: true });
       return;
     }
@@ -453,11 +484,24 @@ export default function BookingFlow({
     setConfirmedBooking(booking);
     setSubmitState("idle");
     goToStep(5);
+    router.replace(
+      `/booking/${encodeURIComponent(booking.booking_number)}?received=1`
+    );
   }
 
   const isSubmitting = submitState === "loading";
   const showSummary = step >= 1 && step <= 4;
   const tariffSettings = getTariffSettings(hotel);
+  const availableRoomCount = availabilityOptions.filter(
+    (item) => item.is_available
+  ).length;
+  const continueDisabled =
+    isSubmitting ||
+    (step === 2 &&
+      (availabilityState === "loading" ||
+        availabilityState === "error" ||
+        availableRoomCount === 0 ||
+        !selectedOption?.is_available));
 
   return (
     <div ref={topRef} className="scroll-mt-28">
@@ -465,6 +509,14 @@ export default function BookingFlow({
 
       {step < 5 && (
         <div aria-busy={isSubmitting}>
+          {unmatchedDeepLink ? (
+            <p
+              role="status"
+              className="mt-8 border border-ink-line bg-ink-soft p-4 text-sm text-cream-dim"
+            >
+              {unmatchedDeepLink}
+            </p>
+          ) : null}
           {formError && (
             <div
               role="alert"
@@ -493,7 +545,7 @@ export default function BookingFlow({
           )}
 
           <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
-            <div className="lg:col-start-1 lg:row-start-1">
+            <div className="order-1 lg:col-start-1 lg:row-start-1">
               {step === 1 && (
                 <StayDetailsStep
                   hotels={hotels}
@@ -510,15 +562,22 @@ export default function BookingFlow({
                 <AvailableRoomsStep
                   hotel={hotel}
                   roomImages={roomImagesByHotel[values.hotelSlug] || {}}
-                  preferredRoomTypeSlug={initialRoomTypeSlug || values.roomTypeSlug}
+                  preferredRoomTypeSlug={
+                    initialRoomTypeSlug || values.roomTypeSlug
+                  }
                   options={availabilityOptions}
                   selectedRoomTypeId={selectedOption?.room_type_id || ""}
+                  guestCount={
+                    Number(values.adults) + Number(values.children)
+                  }
+                  rooms={Number(values.rooms) || 1}
                   loading={availabilityState === "loading"}
                   error={
                     availabilityState === "error" ? availabilityError : null
                   }
                   onSelect={selectRoomOption}
                   onRetry={loadAvailability}
+                  onChangeDates={() => goToStep(1)}
                 />
               )}
 
@@ -541,7 +600,7 @@ export default function BookingFlow({
             </div>
 
             {showSummary && (
-              <div className="lg:col-start-2 lg:row-start-1">
+              <div className="order-3 lg:order-2 lg:col-start-2 lg:row-start-1">
                 <BookingSummary
                   hotel={hotel}
                   roomType={roomType}
@@ -556,44 +615,46 @@ export default function BookingFlow({
                 />
               </div>
             )}
-          </div>
 
-          <div className="mt-12 flex flex-col gap-4 border-t border-ink-line pt-8 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              type="button"
-              onClick={() => goToStep(Math.max(1, step - 1))}
-              disabled={step === 1 || isSubmitting}
-              className={`${SECONDARY_BUTTON_CLASS} w-full sm:w-auto ${
-                step === 1 ? "invisible hidden sm:inline-flex" : ""
-              }`}
-            >
-              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-              Back
-            </button>
+            <div className="order-2 lg:order-3 lg:col-span-2 sticky bottom-0 z-20 -mx-6 border-t border-ink-line bg-ink/95 px-6 py-4 backdrop-blur-sm sm:-mx-0 sm:px-0 lg:static lg:z-auto lg:mt-2 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:mt-10 lg:border-t lg:border-ink-line lg:pt-8">
+                <button
+                  type="button"
+                  onClick={() => goToStep(Math.max(1, step - 1))}
+                  disabled={step === 1 || isSubmitting}
+                  className={`${SECONDARY_BUTTON_CLASS} w-full sm:w-auto ${
+                    step === 1 ? "invisible hidden sm:inline-flex" : ""
+                  }`}
+                >
+                  <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+                  Back
+                </button>
 
-            {step < 4 ? (
-              <button
-                type="button"
-                onClick={handleContinue}
-                disabled={step === 2 && availabilityState === "loading"}
-                className={`${PRIMARY_BUTTON_CLASS} w-full sm:w-auto`}
-              >
-                Continue
-                <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleConfirmBooking}
-                disabled={isSubmitting}
-                className={`${PRIMARY_BUTTON_CLASS} w-full sm:w-auto`}
-              >
-                {isSubmitting && (
-                  <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+                {step < 4 ? (
+                  <button
+                    type="button"
+                    onClick={handleContinue}
+                    disabled={continueDisabled}
+                    className={`${PRIMARY_BUTTON_CLASS} w-full sm:w-auto`}
+                  >
+                    Continue
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleConfirmBooking}
+                    disabled={isSubmitting}
+                    className={`${PRIMARY_BUTTON_CLASS} w-full sm:w-auto`}
+                  >
+                    {isSubmitting && (
+                      <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+                    )}
+                    {isSubmitting ? "Confirming..." : "Confirm Booking"}
+                  </button>
                 )}
-                {isSubmitting ? "Confirming..." : "Confirm Booking"}
-              </button>
-            )}
+              </div>
+            </div>
           </div>
         </div>
       )}
