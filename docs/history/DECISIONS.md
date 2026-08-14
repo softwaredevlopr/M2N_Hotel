@@ -1214,6 +1214,117 @@ approved for this slice.
 - Gate confirmation email on `email_updates`. Rejected — transactional notices
   must remain reliable.
 
+### ADR-0035 — Phase 12 PMS Lite Front Desk over existing bookings (no schema)
+
+**Date:** 2026-08-14
+
+**Status:** Accepted
+
+**Context**
+Phase 12 PMS Lite needs a hotel-scoped operations board (arrivals, departures,
+in-house) without a second reservation system, housekeeping workflow, or folio.
+`GET /api/admin/bookings/stats` was platform-wide. List APIs could filter
+check-in dates but not check-out or stay-overlap.
+
+**Decision**
+- Add optional `hotel_id` to `GET /api/admin/bookings/stats`. Omitted/empty
+  preserves unscoped totals. Invalid UUID → 400. Parameterized SQL scopes
+  `bookings` aggregates and `rooms` sellable counts (`available` / `occupied`).
+- Add backward-compatible list filters `check_out_from`, `check_out_to`, and
+  `stay_on` (`check_in_date <= stay_on AND check_out_date > stay_on`).
+- Ship `/admin/front-desk` in the existing admin shell: hotel required before
+  load; stats + lists reuse the booking engine; rows link to booking detail.
+- No migrations, no new booking tables, no housekeeping, no payments.
+
+**Consequences**
+- Dashboard unscoped stats remain valid. Front Desk is hotel-isolated.
+- List clients may ignore the new query params. Occupancy % stays derived.
+- Front Desk status actions shipped in [ADR-0036](#adr-0036--phase-12-front-desk-status-actions-reuse-existing-status-api). Room-status board remains later Phase 12.
+
+**Alternatives considered**
+- Dedicated `/api/admin/front-desk` aggregate endpoint. Rejected — reuse the
+  booking list/stats contracts so Full PMS can keep one reservation model.
+- Auto-select the first hotel. Rejected — operators must choose a property
+  before hotel-specific operations load.
+
+### ADR-0036 — Phase 12 Front Desk status actions reuse existing status API
+
+**Date:** 2026-08-14
+
+**Status:** Accepted
+
+**Context**
+The Front Desk board listed arrivals, departures, and in-house guests but
+operators still had to open booking detail to check in, check out, or mark
+no-show. Check-in does not require `room_id` today; assignment is a separate
+single-`room_id` API that 409s for multi-room stays.
+
+**Decision**
+- Drive Check in / Check out / Mark no-show from `/admin/front-desk` via
+  existing `PATCH /api/admin/bookings/:id/status` and
+  `canTransitionBookingStatus` (no new transitions, no new endpoints).
+- Check in only from `confirmed`; check out only from `checked_in`; no-show
+  only from `pending` / `confirmed` with a required `cancellation_reason`
+  (same client rule as booking detail).
+- Optional room pick on check-in calls existing assign-room first; failure
+  aborts check-in and surfaces the 409/400. Multi-room: check in without
+  assignment.
+- Refresh hotel-scoped stats/lists after success; ignore rows whose
+  `hotel_id` does not match the selected hotel.
+
+**Consequences**
+- Pending arrivals cannot be checked in until confirmed (API 400).
+- Today's departures can be checked out from the departures list because
+  checkout-day stays are not in-house (`check_out_date > today`).
+- Room status board, housekeeping, and folio remain later work.
+
+**Alternatives considered**
+- New Front Desk status endpoint. Rejected — would duplicate booking-engine
+  rules.
+- Require a room before check-in. Rejected — existing engine does not require
+  `room_id`; keep assignment optional and single-room only.
+
+### ADR-0037 — Phase 12 Front Desk room status board reuses rooms APIs
+
+**Date:** 2026-08-14
+
+**Status:** Accepted
+
+**Context**
+Front Desk already showed hotel-scoped arrivals, departures, in-house, and
+status actions. Operators still needed a physical room board without a
+housekeeping workflow, folio, or new room tables. `rooms.status` is operational
+inventory and is not written by booking status transitions. Overlap APIs are
+per room type, not per physical room.
+
+**Decision**
+- Integrate the board into `/admin/front-desk` as an Operations / Room status
+  panel (`?view=rooms`) instead of a fourth stacked table or a new route.
+- List rooms with existing `GET /api/admin/rooms?hotel_id=` (client also
+  filters `hotel_id`). Occupancy is a UI join of today's Front Desk booking
+  lists on `booking.room_id`.
+- Status changes send `{ status }` only to existing
+  `PATCH /api/admin/rooms/:id` and the existing status enum. Confirm before
+  save. Do not invent housekeeping states. Do not auto-set `rooms.status`
+  from booking check-in/out.
+- UI copy and mismatch notes keep operational status and booking occupancy
+  distinct.
+
+**Consequences**
+- Unassigned in-house/arrival bookings appear as a count, not as room rows.
+- Occupancy chips only see bookings in today's Front Desk lists (truncated at
+  100). Multi-room stays have no per-room `room_id`.
+- Housekeeping tasks and folio remain out of scope. Phase 12 listed PMS Lite
+  views are complete.
+
+**Alternatives considered**
+- Dedicated `/admin/room-board` route. Rejected — Front Desk is the operator
+  home; a tab keeps hotel context without crowding the ops tables.
+- New aggregate Front Desk rooms endpoint. Rejected — existing rooms list +
+  booking lists are sufficient without a schema or contract change.
+- Auto-flip `rooms.status` to occupied/available on check-in/out. Rejected —
+  the engine does not do this; implying sync would be false.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

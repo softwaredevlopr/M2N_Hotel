@@ -1,6 +1,6 @@
 # 13 — Roadmap
 
-> **Status:** Living document · **Last updated:** 2026-08-03  
+> **Status:** Living document · **Last updated:** 2026-08-14  
 > **Related:** [01 — Project Status](01_PROJECT_STATUS.md) · [00 — Overview](00_PROJECT_OVERVIEW.md)
 
 ---
@@ -186,9 +186,17 @@ and richer notification preferences.
 - ✅ Broader guest journey polish (durable confirmation handoff, find-booking
   entry, CTA/wording consistency, occupancy guard)
 
-### Phase 12 — PMS Lite ⬜
+### Phase 12 — PMS Lite ✅
 
-Lightweight property-management views (arrivals, room status, basic ops).
+Lightweight property-management views over the existing booking engine
+(Full PMS-compatible: hotel isolation, no second reservation system).
+
+- ✅ Hotel-scoped admin booking stats (`GET /api/admin/bookings/stats?hotel_id=`)
+- ✅ Front Desk board (`/admin/front-desk`) — arrivals, departures, in-house
+- ✅ Front Desk check-in / check-out / no-show actions (reuse status APIs)
+- ✅ Room status board (`/admin/front-desk?view=rooms`) — physical rooms +
+  operational `rooms.status` + assigned booking occupancy (no auto-sync)
+- Housekeeping workflow and folio/payments are out of scope for PMS Lite
 
 ### Phase 13 — CRM ⬜
 

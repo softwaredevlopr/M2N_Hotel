@@ -31,6 +31,19 @@ export const BOOKING_STATUS_TRANSITIONS = {
   no_show: [],
 };
 
+/** Statuses that match GET /api/admin/bookings/stats arrival / in-house filters. */
+export const FRONT_DESK_ARRIVAL_STATUSES = [
+  "pending",
+  "confirmed",
+  "checked_in",
+];
+export const FRONT_DESK_DEPARTURE_STATUSES = ["confirmed", "checked_in"];
+export const FRONT_DESK_IN_HOUSE_STATUSES = [
+  "pending",
+  "confirmed",
+  "checked_in",
+];
+
 export const BOOKING_SORT_FIELDS = [
   "created_at",
   "check_in_date",
@@ -61,6 +74,74 @@ export function canModifyStayBooking(status) {
   return Boolean(status) && !TERMINAL_BOOKING_STATUSES.includes(status);
 }
 
+export function canFrontDeskCheckIn(booking) {
+  return Boolean(
+    booking && canTransitionBookingStatus(booking.booking_status, "checked_in")
+  );
+}
+
+export function canFrontDeskCheckOut(booking) {
+  return Boolean(
+    booking && canTransitionBookingStatus(booking.booking_status, "checked_out")
+  );
+}
+
+export function canFrontDeskNoShow(booking) {
+  return Boolean(
+    booking && canTransitionBookingStatus(booking.booking_status, "no_show")
+  );
+}
+
+/** Matches admin booking detail: one physical room_id, not cancelled/no_show. */
+export function canAssignBookingRoom(booking) {
+  return Boolean(
+    booking &&
+      Number(booking.number_of_rooms) === 1 &&
+      !["cancelled", "no_show"].includes(booking.booking_status)
+  );
+}
+
+const FRONT_DESK_OCCUPYING_STATUSES = [
+  "pending",
+  "confirmed",
+  "checked_in",
+];
+
+export function mergeFrontDeskOccupancyBookings(lists, hotelId) {
+  const byId = new Map();
+  for (const list of lists) {
+    for (const booking of list || []) {
+      if (booking.hotel_id !== hotelId) continue;
+      if (!byId.has(booking.id)) byId.set(booking.id, booking);
+    }
+  }
+  return Array.from(byId.values());
+}
+
+/**
+ * Assigned booking for a physical room on a calendar date, if the list payload
+ * includes a matching room_id. rooms.status is not consulted — occupancy and
+ * operational status are independent.
+ */
+export function occupancyContextForRoom(room, bookings, today) {
+  if (!room?.id || !Array.isArray(bookings)) return null;
+  const match = bookings.find(
+    (booking) =>
+      booking.room_id === room.id &&
+      booking.hotel_id === room.hotel_id &&
+      FRONT_DESK_OCCUPYING_STATUSES.includes(booking.booking_status)
+  );
+  if (!match) return null;
+  const checkIn = String(match.check_in_date || "").slice(0, 10);
+  const checkOut = String(match.check_out_date || "").slice(0, 10);
+  return {
+    booking: match,
+    arriving: Boolean(today) && checkIn === today,
+    departing: Boolean(today) && checkOut === today,
+    inHouse: Boolean(today) && checkIn <= today && checkOut > today,
+  };
+}
+
 export function nextBookingActions(status) {
   const next = BOOKING_STATUS_TRANSITIONS[status] || [];
   return next.map((value) => ({
@@ -85,6 +166,9 @@ export async function listAdminBookings({
   booking_source,
   check_in_from,
   check_in_to,
+  check_out_from,
+  check_out_to,
+  stay_on,
   sort,
   order,
   limit,
@@ -98,6 +182,9 @@ export async function listAdminBookings({
   if (booking_source) params.set("booking_source", booking_source);
   if (check_in_from) params.set("check_in_from", check_in_from);
   if (check_in_to) params.set("check_in_to", check_in_to);
+  if (check_out_from) params.set("check_out_from", check_out_from);
+  if (check_out_to) params.set("check_out_to", check_out_to);
+  if (stay_on) params.set("stay_on", stay_on);
   if (sort) params.set("sort", sort);
   if (order) params.set("order", order);
   if (limit != null) params.set("limit", String(limit));
@@ -106,8 +193,11 @@ export async function listAdminBookings({
   return adminApi(`/api/admin/bookings${qs ? `?${qs}` : ""}`);
 }
 
-export async function getAdminBookingStats() {
-  return adminApi("/api/admin/bookings/stats");
+export async function getAdminBookingStats({ hotel_id } = {}) {
+  const params = new URLSearchParams();
+  if (hotel_id) params.set("hotel_id", hotel_id);
+  const qs = params.toString();
+  return adminApi(`/api/admin/bookings/stats${qs ? `?${qs}` : ""}`);
 }
 
 export async function getAdminBooking(id) {

@@ -12,6 +12,37 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 12 — PMS Lite complete (2026-08-14)
+
+- Front Desk board, status actions, and room status board verified
+  (`npm run verify:front-desk`). No schema. Housekeeping and folio remain out of
+  scope.
+
+### Phase 12 — Front Desk room status board (2026-08-14)
+
+- `/admin/front-desk?view=rooms` lists physical rooms for the selected hotel
+  ([ADR-0037](DECISIONS.md)).
+- Operational `rooms.status` updates reuse `PATCH /api/admin/rooms/:id`.
+- Booking occupancy is joined from today's Front Desk lists and is not
+  auto-synced to `rooms.status`.
+- Smoke: `npm run verify:front-desk`. No schema.
+
+### Phase 12 — Front Desk check-in / check-out / no-show (2026-08-14)
+
+- `/admin/front-desk` actions reuse `PATCH /api/admin/bookings/:id/status`
+  ([ADR-0036](DECISIONS.md)).
+- Optional single-room assign on check-in; multi-room stays stay unassigned
+  (existing 409).
+- Smoke: `npm run verify:front-desk`. No schema.
+
+### Phase 12 — PMS Lite Front Desk first slice (2026-08-14)
+
+- Optional `hotel_id` on `GET /api/admin/bookings/stats`; unscoped totals
+  unchanged ([ADR-0035](DECISIONS.md)).
+- `/admin/front-desk` hotel-scoped arrivals, departures, and in-house board.
+- List filters `check_out_from` / `check_out_to` / `stay_on`. No schema.
+- Smoke: `npm run verify:front-desk`.
+
 ### Phase 11 — Broader guest journey polish (2026-08-13)
 
 - Durable post-booking handoff to `/booking/[number]?received=1` with session

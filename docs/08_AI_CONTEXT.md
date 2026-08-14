@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-11  
+> **Status:** Living document · **Last updated:** 2026-08-14  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -22,7 +22,7 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** Phases 12–15; operator staging cutover
+- **Next:** Phase 12 PMS Lite ✅; Phases 13–15; operator staging cutover
   ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`/`006`/`007`
   still pending.
 - Guest cancel / modify / notification prefs: contact-verified

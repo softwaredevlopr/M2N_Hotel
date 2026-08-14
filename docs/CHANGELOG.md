@@ -9,6 +9,76 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Verified — Phase 12 PMS Lite complete ✅
+
+- **What changed.** End-to-end audit of Front Desk (hotel-scoped stats, arrivals /
+  departures / in-house, check-in / check-out / no-show, room assignment/change,
+  room status board). No product changes. No schema/migrations.
+- **Files modified:** `verifyFrontDesk.js` (assign/reassign + cross-hotel assign
+  checks); status docs.
+- **APIs added/changed:** none.
+- **Database changes:** none.
+- **Frontend changes:** none in this verification pass.
+- **Backend changes:** none beyond verifier coverage.
+- **Remaining work:** Phases 13–15; non-local migrate `005`–`007`; placeholder
+  contacts.
+
+### Added — Phase 12 Front Desk room status board ✅
+
+- **What changed.** `/admin/front-desk` adds an Operations / Room status panel
+  (`?view=rooms`) for the selected hotel. Physical rooms come from
+  `GET /api/admin/rooms?hotel_id=`. Operational `rooms.status` updates send
+  `{ status }` only to existing `PATCH /api/admin/rooms/:id` (valid statuses
+  only). Today's assigned booking, guest name, and arrival/departure/in-house
+  chips are joined from Front Desk booking lists — occupancy is not auto-synced
+  to `rooms.status`. No schema, housekeeping, or folio.
+- **Files modified:** `FrontDeskRoomBoard.js`, `front-desk/page.js`,
+  `adminBookings.js`, `verifyFrontDesk.js`, `00_PROJECT_OVERVIEW.md`, docs.
+- **APIs added/changed:** none (reuses rooms list/PATCH + existing Front Desk
+  booking lists).
+- **Database changes:** none.
+- **Frontend changes:** hotel-scoped room board on Front Desk; status vs occupancy
+  columns; mismatch notes.
+- **Backend changes:** none beyond Front Desk verifier coverage for rooms APIs.
+- **Remaining work:** Phases 13–15; non-local migrate `005`–`007`; placeholder
+  contacts.
+
+### Added — Phase 12 Front Desk check-in / check-out / no-show ✅
+
+- **What changed.** Front Desk rows can check in, check out, and mark no-show
+  through existing `PATCH /api/admin/bookings/:id/status` and the same
+  transition rules as booking detail. Optional single-room assignment on
+  check-in reuses assign-room (409 for multi-room / unassignable rooms).
+  Lists refresh after success; hotel selection is preserved. No schema.
+- **Files modified:** `front-desk/page.js`, `adminBookings.js`,
+  `verifyFrontDesk.js`, docs.
+- **APIs added/changed:** none (reuses status + assign-room).
+- **Database changes:** none.
+- **Frontend changes:** Front Desk action buttons + confirm dialogs.
+- **Backend changes:** none beyond Front Desk verifier coverage.
+- **Remaining work:** room status board; Phases 13–15; non-local migrate
+  `005`–`007`; placeholder contacts.
+
+### Added — Phase 12 PMS Lite Front Desk (first slice) ✅
+
+- **What changed.** Optional `hotel_id` on `GET /api/admin/bookings/stats`
+  (unscoped behaviour unchanged). Front Desk board at `/admin/front-desk`
+  requires a hotel, then shows hotel-scoped stats plus today's arrivals,
+  departures, and in-house guests from existing booking APIs. Backward-compatible
+  list filters `check_out_from` / `check_out_to` / `stay_on` support those
+  lists. No schema change; no second reservation system.
+- **Files modified:** `adminBooking.controller.js`, `verifyFrontDesk.js`,
+  `verifyPhase10C.js`, `adminBookings.js`, `AdminGuard.js`, dashboard page,
+  `front-desk/page.js`, `package.json`, docs.
+- **APIs added/changed:** `GET /api/admin/bookings/stats?hotel_id=` (optional
+  UUID; invalid → 400). `GET /api/admin/bookings` accepts `check_out_from`,
+  `check_out_to`, `stay_on`.
+- **Database changes:** none.
+- **Frontend changes:** `/admin/front-desk` ops board; nav + dashboard link.
+- **Backend changes:** hotel-scoped stats SQL; list date overlap filters.
+- **Remaining work:** room status board; Phases
+  13–15; non-local migrate `005`–`007`; placeholder contacts.
+
 ### Added — Phase 11 broader guest journey polish ✅
 
 - **What changed.** Post-booking redirects to contact-verified lookup with a

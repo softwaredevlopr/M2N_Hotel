@@ -218,6 +218,13 @@ async function main() {
       stats.body?.data?.by_status &&
       stats.body?.data?.occupancy
   );
+  check("unscoped stats hotel_id is null", stats.body?.data?.hotel_id == null);
+  const badStatsHotel = await api(
+    "GET",
+    "/api/admin/bookings/stats?hotel_id=not-a-uuid",
+    { token }
+  );
+  check("stats rejects invalid hotel_id", badStatsHotel.status === 400);
 
   section("Status transitions + cancellation_reason");
   const illegal = await api("PATCH", `/api/admin/bookings/${booking.id}/status`, {

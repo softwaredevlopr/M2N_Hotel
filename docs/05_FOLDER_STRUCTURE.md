@@ -1,6 +1,6 @@
 # 05 — Folder Structure
 
-> **Status:** Living document · **Last updated:** 2026-07-14
+> **Status:** Living document · **Last updated:** 2026-08-14
 
 ---
 
@@ -39,6 +39,7 @@ frontend/
     │       ├── login/
     │       └── (protected)/
     │           ├── dashboard/
+    │           ├── front-desk/       ← Phase 12 PMS Lite (ops + room board)
     │           ├── bookings/
     │           │   ├── [id]/
     │           │   └── new/              ← Phase 10G create form
@@ -51,7 +52,7 @@ frontend/
     │           └── tariffs/
     ├── components/           ← Public + admin UI
     │   ├── booking/          ← BookingFlow + step / summary / confirmation
-    │   └── admin/            ← AdminGuard, BookingCreateForm, InventoryCalendarGrid, forms, Toast, …
+    │   └── admin/            ← AdminGuard, BookingCreateForm, InventoryCalendarGrid, FrontDeskRoomBoard, forms, Toast, …
     └── lib/
         ├── api.js, images.js, media.js, tariffs.js, brand.js, …
         ├── bookingPricing.js, bookingSession.js

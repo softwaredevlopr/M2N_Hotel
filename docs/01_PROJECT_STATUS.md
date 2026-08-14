@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-12  
+> **Status:** Living document · **Last updated:** 2026-08-14  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -52,9 +52,12 @@
 | Phase 11 — guest stay modification | ✅ Complete (existing schema) |
 | Phase 11 — notification preferences | ✅ Complete (migration `007`) |
 | Phase 11 — guest journey polish | ✅ Complete (no schema) |
+| Phase 12 — Front Desk board | ✅ Complete (no schema) |
+| Phase 12 — Front Desk status actions | ✅ Complete (no schema) |
+| Phase 12 — Room status board | ✅ Complete (no schema) |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
-Next: Phases 12–15; staging cutover
+Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
 
 ---
 
@@ -203,6 +206,23 @@ Next: Phases 12–15; staging cutover
 - Calendar/day APIs set `*_supported: true`. Smoke: `npm run verify:phase10i`.
 - Admin edit UI for inventory date rows still pending.
 
+### Phase 12 — PMS Lite Front Desk ✅
+
+- Optional `hotel_id` on `GET /api/admin/bookings/stats` (unscoped totals
+  unchanged; invalid UUID → 400). Occupancy sellable rooms scoped via
+  `rooms.hotel_id`.
+- `/admin/front-desk` requires a hotel, then shows hotel-scoped stats plus
+  today's arrivals, departures, and in-house lists (existing booking APIs;
+  rows link to `/admin/bookings/[id]`).
+- Check-in / check-out / no-show via existing `PATCH /:id/status` and the
+  same transition table; optional single-room assign on check-in.
+- Room status panel (`?view=rooms`) lists physical rooms for the selected hotel
+  and PATCHes operational `rooms.status` via existing `PATCH /api/admin/rooms/:id`.
+  Assigned booking occupancy is joined in the UI and is not auto-synced to
+  `rooms.status`.
+- Backward-compatible list filters: `check_out_from`, `check_out_to`, `stay_on`.
+- No schema, housekeeping, or folio. Smoke: `npm run verify:front-desk`.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -213,8 +233,7 @@ Next: Phases 12–15; staging cutover
 
 ## 3. In Progress
 
-- Phase 11 booking-engine completion (cancel, stay modify, prefs, journey
-  polish) is shipped. Staging cutover remains operator-run per
+- Staging cutover remains operator-run per
   [12 — Deployment](12_DEPLOYMENT.md).
 
 ---
@@ -224,7 +243,7 @@ Next: Phases 12–15; staging cutover
 1. Provision staging/production hosts + secrets; non-local migrate
    `005`/`006`/`007`.
 2. Replace placeholder contact details before public launch.
-3. Phases **12–15** per [13 — Roadmap](13_ROADMAP.md).
+3. Phases **13–15** per [13 — Roadmap](13_ROADMAP.md) (next: CRM).
 
 ---
 
@@ -243,6 +262,10 @@ Next: Phases 12–15; staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-08-14 | Phase 12 PMS Lite verified (no schema; Front Desk complete) |
+| 2026-08-14 | Phase 12 Front Desk room status board |
+| 2026-08-14 | Phase 12 Front Desk check-in / check-out / no-show |
+| 2026-08-14 | Phase 12 PMS Lite Front Desk first slice |
 | 2026-08-13 | Phase 11 broader guest journey polish |
 | 2026-08-13 | Phase 11 booking notification preferences (migration `007`) |
 | 2026-08-13 | Phase 11 guest self-service stay modification |

@@ -1,6 +1,6 @@
 # 10 — UI Guidelines
 
-> **Status:** Living document · **Last updated:** 2026-07-14
+> **Status:** Living document · **Last updated:** 2026-08-14
 
 ---
 
@@ -43,6 +43,24 @@
 - Eligible guests (`pending` / `confirmed`) can open an inline cancel confirm
   panel with optional reason; cancelled state refreshes in place. Stay modify
   requires an availability check before save.
+
+**Admin Front Desk (`/admin/front-desk`)**
+
+- Hotel selector required before loading operations (empty state until chosen).
+- Hotel-scoped summary stats plus Today's Arrivals, Today's Departures, and
+  Current In-House tables from existing booking list/stats APIs.
+- Status actions reuse `PATCH /api/admin/bookings/:id/status` and the same
+  transition table as booking detail: Check in (`confirmed` only), Check out
+  (`checked_in` only), Mark no-show (`pending` / `confirmed`, reason required).
+- Optional single-room assignment on check-in via existing assign-room API;
+  multi-room stays cannot be assigned (409). Check-in itself does not require
+  a room.
+- **Room status** panel (`?view=rooms`) lists physical rooms for the selected
+  hotel: number, type, floor, operational `rooms.status`, and today's assigned
+  booking/guest when `room_id` matches. Status updates send `{ status }` only
+  to `PATCH /api/admin/rooms/:id`. Occupancy chips (arriving / departing /
+  in-house) are booking-derived and are not synchronized with `rooms.status`.
+- Rows keep a View link to `/admin/bookings/[id]`. No housekeeping or folio UI.
 
 **Admin inventory calendar (`/admin/inventory`)**
 

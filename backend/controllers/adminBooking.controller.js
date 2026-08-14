@@ -155,6 +155,21 @@ const listBookings = asyncHandler(async (req, res) => {
   const checkInTo = parseDate(req.query.check_in_to, "check_in_to", dateErrors, {
     required: false,
   });
+  const checkOutFrom = parseDate(
+    req.query.check_out_from,
+    "check_out_from",
+    dateErrors,
+    { required: false }
+  );
+  const checkOutTo = parseDate(
+    req.query.check_out_to,
+    "check_out_to",
+    dateErrors,
+    { required: false }
+  );
+  const stayOn = parseDate(req.query.stay_on, "stay_on", dateErrors, {
+    required: false,
+  });
   if (dateErrors.length > 0) {
     return sendValidationError(res, dateErrors);
   }
@@ -166,6 +181,21 @@ const listBookings = asyncHandler(async (req, res) => {
   if (checkInTo) {
     params.push(checkInTo);
     conditions.push(`b.check_in_date <= $${params.length}`);
+  }
+  if (checkOutFrom) {
+    params.push(checkOutFrom);
+    conditions.push(`b.check_out_date >= $${params.length}`);
+  }
+  if (checkOutTo) {
+    params.push(checkOutTo);
+    conditions.push(`b.check_out_date <= $${params.length}`);
+  }
+  if (stayOn) {
+    params.push(stayOn);
+    const stayIdx = params.length;
+    conditions.push(
+      `b.check_in_date <= $${stayIdx} AND b.check_out_date > $${stayIdx}`
+    );
   }
 
   const search = trimOrNull(req.query.search);
@@ -250,15 +280,40 @@ const listBookings = asyncHandler(async (req, res) => {
 /**
  * Dashboard aggregates for the admin console. Uses calendar dates in UTC so the
  * same "today" matches the DATE columns stored on bookings.
+ * Optional hotel_id scopes bookings and sellable rooms to one property.
  */
 const getBookingStats = asyncHandler(async (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
+  const hotelErrors = [];
+  const hotelId = parseUuid(req.query.hotel_id, "hotel_id", hotelErrors, {
+    required: false,
+  });
+  if (hotelErrors.length > 0) {
+    return sendValidationError(res, hotelErrors);
+  }
+
+  const byStatusParams = [];
+  let byStatusWhere = "";
+  const opsParams = [today];
+  let opsWhere = "";
+  const roomParams = [["available", "occupied"]];
+  let roomHotelClause = "";
+  if (hotelId) {
+    byStatusParams.push(hotelId);
+    byStatusWhere = "WHERE hotel_id = $1";
+    opsParams.push(hotelId);
+    opsWhere = "WHERE hotel_id = $2";
+    roomParams.push(hotelId);
+    roomHotelClause = "AND hotel_id = $2";
+  }
 
   const [byStatus, ops, occupancy] = await Promise.all([
     query(
       `SELECT booking_status, COUNT(*)::int AS count
        FROM bookings
-       GROUP BY booking_status`
+       ${byStatusWhere}
+       GROUP BY booking_status`,
+      byStatusParams
     ),
     query(
       `SELECT
@@ -284,14 +339,16 @@ const getBookingStats = asyncHandler(async (req, res) => {
              AND check_in_date <= $1::date
              AND check_out_date > $1::date
          ), 0)::int AS rooms_held_tonight
-       FROM bookings`,
-      [today]
+       FROM bookings
+       ${opsWhere}`,
+      opsParams
     ),
     query(
       `SELECT COUNT(*)::int AS sellable_rooms
        FROM rooms
-       WHERE status = ANY($1::text[])`,
-      [["available", "occupied"]]
+       WHERE status = ANY($1::text[])
+       ${roomHotelClause}`,
+      roomParams
     ),
   ]);
 
@@ -311,6 +368,7 @@ const getBookingStats = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, {
     data: {
       today,
+      hotel_id: hotelId,
       arrivals_today: opsRow.arrivals_today || 0,
       departures_today: opsRow.departures_today || 0,
       upcoming: opsRow.upcoming || 0,

@@ -17,6 +17,7 @@
     "verify:admin-stay-modify": "node scripts/verifyAdminStayModify.js",
     "verify:guest-stay-modify": "node scripts/verifyGuestStayModify.js",
     "verify:notification-prefs": "node scripts/verifyNotificationPrefs.js",
+    "verify:front-desk": "node scripts/verifyFrontDesk.js",
     "verify:inventory-dates": "node scripts/verifyInventoryDateWrites.js",
     "set:base-prices": "node scripts/setRoomTypeBasePrices.js",
     "verify:base-prices": "node scripts/verifyRoomTypeBasePrices.js"

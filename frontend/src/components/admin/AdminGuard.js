@@ -9,6 +9,7 @@ import { ToastProvider } from "@/components/admin/Toast";
 
 const NAV = [
   { href: "/admin/dashboard", label: "Dashboard" },
+  { href: "/admin/front-desk", label: "Front Desk" },
   { href: "/admin/bookings", label: "Bookings" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/hotels", label: "Hotels" },

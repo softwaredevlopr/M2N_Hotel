@@ -175,7 +175,7 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   readiness guide (architecture, env matrix, 005/006 rollout checklist). No
   staging/production cutover yet.
 
-**Next:** Phases 12–15; operator non-local migrate (`005`–`007`) + host cutover.
+**Next:** Phases 13–15; operator non-local migrate (`005`–`007`) + host cutover.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -198,6 +198,21 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   handoff to `/booking/[number]`, find-booking entry, CTA/wording consistency,
   mobile book chrome, lookup polish, occupancy guard on public create. No
   schema change.
+
+- ✅ **Phase 12 — PMS Lite Front Desk (first slice)** — optional `hotel_id` on
+  `GET /api/admin/bookings/stats`; `/admin/front-desk` hotel-scoped arrivals,
+  departures, in-house. List filters `check_out_*` / `stay_on`. No schema.
+  Smoke: `npm run verify:front-desk`.
+
+- ✅ **Phase 12 — Front Desk status actions** — check-in / check-out / no-show
+  on `/admin/front-desk` via existing `PATCH /:id/status`; optional single-room
+  assign on check-in. No schema.
+
+- ✅ **Phase 12 — Room status board** — `/admin/front-desk?view=rooms` lists
+  physical rooms for the selected hotel; operational status via existing
+  `PATCH /api/admin/rooms/:id`; occupancy joined from today's booking lists
+  (not auto-synced to `rooms.status`). Smoke: `npm run verify:front-desk`.
+  No schema.
 
 ---
 

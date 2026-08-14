@@ -23,6 +23,12 @@
         `npm run verify:notification-prefs`).
   - [x] Guest journey polish (durable confirmation, find-booking, CTA/wording,
         occupancy guard).
+- [x] **Phase 12 — PMS Lite**
+  - [x] Hotel-scoped `GET /api/admin/bookings/stats?hotel_id=` + `/admin/front-desk`
+        (arrivals / departures / in-house). Smoke: `npm run verify:front-desk`.
+  - [x] Front Desk check-in / check-out / no-show actions (reuse status APIs).
+  - [x] Room status board on `/admin/front-desk` (existing rooms list/PATCH;
+        occupancy joined from bookings; no auto-sync).
 - [x] **Phase 10B** — Guest booking UI (`/book` five-step flow, availability API,
       live stay summary, review + confirmation, `/booking/[bookingNumber]`
       lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
@@ -109,7 +115,7 @@
 
 - [x] Phase 11 — Booking Engine completion (cancel, stay modify, prefs, journey
       polish)
-- [ ] Phase 12 — PMS Lite
+- [x] Phase 12 — PMS Lite (Front Desk board, status actions, room status board)
 - [ ] Phase 13 — CRM
 - [ ] Phase 14 — Payments & Invoice
 - [ ] Phase 15 — Multi-Property SaaS
@@ -118,6 +124,6 @@
 
 ## Completed (pointer)
 
-Phases **1–11** complete (10A–10I + Phase 11 booking-engine completion) — see
-[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining: non-local
-migrate `005`–`007`; placeholder contacts; Phases 12–15.
+Phases **1–11** complete; Phase **12** Front Desk board + status actions shipped —
+see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining:
+non-local migrate `005`–`007`; placeholder contacts; Phases 13–15.

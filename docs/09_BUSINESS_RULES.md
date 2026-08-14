@@ -67,6 +67,10 @@ Domain rules the product must enforce. Schema changes require explicit approval.
   `checked_in → checked_out | cancelled`. The rest are terminal.
 - A physical room is never auto-allocated. Admins assign one explicitly, and only
   for single-room reservations.
+- `rooms.status` is operational inventory (`available`, `occupied`,
+  `maintenance`, `blocked`, `out_of_service`) and is **not** auto-updated when a
+  booking is checked in or out. Front Desk shows occupancy from assigned
+  bookings separately.
 - Guests may view a booking only with the booking number **plus** the email or
   phone on it.
 

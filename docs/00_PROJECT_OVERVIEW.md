@@ -1,6 +1,6 @@
 # 00 — Project Overview
 
-> **Status:** Living document · **Last updated:** 2026-07-14  
+> **Status:** Living document · **Last updated:** 2026-08-14  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [01 — Status](01_PROJECT_STATUS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -34,10 +34,10 @@ hotels, room types, rooms, and media.
 
 ## 2. Vision
 
-1. **Phases 1–7 (done)** — Public multi-hotel site, booking inquiries, and admin
-   CRUD for core property data.
-2. **Phases 8–14 (upcoming)** — Fully dynamic public site, rates, inventory,
-   booking engine, PMS lite, CRM, payments.
+1. **Phases 1–12 (done)** — Public multi-hotel site, booking inquiries, admin
+   CRUD, API-driven pages, rates, inventory, booking engine, and PMS Lite
+   Front Desk.
+2. **Phases 13–14 (upcoming)** — CRM, payments.
 3. **Phase 15 (goal)** — Multi-tenant SaaS with self-serve onboarding.
 
 Everything is **data-driven and slug-scoped**. Hotels never share each other’s
@@ -60,12 +60,14 @@ photos or content.
 
 - Public marketing / hotel detail experiences.
 - Inquiry submission.
-- Admin auth + CRUD for hotels, room types, rooms, media.
-- PostgreSQL-backed REST API.
+- Admin auth + CRUD for hotels, room types, rooms, media, tariffs, bookings,
+  inventory, inquiries, and Front Desk.
+- PostgreSQL-backed REST API and booking engine (no payment gateway).
 
 **Out of scope (until later phases)**
 
-- Full booking engine, payments, PMS, CRM, multi-tenant SaaS billing.
+- Housekeeping workflow, folio, payment capture, CRM profiles, multi-tenant
+  SaaS billing.
 - Changing DB schema without explicit approval.
 
 ---

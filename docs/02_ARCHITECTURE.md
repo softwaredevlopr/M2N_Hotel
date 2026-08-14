@@ -1,6 +1,6 @@
 # 02 — Architecture
 
-> **Status:** Living document · **Last updated:** 2026-07-14  
+> **Status:** Living document · **Last updated:** 2026-08-14  
 > **Related:** [04 — API](04_API.md) · [03 — Database](03_DATABASE.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md)
 
 ---
@@ -146,6 +146,7 @@ models.
 | Media | `/admin/media` | `/api/admin/media` |
 | Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
 | Bookings | ✅ Phase 10C/10G | `/api/admin/bookings` + list/detail/create UI |
+| Front Desk | ✅ Phase 12 PMS Lite | `/admin/front-desk` over hotel-scoped stats, list, status actions, room board |
 | Inquiries | ✅ Phase 10H | `/api/inquiries` (POST public; admin JWT for rest) + UI |
 | Inventory | ✅ Phase 10D/10E/10I + write APIs | `/api/admin/inventory/*` + `/admin/inventory` UI; date upsert/delete |
 | Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |

@@ -101,7 +101,14 @@ create API. No schema change.
 detail, status, delete). Public `POST /api/inquiries` unchanged; admin reads/
 writes require JWT. No schema change.
 
-**Upcoming:** Phases 12–15; staging cutover per
+**Completed (Phase 12):** hotel-scoped
+`GET /api/admin/bookings/stats?hotel_id=` and `/admin/front-desk` arrivals /
+departures / in-house board, check-in / check-out / no-show (existing status
+API), and a hotel-scoped room status board (`?view=rooms`) over existing rooms
+list/PATCH. Operational `rooms.status` is not auto-synced from booking status.
+No schema change. Verify: `npm run verify:front-desk`.
+
+**Upcoming:** Phases 13–15; staging cutover per
 [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 

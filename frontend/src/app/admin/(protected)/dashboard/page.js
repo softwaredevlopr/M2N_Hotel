@@ -162,6 +162,15 @@ export default function AdminDashboardPage() {
 
       <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Link
+          href="/admin/front-desk"
+          className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
+        >
+          <h2 className="font-display text-2xl text-cream">Front Desk</h2>
+          <p className="mt-3 text-sm leading-relaxed text-cream-dim">
+            Hotel-scoped arrivals, departures, and in-house guests.
+          </p>
+        </Link>
+        <Link
           href="/admin/bookings"
           className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
         >

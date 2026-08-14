@@ -1,6 +1,6 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-10  
+> **Status:** Living document · **Last updated:** 2026-08-14  
 > **Base URL (local):** `http://localhost:5001`  
 > **Frontend env:** `NEXT_PUBLIC_API_URL`
 
@@ -66,7 +66,7 @@
 | `POST` | `/api/bookings/:bookingNumber/modify/preview` | Public + contact check | 11 |
 | `POST` | `/api/bookings/:bookingNumber/notification-preferences` | Public + contact check | 11 |
 | `GET` | `/api/admin/bookings` | JWT | 10A/10C |
-| `GET` | `/api/admin/bookings/stats` | JWT | 10C |
+| `GET` | `/api/admin/bookings/stats` | JWT | 10C / 12 |
 | `POST` | `/api/admin/bookings` | JWT | 10A |
 | `GET` | `/api/admin/bookings/:id` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id` | JWT | 10A |
@@ -171,7 +171,11 @@ Public hotel GET contracts remain unchanged.
 | `DELETE` | `/api/admin/rooms/:id` |
 
 `room_type_id` must belong to the same `hotel_id`.  
-Activate/deactivate in UI maps to `available` / `out_of_service`.
+Activate/deactivate in UI maps to `available` / `out_of_service`.  
+Statuses: `available`, `occupied`, `maintenance`, `blocked`, `out_of_service`.
+Phase 12 Front Desk room board lists `GET /api/admin/rooms?hotel_id=` and
+PATCHes `{ status }` only. `rooms.status` is operational inventory and is not
+auto-updated from booking status.
 
 ## 8. Admin media (Phase 7)
 
@@ -332,7 +336,9 @@ Wrong contact → identical `404`. Response is the guest-safe booking payload.
 | `PATCH` | `/api/admin/bookings/:id/assign-room` |
 
 **List filters:** `hotel_id`, `room_type_id`, `booking_status`, `payment_status`,
-`booking_source`, `check_in_from`, `check_in_to`, `search` (booking number, guest
+`booking_source`, `check_in_from`, `check_in_to`, `check_out_from`,
+`check_out_to`, `stay_on` (bookings with `check_in_date <= stay_on` and
+`check_out_date > stay_on`), `search` (booking number, guest
 name, email, or phone digits), `limit` (default 50, max 100), `offset`,
 `sort` (`created_at` \| `check_in_date` \| `check_out_date` \| `guest_name` \|
 `booking_status` \| `total_amount` \| `booking_number`, default `created_at`),
@@ -342,7 +348,10 @@ name, email, or phone digits), `limit` (default 50, max 100), `offset`,
 **Stats (`GET /stats`):** arrivals today, departures today, upcoming bookings,
 `by_status` counts, and occupancy summary (`sellable_rooms`,
 `rooms_held_tonight`, `in_house_bookings`, `occupancy_pct`) for calendar
-`today` (UTC date). Must be registered before `/:id`.
+`today` (UTC date). Optional `hotel_id` (UUID) scopes booking counts and
+sellable rooms to one property; omitted or empty preserves the unscoped
+platform totals. Invalid `hotel_id` → `400`. Response includes `hotel_id`
+(`null` when unscoped). Must be registered before `/:id`.
 
 **Create:** staff bookings default to `booking_source=admin` and
 `booking_status=confirmed`, may use past dates (walk-ins recorded after the
@@ -378,7 +387,8 @@ remains the cancel/no-show reason field.
 | no_show`, `checked_in → checked_out | cancelled`; `checked_out`, `cancelled`
 and `no_show` are terminal. **Confirming** stamps `confirmed_at`. **Cancelling or marking no_show** stamps
 `cancelled_at` (shared terminal-exit audit column; no separate `no_show_at`) and
-may store `cancellation_reason`. Payment status moves freely.
+may store `cancellation_reason`. Payment status moves freely. Phase 12 Front
+Desk check-in / check-out / no-show calls this same endpoint (no new routes).
 
 **Cancel (`POST /:id/cancel`, Phase 11):** dedicated cancel for eligible bookings
 (`pending` / `confirmed` / `checked_in`). Optional body
