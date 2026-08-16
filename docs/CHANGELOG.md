@@ -9,6 +9,30 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Fixed — Admin console uses full desktop viewport width ✅
+
+- **What changed.** The shared admin shell no longer caps header and content at
+  `max-w-6xl` (~1152px). Desktop layout uses the full available width: a fixed
+  220px sidebar from `lg` up, and a `minmax(0,1fr)` main pane so tables and
+  cards expand without page-level overflow. Visual language (colors, type,
+  cards, nav) is unchanged. Form/intro readability max-widths on individual
+  pages are unchanged.
+- **Files modified:** `frontend/src/components/admin/AdminGuard.js`,
+  `docs/10_UI_GUIDELINES.md`, `docs/02_ARCHITECTURE.md`,
+  `docs/01_PROJECT_STATUS.md`, `docs/08_AI_CONTEXT.md`,
+  `docs/history/DECISIONS.md`, `docs/history/RELEASE_NOTES.md`,
+  `PROJECT_DOCS.md`, `docs/CHANGELOG.md`.
+- **APIs added/changed:** none.
+- **Database changes:** none.
+- **Frontend changes:** `AdminGuard` header and body drop `max-w-6xl mx-auto`;
+  main gets `min-w-0`; sidebar stays 220px on `lg+`. Below `lg`, nav still
+  stacks above content. Header label next to Logout is the static text
+  “Administrator” (display only; stored profile name unchanged).
+- **Backend changes:** none.
+- **Remaining work:** Phases 13–15; non-local migrate `005`–`007`; placeholder
+  contacts. Ultra-wide form pages still use their existing `max-w-3xl` for
+  readability (intentional).
+
 ### Verified — Phase 12 PMS Lite complete ✅
 
 - **What changed.** End-to-end audit of Front Desk (hotel-scoped stats, arrivals /

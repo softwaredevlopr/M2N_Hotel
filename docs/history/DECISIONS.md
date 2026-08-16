@@ -1325,6 +1325,37 @@ per room type, not per physical room.
 - Auto-flip `rooms.status` to occupied/available on check-in/out. Rejected —
   the engine does not do this; implying sync would be false.
 
+### ADR-0038 — Admin console shell uses full viewport width
+
+**Date:** 2026-08-16
+
+**Status:** Accepted
+
+**Context**
+The shared admin shell (`AdminGuard`) wrapped header and body in
+`max-w-6xl mx-auto` (~1152px). On typical desktop viewports the sidebar and
+main content sat in a centred column with unused space on both sides, even
+though tables, calendars, and dashboard cards are designed to fill their
+container.
+
+**Decision**
+- Drop `max-w-6xl` / `mx-auto` from the admin header and body.
+- Keep a fixed 220px sidebar from `lg` up (`lg:grid-cols-[220px_minmax(0,1fr)]`).
+- Give `<main>` `min-w-0` so wide tables scroll inside the pane instead of
+  overflowing the page.
+- Do not restyle colors, type, cards, or navigation. Individual form/intro
+  `max-w-*` classes stay for readability.
+
+**Consequences**
+- All protected `/admin/*` routes inherit the wider shell.
+- Below `lg`, nav still stacks above content.
+- Login remains a centred `max-w-md` card (outside this shell).
+
+**Alternatives considered**
+- Raise the cap to `max-w-7xl`. Rejected — still leaves unused width on
+  1440px+ monitors.
+- Per-page width classes. Rejected — the constraint was in the shared shell.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

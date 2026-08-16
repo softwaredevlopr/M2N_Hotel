@@ -12,6 +12,13 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Admin console full-width desktop shell (2026-08-16)
+
+- `AdminGuard` no longer caps the console at `max-w-6xl`. Desktop uses a
+  220px sidebar and an expanding main pane ([ADR-0038](DECISIONS.md)).
+- Header label next to Logout is “Administrator” (display text only).
+- Design language unchanged. No API or schema change.
+
 ### Phase 12 — PMS Lite complete (2026-08-14)
 
 - Front Desk board, status actions, and room status board verified

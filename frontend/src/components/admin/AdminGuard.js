@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { getAdminToken, getAdminProfile, clearAdminSession } from "@/lib/adminAuth";
+import { getAdminToken, clearAdminSession } from "@/lib/adminAuth";
 import { BRAND_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { ToastProvider } from "@/components/admin/Toast";
@@ -27,7 +27,6 @@ export default function AdminGuard({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
-  const [admin, setAdmin] = useState(null);
 
   useEffect(() => {
     const token = getAdminToken();
@@ -35,7 +34,6 @@ export default function AdminGuard({ children }) {
       router.replace("/admin/login");
       return;
     }
-    setAdmin(getAdminProfile());
     setReady(true);
   }, [router]);
 
@@ -54,13 +52,11 @@ export default function AdminGuard({ children }) {
     );
   }
 
-  const displayName = admin?.full_name || admin?.email || "Admin";
-
   return (
     <ToastProvider>
-    <div className="min-h-screen bg-ink text-cream">
+    <div className="min-h-screen w-full bg-ink text-cream">
       <header className="border-b border-ink-line bg-ink-soft">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
+        <div className="flex w-full items-center justify-between gap-4 px-6 py-5">
           <div>
             <div className="text-[10px] tracking-[0.35em] uppercase text-gold">
               {BRAND_NAME}
@@ -71,7 +67,7 @@ export default function AdminGuard({ children }) {
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden text-sm text-cream-muted sm:inline">
-              {displayName}
+              Administrator
             </span>
             <button
               type="button"
@@ -84,8 +80,8 @@ export default function AdminGuard({ children }) {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[220px_1fr]">
-        <aside className="border border-ink-line bg-ink-soft p-5">
+      <div className="grid w-full gap-8 px-6 py-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="border border-ink-line bg-ink-soft p-5 lg:w-[220px] lg:shrink-0">
           <nav className="flex flex-col gap-1">
             {NAV.map((item) =>
               item.href ? (
@@ -114,7 +110,7 @@ export default function AdminGuard({ children }) {
           </nav>
         </aside>
 
-        <main>{children}</main>
+        <main className="min-w-0">{children}</main>
       </div>
     </div>
     </ToastProvider>

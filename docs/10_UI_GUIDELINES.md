@@ -1,6 +1,6 @@
 # 10 — UI Guidelines
 
-> **Status:** Living document · **Last updated:** 2026-08-14
+> **Status:** Living document · **Last updated:** 2026-08-16
 
 ---
 
@@ -98,10 +98,17 @@
 
 **Admin**
 
-- Shared shell: `AdminGuard` (nav + toast provider).
+- Shared shell: `AdminGuard` (nav + toast provider). Full-viewport width on
+  desktop — not a `max-w-6xl` container. Sidebar is a fixed 220px column from
+  `lg` up; the main pane expands (`minmax(0,1fr)` + `min-w-0`) so lists and
+  calendars use remaining width without page-level overflow. Header shows
+  the static label “Administrator” next to Logout (not the stored profile
+  name).
 - Patterns: table lists, filters, confirm dialogs, toast success/error, form
-  sections with gold focus borders.
-- Modules: Hotels, Room Types, Rooms, Media, Tariffs (Bookings and Inquiries TBD).
+  sections with gold focus borders. Form and intro copy may keep a readability
+  max-width; the shell must not.
+- Modules: Dashboard, Front Desk, Bookings, Inventory, Hotels, Room Types,
+  Rooms, Media, Tariffs, Inquiries.
 
 ## 4. Imagery
 
@@ -121,4 +128,8 @@
 ## 6. Responsiveness
 
 - Public and admin layouts must work on mobile and desktop.
-- Admin tables may scroll horizontally on small screens.
+- Admin shell (`AdminGuard`): below `lg`, nav stacks above content; from `lg`
+  up, 220px sidebar + expanding main. Header and body share full viewport
+  width with `px-6` gutters.
+- Admin tables may scroll horizontally on small screens (`overflow-x-auto`);
+  the page itself must not.

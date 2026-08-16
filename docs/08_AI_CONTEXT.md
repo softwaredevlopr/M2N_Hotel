@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-14  
+> **Status:** Living document · **Last updated:** 2026-08-16  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -49,6 +49,7 @@
 |---------|------|
 | Public routes | `frontend/src/app/` |
 | Admin UI | `frontend/src/app/admin/` |
+| Admin shell | `frontend/src/components/admin/AdminGuard.js` (full-width desktop) |
 | Admin libs | `frontend/src/lib/admin*.js` |
 | API mount | `backend/routes/index.js` |
 | Schema | `backend/migrations/` |

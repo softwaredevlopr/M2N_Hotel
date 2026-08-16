@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-14  
+> **Status:** Living document · **Last updated:** 2026-08-16  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -83,6 +83,8 @@ Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
 
 - `admin_users` (migration `002`), bcrypt passwords, JWT login + `/me`.
 - `/admin/login`, protected console (`AdminGuard`), localStorage token.
+- Admin shell uses full desktop viewport width (220px sidebar + expanding
+  main); not capped at `max-w-6xl` ([ADR-0038](history/DECISIONS.md)).
 - `requireAdminAuth` on all `/api/admin/*` write modules.
 
 ### Phase 4 — Hotel Management ✅
@@ -262,6 +264,7 @@ Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-08-16 | Admin console shell uses full desktop viewport width (`AdminGuard`) |
 | 2026-08-14 | Phase 12 PMS Lite verified (no schema; Front Desk complete) |
 | 2026-08-14 | Phase 12 Front Desk room status board |
 | 2026-08-14 | Phase 12 Front Desk check-in / check-out / no-show |

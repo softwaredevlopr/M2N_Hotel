@@ -1,6 +1,6 @@
 # 02 — Architecture
 
-> **Status:** Living document · **Last updated:** 2026-08-14  
+> **Status:** Living document · **Last updated:** 2026-08-16  
 > **Related:** [04 — API](04_API.md) · [03 — Database](03_DATABASE.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md)
 
 ---
@@ -151,7 +151,9 @@ models.
 | Inventory | ✅ Phase 10D/10E/10I + write APIs | `/api/admin/inventory/*` + `/admin/inventory` UI; date upsert/delete |
 | Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |
 
-Protected by `AdminGuard` (client) + `requireAdminAuth` (server).
+Protected by `AdminGuard` (client) + `requireAdminAuth` (server). The shell is
+full viewport width on desktop: 220px sidebar from `lg` up, expanding main
+pane ([ADR-0038](history/DECISIONS.md)).
 
 ## 8. Key Design Decisions
 

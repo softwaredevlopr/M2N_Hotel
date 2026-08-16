@@ -1,6 +1,6 @@
 # M2N Hotels — Project Documentation
 
-> **Last updated:** July 2026  
+> **Last updated:** 2026-08-16  
 > **Purpose:** Master index and long-form reference. For the current roadmap and
 > status, prefer [`README.md`](README.md), [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md),
 > and [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
@@ -99,6 +99,8 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
 - ✅ **Backend REST + `/health`** — PostgreSQL-backed public and admin APIs.
 - ✅ **Booking inquiry** — `InquiryForm` → `POST /api/inquiries`.
 - ✅ **Admin Authentication (JWT)** — `/admin/login`, `admin_users`, `requireAdminAuth`.
+  Protected console shell (`AdminGuard`) uses full desktop viewport width
+  (220px sidebar + expanding main; not `max-w-6xl`). See [ADR-0038](docs/history/DECISIONS.md).
 - ✅ **Hotel Management** — `/admin/hotels` + `/api/admin/hotels`.
 - ✅ **Room Type Management** — `/admin/room-types` + `/api/admin/room-types`.
 - ✅ **Rooms Management** — `/admin/rooms` + `/api/admin/rooms`.
