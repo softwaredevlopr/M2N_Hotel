@@ -1,6 +1,6 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-14  
+> **Status:** Living document · **Last updated:** 2026-08-16  
 > **Base URL (local):** `http://localhost:5001`  
 > **Frontend env:** `NEXT_PUBLIC_API_URL`
 
@@ -18,7 +18,8 @@
 - [8. Admin media](#8-admin-media)
 - [9. Tariffs (Phase 9)](#9-tariffs-phase-9)
 - [10. Bookings (Phase 10A)](#10-bookings-phase-10a)
-- [11. Errors & security](#11-errors--security)
+- [11. Admin guests (Phase 13 CRM Lite)](#11-admin-guests-phase-13-crm-lite)
+- [12. Errors & security](#12-errors--security)
 
 ---
 
@@ -78,6 +79,8 @@
 | `GET` | `/api/admin/inventory/overlaps` | JWT | 10D |
 | `PUT` | `/api/admin/inventory/dates` | JWT | 10I write |
 | `DELETE` | `/api/admin/inventory/dates` | JWT | 10I write |
+| `GET` | `/api/admin/guests` | JWT | 13 |
+| `GET` | `/api/admin/guests/profile` | JWT | 13 |
 
 Static files: `GET /uploads/...` (admin-uploaded media).
 
@@ -480,7 +483,48 @@ and computed `day` inventory for that night.
 tables. `notes` / `external_ref` are not writable via this API yet. Admin
 day-edit UI on `/admin/inventory` consumes these write endpoints.
 
-## 11. Errors & security
+## 11. Admin guests (Phase 13 CRM Lite)
+
+Read-only hotel-scoped guest directory derived from `bookings` and `inquiries`.
+No `guests` table. JWT required. `hotel_id` is required on both endpoints.
+
+**Identity (per hotel, never cross-property)**
+
+| Priority | Key | Rule |
+|----------|-----|------|
+| Primary | `email:` + `lower(trim(guest_email))` | When email is non-empty |
+| Fallback | `phone:` + last 10 digits | **Only** when email is empty |
+| Not a join | Name | Search only |
+
+Different emails are never merged, even when phones match. Rows with neither
+key are omitted. Repeat guest = `booking_count >= 2` at that hotel. Stay count
+= bookings in `checked_in` or `checked_out`. Inquiry `confirmed` is not a
+booking.
+
+**`GET /api/admin/guests`**
+
+Query: `hotel_id` (required UUID), `q` (optional name/email/phone), `limit`
+(default 20, max 100), `offset`.
+
+Response: `{ success, hotel_id, count, total, limit, offset, data[] }`.
+
+Each row: `identity_key`, `identity_type`, `display_name`, `email`, `phone`,
+`booking_count`, `inquiry_count`, `stay_count`, `is_repeat_guest`,
+`first_seen_at`, `last_activity_at`. Search finds identities; counts still
+cover all of that hotel’s source rows for the matched key.
+
+**`GET /api/admin/guests/profile`**
+
+Query: `hotel_id` (required UUID), `key` (`email:…` or `phone:…`).
+
+Response: `{ success, hotel_id, data }` with `contact`, `summary`,
+`bookings[]`, `inquiries[]`. `404` if no rows at that hotel for the key.
+`400` for missing/invalid `hotel_id` or `key`.
+
+Smoke: `npm run verify:crm`. Admin UI: `/admin/guests`,
+`/admin/guests/profile`.
+
+## 12. Errors & security
 
 - Validation: `400` with `errors` array where applicable.
 - Auth: `401` / `403` for admin routes.

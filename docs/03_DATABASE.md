@@ -203,3 +203,4 @@ data only.
 | Room type featured | `room_types.metadata.is_featured` |
 | Media category | URL path `/uploads/hotels/{id}/{Category}/…` |
 | Room activate/deactivate | `available` / `out_of_service` |
+| CRM guest 360 | Derived at read time from `bookings` + `inquiries` (no guests table) |

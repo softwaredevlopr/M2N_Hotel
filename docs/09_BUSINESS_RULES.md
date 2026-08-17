@@ -1,6 +1,6 @@
 # 09 — Business Rules
 
-> **Status:** Living document · **Last updated:** 2026-07-14
+> **Status:** Living document · **Last updated:** 2026-08-16
 
 ---
 
@@ -41,7 +41,18 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 
 - Guests submit inquiries via `POST /api/inquiries` (validated; rate-limited).
 - Required fields enforced by API validators (name, email, etc. — see code).
-- Inquiry handling/admin CRM UI is upcoming (roadmap Phase 13 / inquiries admin).
+- Admin inquiry list/detail is Phase 10H (`/admin/inquiries`). CRM Lite
+  (Phase 13) groups inquiries with bookings by identity key for Guest 360;
+  it does not convert `confirmed` inquiries into bookings.
+
+## 4b. CRM Lite identity rules (Phase 13)
+
+- A guest is a **read model** (`hotel_id` + `identity_key`), not a stored row.
+- Primary match: `lower(trim(guest_email))` when email is non-empty.
+- Phone last-10 digits is a join key **only when email is empty**.
+- Do not merge two emails because phones match. Name is search-only.
+- Repeat guest means two or more **bookings** at that hotel.
+- Grain is per hotel: the same email at two properties is two guests.
 
 ## 5. Booking rules (Phase 10A)
 

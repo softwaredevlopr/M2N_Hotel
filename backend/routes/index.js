@@ -13,6 +13,7 @@ const adminTariffRoutes = require("./adminTariff.routes");
 const bookingRoutes = require("./booking.routes");
 const adminBookingRoutes = require("./adminBooking.routes");
 const adminInventoryRoutes = require("./adminInventory.routes");
+const adminGuestRoutes = require("./adminGuest.routes");
 
 const router = express.Router();
 
@@ -30,5 +31,6 @@ router.use("/api/admin/media", adminMediaRoutes);
 router.use("/api/admin/tariffs", adminTariffRoutes);
 router.use("/api/admin/bookings", adminBookingRoutes);
 router.use("/api/admin/inventory", adminInventoryRoutes);
+router.use("/api/admin/guests", adminGuestRoutes);
 
 module.exports = router;

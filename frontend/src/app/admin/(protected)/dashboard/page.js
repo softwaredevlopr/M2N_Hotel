@@ -180,6 +180,15 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
         <Link
+          href="/admin/guests"
+          className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
+        >
+          <h2 className="font-display text-2xl text-cream">Guests</h2>
+          <p className="mt-3 text-sm leading-relaxed text-cream-dim">
+            Hotel-scoped guest 360 from bookings and inquiries.
+          </p>
+        </Link>
+        <Link
           href="/admin/inventory"
           className="border border-ink-line bg-ink-soft p-6 transition-colors hover:border-gold/50"
         >

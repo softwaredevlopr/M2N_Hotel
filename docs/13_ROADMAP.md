@@ -1,6 +1,6 @@
 # 13 — Roadmap
 
-> **Status:** Living document · **Last updated:** 2026-08-14  
+> **Status:** Living document · **Last updated:** 2026-08-16  
 > **Related:** [01 — Project Status](01_PROJECT_STATUS.md) · [00 — Overview](00_PROJECT_OVERVIEW.md)
 
 ---
@@ -198,9 +198,18 @@ Lightweight property-management views over the existing booking engine
   operational `rooms.status` + assigned booking occupancy (no auto-sync)
 - Housekeeping workflow and folio/payments are out of scope for PMS Lite
 
-### Phase 13 — CRM ⬜
+### Phase 13 — CRM 🔶 first slice
 
-Guest profiles, inquiry/booking history, follow-ups.
+Guest relationship layer over existing bookings and inquiries (no guest table).
+
+- ✅ Hotel-scoped derived guest search (`GET /api/admin/guests`)
+- ✅ Guest 360 (`GET /api/admin/guests/profile`) — contact, booking/stay
+  history, inquiry history, repeat-guest flag
+- ✅ Admin UI `/admin/guests` + `/admin/guests/profile` (JWT; hotel required)
+- Open-leads visibility via **existing** inquiry statuses + source-record
+  `admin_notes` (no dated follow-up table until separately approved)
+- Out of scope here: merge UI, loyalty, campaigns, SMS/WhatsApp, marketing
+  automation, guest master table
 
 ### Phase 14 — Payments & Invoice ⬜
 

@@ -55,9 +55,11 @@
 | Phase 12 — Front Desk board | ✅ Complete (no schema) |
 | Phase 12 — Front Desk status actions | ✅ Complete (no schema) |
 | Phase 12 — Room status board | ✅ Complete (no schema) |
+| Phase 13 — CRM Lite guest search + 360 | ✅ First slice (no schema) |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
-Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
+Phase **12** PMS Lite ✅ · Phase **13** CRM Lite first slice ✅ · Next: remaining
+CRM Lite, Phases 14–15; staging cutover
 
 ---
 
@@ -225,6 +227,17 @@ Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
 - Backward-compatible list filters: `check_out_from`, `check_out_to`, `stay_on`.
 - No schema, housekeeping, or folio. Smoke: `npm run verify:front-desk`.
 
+### Phase 13 — CRM Lite guest search + Guest 360 ✅ (first slice)
+
+- Read-only hotel-scoped guests derived from `bookings` and `inquiries`.
+  No `guests` table and no migration.
+- Identity: email (lower/trim) when present; last-10 phone only if email is
+  empty. Different emails are never merged. Repeat = ≥2 bookings at that hotel.
+- `GET /api/admin/guests` and `GET /api/admin/guests/profile` (JWT,
+  required `hotel_id`). UI: `/admin/guests` and `/admin/guests/profile`.
+- Smoke: `npm run verify:crm`. Dated follow-ups, marketing, loyalty, and
+  messaging providers are not in this slice.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -245,7 +258,9 @@ Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
 1. Provision staging/production hosts + secrets; non-local migrate
    `005`/`006`/`007`.
 2. Replace placeholder contact details before public launch.
-3. Phases **13–15** per [13 — Roadmap](13_ROADMAP.md) (next: CRM).
+3. Remaining Phase **13** CRM Lite (open leads via existing inquiry
+   statuses/notes; no dated follow-up table until approved), then Phases
+   **14–15** per [13 — Roadmap](13_ROADMAP.md).
 
 ---
 
@@ -264,6 +279,7 @@ Phase **12** PMS Lite ✅ · Next: Phases 13–15; staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-08-16 | Phase 13 CRM Lite derived guest search + Guest 360 (no schema) |
 | 2026-08-16 | Admin console shell uses full desktop viewport width (`AdminGuard`) |
 | 2026-08-14 | Phase 12 PMS Lite verified (no schema; Front Desk complete) |
 | 2026-08-14 | Phase 12 Front Desk room status board |

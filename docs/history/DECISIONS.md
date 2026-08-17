@@ -1356,6 +1356,40 @@ container.
   1440px+ monitors.
 - Per-page width classes. Rejected — the constraint was in the shared shell.
 
+### ADR-0039 — Phase 13 CRM Lite derives guests from bookings and inquiries (no schema)
+
+**Date:** 2026-08-16
+
+**Status:** Accepted
+
+**Context**
+Phase 13 needs a hotel-scoped guest relationship view. `bookings` and
+`inquiries` already store `guest_name` / `guest_email` / `guest_phone`. There
+is no guest master table. Inventing one now would couple writes, force a
+backfill, and still need merge UX for typos and family emails.
+
+**Decision**
+- Treat a guest as a **read model**: `hotel_id` + `identity_key`.
+- Primary key: `email:` + `lower(btrim(guest_email))` when email is non-empty.
+- Fallback: `phone:` + last 10 digits **only when email is empty**.
+- Do not OR-merge email and phone. Name is search-only.
+- Rows with neither key are not grouped.
+- Repeat guest = `booking_count >= 2` at that hotel (inquiries do not count).
+- Stay count = bookings in `checked_in` or `checked_out`.
+- Require `hotel_id` on every guest API. JWT admin only. No public directory.
+- No guests table, no migration, no dated follow-up table in this slice.
+
+**Consequences**
+- Same email at two hotels = two 360s.
+- New email + same phone = two 360s.
+- Staff correct a booking email via existing PATCH; that row moves identity.
+- Full CRM (guest table, merge, tags) remains later and additive.
+
+**Alternatives considered**
+- `guests` table + `guest_id` FKs now. Rejected — schema change not approved
+  for Lite; heuristic splits remain either way.
+- Merge on email OR phone. Rejected — silently fuses different people.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

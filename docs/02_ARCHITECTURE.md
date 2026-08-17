@@ -70,6 +70,7 @@ GET  /api/hotels/:slug             /api/admin/hotels
 GET  /api/rooms/types              /api/admin/room-types
 GET  /api/rooms                    /api/admin/rooms
 POST /api/inquiries                /api/admin/media
+                                   /api/admin/guests (Phase 13, JWT)
 Photos under frontend/public       uploads under backend/uploads
 ```
 
@@ -78,8 +79,9 @@ Photos under frontend/public       uploads under backend/uploads
 - Location: `frontend/`
 - Public routes: `/`, `/about`, `/book`, `/booking/[bookingNumber]`,
   `/hotels/[slug]`, …
-- Admin routes: `/admin/login`, `/admin/dashboard`, `/admin/hotels`,
-  `/admin/room-types`, `/admin/rooms`, `/admin/media`, `/admin/tariffs`, …
+- Admin routes: `/admin/login`, `/admin/dashboard`, `/admin/front-desk`,
+  `/admin/guests`, `/admin/hotels`, `/admin/room-types`, `/admin/rooms`,
+  `/admin/media`, `/admin/tariffs`, …
 - Hotel imagery (public): slug → `public/Photos/<Hotel>/…` via `lib/images.js`.
   That module reads the filesystem, so it is **server-only**; interactive client
   components receive already-resolved URLs as props ([ADR-0015](history/DECISIONS.md)).
@@ -88,7 +90,7 @@ Photos under frontend/public       uploads under backend/uploads
   totals mirrored from the backend) and `lib/bookingSession.js` (tab-scoped
   contact for the guest lookup)
 - Admin helpers: `lib/adminAuth.js`, `adminHotels.js`, `adminRoomTypes.js`,
-  `adminRooms.js`, `adminMedia.js`, `adminTariffs.js`
+  `adminRooms.js`, `adminMedia.js`, `adminTariffs.js`, `adminGuests.js`
 
 ## 5. Backend
 
@@ -98,7 +100,8 @@ Photos under frontend/public       uploads under backend/uploads
 - Responses: `utils/apiResponse` (`success` / validation errors)
 - Services: `backend/services/` holds multi-step domain logic that needs a
   transaction or locking, so controllers stay request-shaped. Uses:
-  `booking.service.js` (Phase 10A), `inventory.service.js` (Phase 10D), and
+  `booking.service.js` (Phase 10A), `inventory.service.js` (Phase 10D),
+  `crmGuest.service.js` (Phase 13 derived guest 360), and
   `email/` + `bookingNotification.service.js` (Phase 10F outbound guest mail).
 
 Public and admin surfaces are split into sibling files per module
@@ -147,6 +150,7 @@ models.
 | Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
 | Bookings | ✅ Phase 10C/10G | `/api/admin/bookings` + list/detail/create UI |
 | Front Desk | ✅ Phase 12 PMS Lite | `/admin/front-desk` over hotel-scoped stats, list, status actions, room board |
+| Guests | ✅ Phase 13 CRM Lite | `/admin/guests` over derived `GET /api/admin/guests` + profile |
 | Inquiries | ✅ Phase 10H | `/api/inquiries` (POST public; admin JWT for rest) + UI |
 | Inventory | ✅ Phase 10D/10E/10I + write APIs | `/api/admin/inventory/*` + `/admin/inventory` UI; date upsert/delete |
 | Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |

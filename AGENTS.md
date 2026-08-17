@@ -108,7 +108,14 @@ API), and a hotel-scoped room status board (`?view=rooms`) over existing rooms
 list/PATCH. Operational `rooms.status` is not auto-synced from booking status.
 No schema change. Verify: `npm run verify:front-desk`.
 
-**Upcoming:** Phases 13–15; staging cutover per
+**Completed (Phase 13 first slice):** hotel-scoped derived guest search and
+Guest 360 over existing `bookings` + `inquiries`. No guests table, no
+migration. JWT `GET /api/admin/guests` and `/api/admin/guests/profile`; UI at
+`/admin/guests`. Identity is email-primary; phone last-10 only when email is
+empty. Verify: `npm run verify:crm`.
+
+**Upcoming:** remaining CRM Lite (existing inquiry statuses/notes; no dated
+follow-up table until approved); Phases 14–15; staging cutover per
 [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 

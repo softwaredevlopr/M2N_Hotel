@@ -62,6 +62,15 @@
   in-house) are booking-derived and are not synchronized with `rooms.status`.
 - Rows keep a View link to `/admin/bookings/[id]`. No housekeeping or folio UI.
 
+**Admin guests (`/admin/guests`)**
+
+- Hotel selector required before listing derived guests (empty state until
+  chosen). Search is name / email / phone at that hotel only.
+- Repeat-guest badge when the identity has two or more bookings at the hotel.
+  View 360 opens `/admin/guests/profile` with contact, summary, booking and
+  inquiry history. Rows link to existing booking and inquiry detail pages.
+- No merge UI, dated follow-ups, or guest master editor.
+
 **Admin inventory calendar (`/admin/inventory`)**
 
 - Monthly Monday-first grid; prev/next month controls.
@@ -107,8 +116,8 @@
 - Patterns: table lists, filters, confirm dialogs, toast success/error, form
   sections with gold focus borders. Form and intro copy may keep a readability
   max-width; the shell must not.
-- Modules: Dashboard, Front Desk, Bookings, Inventory, Hotels, Room Types,
-  Rooms, Media, Tariffs, Inquiries.
+- Modules: Dashboard, Front Desk, Bookings, Guests, Inventory, Hotels,
+  Room Types, Rooms, Media, Tariffs, Inquiries.
 
 ## 4. Imagery
 

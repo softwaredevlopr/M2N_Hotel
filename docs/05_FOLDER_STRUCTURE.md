@@ -1,6 +1,6 @@
 # 05 — Folder Structure
 
-> **Status:** Living document · **Last updated:** 2026-08-14
+> **Status:** Living document · **Last updated:** 2026-08-16
 
 ---
 
@@ -39,8 +39,9 @@ frontend/
     │       ├── login/
     │       └── (protected)/
     │           ├── dashboard/
-    │           ├── front-desk/       ← Phase 12 PMS Lite (ops + room board)
-    │           ├── bookings/
+            │           ├── front-desk/       ← Phase 12 PMS Lite (ops + room board)
+            │           ├── guests/           ← Phase 13 CRM Lite (list + profile)
+            │           ├── bookings/
     │           │   ├── [id]/
     │           │   └── new/              ← Phase 10G create form
     │           ├── inventory/        ← Phase 10E calendar UI
@@ -58,7 +59,8 @@ frontend/
         ├── bookingPricing.js, bookingSession.js
         ├── adminAuth.js
         ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js,
-        │   adminTariffs.js, adminBookings.js, adminInventory.js, adminInquiries.js
+        │   adminTariffs.js, adminBookings.js, adminInventory.js, adminInquiries.js,
+        │   adminGuests.js
 
 ## 3. Backend
 
@@ -73,8 +75,9 @@ backend/
 │   ├── adminRoomType.routes.js, adminRoom.routes.js, adminMedia.routes.js
 │   ├── tariff.routes.js, adminTariff.routes.js
 │   ├── booking.routes.js, adminBooking.routes.js
+│   ├── adminInventory.routes.js, adminGuest.routes.js
 ├── controllers/
-├── services/                 ← booking, inventory, email, bookingNotification
+├── services/                 ← booking, inventory, crmGuest, email, bookingNotification
 │   └── email/                ← provider abstraction + HTML templates (Phase 10F)
 ├── middleware/               ← validate, adminAuth, error
 ├── validators/
@@ -86,9 +89,11 @@ backend/
 │   ├── 003_tariff_rates.sql
 │   ├── 004_bookings.sql
 │   ├── 005_room_type_inventory_dates.sql
-│   └── 006_booking_admin_notes.sql
+│   ├── 006_booking_admin_notes.sql
+│   └── 007_booking_notification_preferences.sql
 └── scripts/
     ├── seed.js, seedAdmin.js, runMigrations.js
+    ├── verifyCrm.js
 ```
 
 ## 4. Hotel image folders (public)

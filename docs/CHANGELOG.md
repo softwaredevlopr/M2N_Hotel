@@ -9,6 +9,32 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 13 CRM Lite derived guest search + Guest 360 ✅
+
+- **What changed.** Hotel-scoped admin guest directory and Guest 360 over
+  existing `bookings` and `inquiries`. No `guests` table, no migration, no
+  write APIs. Identity is computed at read time: primary `email:` +
+  `lower(trim(guest_email))`; phone last-10 only when email is empty. Different
+  emails are never merged, even when phones match. Repeat guest = two or more
+  bookings at that hotel. Stay count = `checked_in` / `checked_out`.
+- **Files modified:** `crmGuest.service.js`, `adminGuest.controller.js`,
+  `adminGuest.routes.js`, `routes/index.js`, `verifyCrm.js`, `package.json`,
+  `adminGuests.js`, `guests/page.js`, `guests/profile/page.js`, `AdminGuard.js`,
+  `dashboard/page.js`, docs.
+- **APIs added/changed:** `GET /api/admin/guests` (JWT, required `hotel_id`,
+  optional `q`/`limit`/`offset`); `GET /api/admin/guests/profile` (JWT,
+  required `hotel_id` + `key`).
+- **Database changes:** none.
+- **Frontend changes:** `/admin/guests` (hotel required, search, pagination,
+  Repeat badge, View 360); `/admin/guests/profile` (contact, summary, booking
+  and inquiry history with links to existing detail pages); nav + dashboard
+  card.
+- **Backend changes:** read-only `crmGuest.service.js` groups source rows per
+  `hotel_id` + identity key. Public booking/inquiry APIs unchanged.
+- **Remaining work:** rest of CRM Lite (open-leads visibility via existing
+  inquiry statuses/notes — no dated follow-up table until separately
+  approved); Phases 14–15; non-local migrate `005`–`007`; placeholder contacts.
+
 ### Fixed — Admin console uses full desktop viewport width ✅
 
 - **What changed.** The shared admin shell no longer caps header and content at

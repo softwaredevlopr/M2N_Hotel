@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/front-desk", label: "Front Desk" },
   { href: "/admin/bookings", label: "Bookings" },
+  { href: "/admin/guests", label: "Guests" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/hotels", label: "Hotels" },
   { href: "/admin/room-types", label: "Room Types" },

@@ -29,6 +29,9 @@
   - [x] Front Desk check-in / check-out / no-show actions (reuse status APIs).
   - [x] Room status board on `/admin/front-desk` (existing rooms list/PATCH;
         occupancy joined from bookings; no auto-sync).
+- [x] **Phase 13 — CRM Lite (first slice)** — derived guest search + Guest 360
+      over bookings/inquiries (`/admin/guests`). No schema. Smoke:
+      `npm run verify:crm`.
 - [x] **Phase 10B** — Guest booking UI (`/book` five-step flow, availability API,
       live stay summary, review + confirmation, `/booking/[bookingNumber]`
       lookup). Hotel/room CTAs deep-link to `/book`; inquiry form preserved.
@@ -111,12 +114,14 @@
 
 ---
 
-## Future (roadmap Phases 12–15)
+## Future (roadmap Phases 13–15)
 
 - [x] Phase 11 — Booking Engine completion (cancel, stay modify, prefs, journey
       polish)
 - [x] Phase 12 — PMS Lite (Front Desk board, status actions, room status board)
-- [ ] Phase 13 — CRM
+- [x] Phase 13 — CRM Lite first slice (derived guest search + Guest 360)
+- [ ] Phase 13 remainder — open leads via existing inquiry statuses/notes
+      (no dated follow-up table until approved); Full CRM later
 - [ ] Phase 14 — Payments & Invoice
 - [ ] Phase 15 — Multi-Property SaaS
 
@@ -124,6 +129,7 @@
 
 ## Completed (pointer)
 
-Phases **1–11** complete; Phase **12** Front Desk board + status actions shipped —
-see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md). Remaining:
-non-local migrate `005`–`007`; placeholder contacts; Phases 13–15.
+Phases **1–12** complete; Phase **13** CRM Lite first slice (guest search +
+360) shipped — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
+Remaining: CRM Lite open-leads/notes; non-local migrate `005`–`007`;
+placeholder contacts; Phases 14–15.

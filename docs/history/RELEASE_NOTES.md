@@ -12,6 +12,15 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 13 — CRM Lite guest search + Guest 360 (2026-08-16)
+
+- Hotel-scoped derived guests from `bookings` + `inquiries` (no schema)
+  ([ADR-0039](DECISIONS.md)).
+- `GET /api/admin/guests` and `GET /api/admin/guests/profile` (JWT).
+- Admin UI: `/admin/guests` and `/admin/guests/profile`.
+- Smoke: `npm run verify:crm`. Dated follow-ups, loyalty, and messaging
+  providers are out of scope.
+
 ### Admin console full-width desktop shell (2026-08-16)
 
 - `AdminGuard` no longer caps the console at `max-w-6xl`. Desktop uses a
