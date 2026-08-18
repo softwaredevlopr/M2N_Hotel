@@ -1421,6 +1421,74 @@ inquiry and booking detail pages.
 - Dated `follow_ups` table. Rejected — not approved for Lite.
 - Profile-level notes. Rejected — would duplicate source-record notes.
 
+### ADR-0041 — Phase 14 Lite uses hotel-scoped payment ledger rows and immutable issued invoice snapshots
+
+**Date:** 2026-08-18
+
+**Status:** Accepted
+
+**Context**
+Phase 14 needs manual payment recording and invoices without introducing a live
+payment gateway, a folio engine, or a full accounting system. The existing
+`bookings` table already has `payment_status`, `subtotal`, `tax_amount`,
+`total_amount`, `currency`, and the human-readable `booking_number`, but it has
+no ledger rows for partial payments/refunds and no immutable invoice document.
+Because the platform is hotel-scoped today and will evolve toward multi-property
+SaaS, every financial record must preserve `hotel_id` isolation.
+
+**Decision**
+- Add a hotel-scoped `booking_payments` table as an append-only ledger over
+  `bookings`:
+  - One row per payment or refund (`entry_type = payment | refund`)
+  - Payment methods limited to `cash`, `card`, `upi`, `bank_transfer`, `other`
+  - Genuine refunds are new positive `refund` rows
+  - Duplicate or mistaken entries are `void`ed, never hard-deleted or edited in
+    place
+  - Optional `idempotency_key`, `external_provider`, and
+    `external_transaction_id` keep future gateway integrations possible without
+    storing card details
+- Add a hotel-scoped `booking_invoices` table plus `hotel_invoice_sequences`:
+  - Invoice numbers are unique per hotel, using a slug-derived hotel code and a
+    yearly sequence (`{HOTEL_CODE}-{YYYY}-{SEQ6}`)
+  - A booking may have multiple drafts/voids but only one active issued invoice
+  - Issued invoices snapshot seller, buyer, stay, amount, and GST/tax display
+    fields so later hotel/booking edits do not rewrite history
+  - Issued invoices may only transition to `void`; correction is void + reissue
+- Keep `bookings.payment_status` as the summary field already used by admin and
+  public surfaces. After every payment/refund/void write, recompute the ledger
+  net and sync `bookings.payment_status` transactionally:
+  - `unpaid`: no net paid amount
+  - `partial`: net paid is greater than 0 but less than billed total
+  - `paid`: net paid is at least the billed total
+  - `refunded`: net paid returns to 0 after prior payment activity
+- Billed total for status sync comes from the current issued invoice when one
+  exists; otherwise it falls back to `bookings.total_amount`.
+- GST / tax handling stays Lite: snapshot `subtotal`, `tax_amount`,
+  `total_amount`, `tax_rate_label`, optional `tax_rate_percent`, optional
+  `seller_gstin`, optional `buyer_gstin`, optional `hsn_sac`, and
+  `place_of_supply`. No accounting/ERP, tax filing, or gateway work in this
+  phase.
+
+**Consequences**
+- Partial payments, refunds, and outstanding balance can be derived correctly
+  without overloading `bookings`.
+- Existing booking/admin screens can continue to read `bookings.payment_status`
+  as the summary flag once application code is added in a later task.
+- Issued invoices become audit-safe, because they no longer mutate when a
+  booking or hotel record changes later.
+- `hotel_id` is intentionally duplicated on payment/invoice rows for isolation,
+  indexing, invoice numbering, and future SaaS tenancy.
+
+**Alternatives considered**
+- Keep all payment state only on `bookings`. Rejected — cannot represent partial
+  payments, refunds, audit history, or dedupe safely.
+- Global invoice numbering. Rejected — future SaaS needs per-property isolation
+  and easier operator-facing numbering.
+- Hard-delete mistaken financial rows. Rejected — weak audit trail and unsafe for
+  reconciliation.
+- Multiple concurrently issued invoices per booking in Lite. Rejected — deposit /
+  split-billing is out of scope for the first Phase 14 slice.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*
