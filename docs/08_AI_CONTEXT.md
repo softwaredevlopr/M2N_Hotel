@@ -22,8 +22,8 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** Phase 13 CRM Lite first slice ✅; remaining CRM Lite (open leads
-  via existing inquiry statuses/notes); Phases 14–15; operator staging cutover
+- **Next:** Phase 13 CRM Lite (search + 360 + open leads) ✅; Full CRM / dated
+  follow-ups only if approved; Phases 14–15; operator staging cutover
   ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`/`006`/`007`
   still pending.
 - Guest cancel / modify / notification prefs: contact-verified
@@ -34,7 +34,8 @@
   confirm/cancel ungated ([ADR-0034](history/DECISIONS.md)).
 - Bookings carry private `admin_notes` (admin JWT only; never public).
 - CRM Lite guests are a read model over bookings/inquiries (`/admin/guests`);
-  no guests table ([ADR-0039](history/DECISIONS.md)).
+  no guests table ([ADR-0039](history/DECISIONS.md)). Open leads reuse inquiry
+  statuses; notes stay on source records ([ADR-0040](history/DECISIONS.md)).
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 

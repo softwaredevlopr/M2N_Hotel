@@ -129,7 +129,7 @@ function AdminGuestProfilePageInner() {
         <p className="mt-10 text-sm text-cream-muted">{error}</p>
       ) : profile ? (
         <>
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <div className="border border-ink-line bg-ink-soft p-5">
               <div className="text-[10px] tracking-[0.22em] uppercase text-cream-muted">
                 Bookings
@@ -145,6 +145,17 @@ function AdminGuestProfilePageInner() {
               <div className="mt-3 font-display text-3xl text-gold">
                 {summary?.inquiry_count ?? 0}
               </div>
+            </div>
+            <div className="border border-ink-line bg-ink-soft p-5">
+              <div className="text-[10px] tracking-[0.22em] uppercase text-cream-muted">
+                Open leads
+              </div>
+              <div className="mt-3 font-display text-3xl text-gold">
+                {summary?.open_lead_count ?? 0}
+              </div>
+              <p className="mt-2 text-xs text-cream-dim">
+                Pending, contacted, or quoted
+              </p>
             </div>
             <div className="border border-ink-line bg-ink-soft p-5">
               <div className="text-[10px] tracking-[0.22em] uppercase text-cream-muted">
@@ -183,6 +194,112 @@ function AdminGuestProfilePageInner() {
                 activity {formatDateTime(summary?.last_activity_at)}
               </p>
             </div>
+          </Section>
+
+          <Section title="Open leads">
+            {profile.open_leads?.length ? (
+              <div className="border border-ink-line bg-ink-soft overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left">
+                  <thead>
+                    <tr className="border-b border-ink-line text-[10px] tracking-[0.2em] uppercase text-cream-muted">
+                      <th className="px-4 py-3 font-normal">Inquiry</th>
+                      <th className="px-4 py-3 font-normal">Stay intent</th>
+                      <th className="px-4 py-3 font-normal">Status</th>
+                      <th className="px-4 py-3 font-normal">Notes</th>
+                      <th className="px-4 py-3 font-normal" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profile.open_leads.map((lead) => (
+                      <tr
+                        key={lead.id}
+                        className="border-t border-ink-line align-top"
+                      >
+                        <td className="px-4 py-4">
+                          <div className="text-sm text-cream">
+                            {lead.guest_name}
+                          </div>
+                          <div className="mt-1 text-xs text-cream-muted">
+                            {formatDateTime(lead.created_at)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-cream-dim">
+                          {formatDate(lead.check_in_date)} →{" "}
+                          {formatDate(lead.check_out_date)}
+                          <div className="mt-1 text-xs text-cream-muted">
+                            {lead.room_type_name || "No room type"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <StatusBadge status={lead.status} />
+                        </td>
+                        <td className="px-4 py-4 text-sm text-cream-dim whitespace-pre-wrap">
+                          {lead.admin_notes?.trim()
+                            ? lead.admin_notes
+                            : "No staff notes yet"}
+                        </td>
+                        <td className="px-4 py-4">
+                          <Link
+                            href={`/admin/inquiries/${lead.id}`}
+                            className="text-[11px] tracking-[0.2em] uppercase text-gold hover:text-cream"
+                          >
+                            View / edit notes
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-cream-muted">
+                No open leads (pending, contacted, or quoted) at this hotel.
+              </p>
+            )}
+          </Section>
+
+          <Section title="Staff notes">
+            <p className="mb-4 text-sm text-cream-dim">
+              Notes live on the booking or inquiry record. Edit them on the
+              existing detail page — this 360 view is read-only.
+            </p>
+            {profile.staff_notes?.length ? (
+              <div className="space-y-3">
+                {profile.staff_notes.map((note) => (
+                  <div
+                    key={`${note.source_kind}-${note.id}`}
+                    className="border border-ink-line bg-ink-soft p-5"
+                  >
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <div className="text-[10px] tracking-[0.2em] uppercase text-gold">
+                        {note.source_kind === "booking"
+                          ? "Booking"
+                          : "Inquiry"}{" "}
+                        · {note.label || "—"}
+                      </div>
+                      <Link
+                        href={
+                          note.source_kind === "booking"
+                            ? `/admin/bookings/${note.id}`
+                            : `/admin/inquiries/${note.id}`
+                        }
+                        className="text-[11px] tracking-[0.2em] uppercase text-gold hover:text-cream"
+                      >
+                        Edit notes
+                      </Link>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-sm text-cream-dim">
+                      {note.admin_notes}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-cream-muted">
+                No staff notes on bookings or inquiries for this guest at this
+                hotel.
+              </p>
+            )}
           </Section>
 
           <Section title="Booking / stay history">

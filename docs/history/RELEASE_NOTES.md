@@ -12,6 +12,14 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 13 — CRM Lite open leads on Guest 360 (2026-08-17)
+
+- Open leads = inquiries in `pending` / `contacted` / `quoted` at that hotel
+  ([ADR-0040](DECISIONS.md)).
+- Guest 360 shows open leads and read-only source-record `admin_notes`; edit
+  on existing booking/inquiry detail pages.
+- Smoke: `npm run verify:crm`. No schema. No follow-up table.
+
 ### Phase 13 — CRM Lite guest search + Guest 360 (2026-08-16)
 
 - Hotel-scoped derived guests from `bookings` + `inquiries` (no schema)

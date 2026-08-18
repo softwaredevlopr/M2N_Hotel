@@ -269,6 +269,12 @@ function AdminGuestsPageInner() {
                             Repeat guest
                           </div>
                         ) : null}
+                        {guest.open_lead_count > 0 ? (
+                          <div className="mt-1 text-[10px] tracking-[0.16em] uppercase text-cream-muted">
+                            {guest.open_lead_count} open lead
+                            {guest.open_lead_count === 1 ? "" : "s"}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-4 py-4 text-sm text-cream-dim">
                         <div>{guest.email || "No email"}</div>

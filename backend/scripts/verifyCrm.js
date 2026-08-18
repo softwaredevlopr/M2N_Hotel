@@ -171,6 +171,7 @@ async function main() {
       check_in_date: isoDaysFromNow(50),
       check_out_date: isoDaysFromNow(52),
       booking_status: "confirmed",
+      admin_notes: "CRM selftest booking note",
     },
   });
   if (bookingA1.body?.data?.booking_number) {
@@ -202,13 +203,49 @@ async function main() {
 
   const inquiryA = await query(
     `INSERT INTO inquiries (
-       hotel_id, guest_name, guest_email, guest_phone, source, status
-     ) VALUES ($1, $2, $3, $4, 'website', 'pending')
+       hotel_id, guest_name, guest_email, guest_phone, source, status, admin_notes
+     ) VALUES ($1, $2, $3, $4, 'website', 'pending', $5)
      RETURNING id`,
-    [hotelA.hotel_id, "Crm Alpha Inquiry", sharedEmail, "+91 98765 01312"]
+    [
+      hotelA.hotel_id,
+      "Crm Alpha Inquiry",
+      sharedEmail,
+      "+91 98765 01312",
+      "CRM selftest pending note",
+    ]
   );
   if (inquiryA.rows[0]?.id) createdInquiryIds.push(inquiryA.rows[0].id);
   check("hotel A inquiry inserted", Boolean(inquiryA.rows[0]?.id));
+
+  const inquiryDeclined = await query(
+    `INSERT INTO inquiries (
+       hotel_id, guest_name, guest_email, guest_phone, source, status
+     ) VALUES ($1, $2, $3, $4, 'website', 'declined')
+     RETURNING id`,
+    [hotelA.hotel_id, "Crm Alpha Declined", sharedEmail, "+91 98765 01313"]
+  );
+  if (inquiryDeclined.rows[0]?.id) {
+    createdInquiryIds.push(inquiryDeclined.rows[0].id);
+  }
+  check("hotel A declined inquiry inserted", Boolean(inquiryDeclined.rows[0]?.id));
+
+  const inquiryQuoted = await query(
+    `INSERT INTO inquiries (
+       hotel_id, guest_name, guest_email, guest_phone, source, status, admin_notes
+     ) VALUES ($1, $2, $3, $4, 'website', 'quoted', $5)
+     RETURNING id`,
+    [
+      hotelA.hotel_id,
+      "Crm Alpha Quoted",
+      sharedEmail,
+      "+91 98765 01314",
+      "CRM selftest quoted note",
+    ]
+  );
+  if (inquiryQuoted.rows[0]?.id) {
+    createdInquiryIds.push(inquiryQuoted.rows[0].id);
+  }
+  check("hotel A quoted inquiry inserted", Boolean(inquiryQuoted.rows[0]?.id));
 
   const bookingOther = await api("POST", "/api/admin/bookings", {
     token,
@@ -309,9 +346,14 @@ async function main() {
     `got ${alpha?.booking_count}`
   );
   check(
-    "grouped inquiry_count is 1",
-    alpha?.inquiry_count === 1,
+    "grouped inquiry_count is 3",
+    alpha?.inquiry_count === 3,
     `got ${alpha?.inquiry_count}`
+  );
+  check(
+    "open leads exclude declined",
+    alpha?.open_lead_count === 2,
+    `got ${alpha?.open_lead_count}`
   );
   check("repeat guest when 2 bookings", alpha?.is_repeat_guest === true);
 
@@ -342,6 +384,11 @@ async function main() {
     `got ${alphaOnB?.booking_count}`
   );
   check(
+    "hotel B open_lead_count is 0",
+    alphaOnB?.open_lead_count === 0,
+    `got ${alphaOnB?.open_lead_count}`
+  );
+  check(
     "hotel B list excludes hotel A-only email",
     !guestInList(listB, otherEmail)
   );
@@ -350,6 +397,10 @@ async function main() {
     (row) => row.identity_key === "phone:9876501401"
   );
   check("empty-email inquiry groups on last-10 phone", Boolean(phoneOnlyGuest));
+  check(
+    "phone-only guest has 1 open lead",
+    phoneOnlyGuest?.open_lead_count === 1
+  );
   check(
     "hotel B list excludes hotel A phone-only guest",
     !(listB.body?.data || []).some((row) => row.identity_key === "phone:9876501401")
@@ -387,8 +438,34 @@ async function main() {
   check("profile hotel_id echoed", profileA.body?.hotel_id === hotelA.hotel_id);
   const profile = profileA.body?.data;
   check("profile booking history has 2", profile?.bookings?.length === 2);
-  check("profile inquiry history has 1", profile?.inquiries?.length === 1);
+  check("profile inquiry history has 3", profile?.inquiries?.length === 3);
   check("profile repeat flag", profile?.summary?.is_repeat_guest === true);
+  check(
+    "profile open_lead_count is 2",
+    profile?.summary?.open_lead_count === 2,
+    `got ${profile?.summary?.open_lead_count}`
+  );
+  check(
+    "open_leads length is 2",
+    profile?.open_leads?.length === 2,
+    `got ${profile?.open_leads?.length}`
+  );
+  check(
+    "open_leads are pending or quoted only",
+    (profile?.open_leads || []).every((row) =>
+      ["pending", "quoted"].includes(row.status)
+    )
+  );
+  check(
+    "open_leads stay on hotel A",
+    (profile?.open_leads || []).every((row) => row.hotel_id === hotelA.hotel_id)
+  );
+  check(
+    "staff_notes include booking and inquiry notes",
+    (profile?.staff_notes || []).length === 3 &&
+      (profile?.staff_notes || []).some((row) => row.source_kind === "booking") &&
+      (profile?.staff_notes || []).every((row) => row.hotel_id === hotelA.hotel_id)
+  );
   check(
     "profile bookings stay on hotel A",
     (profile?.bookings || []).every((row) => row.hotel_id === hotelA.hotel_id)
@@ -411,6 +488,15 @@ async function main() {
   check(
     "hotel B profile has 0 inquiries",
     profileB.body?.data?.inquiries?.length === 0
+  );
+  check(
+    "hotel B profile has 0 open leads",
+    profileB.body?.data?.summary?.open_lead_count === 0 &&
+      (profileB.body?.data?.open_leads || []).length === 0
+  );
+  check(
+    "hotel B profile has 0 staff notes",
+    (profileB.body?.data?.staff_notes || []).length === 0
   );
 
   const missing = await api(
@@ -443,6 +529,10 @@ async function main() {
   check(
     "phone-only profile has 1 inquiry",
     phoneOnlyProfile.body?.data?.inquiries?.length === 1
+  );
+  check(
+    "phone-only profile has 1 open lead",
+    phoneOnlyProfile.body?.data?.summary?.open_lead_count === 1
   );
 
   console.log(`\n${passed} passed, ${failed} failed`);

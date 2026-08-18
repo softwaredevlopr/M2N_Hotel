@@ -36,7 +36,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 10I | Persistent inventory dates (stop-sell/allotment/overbooking) + admin date write APIs | ✅ |
 | 11 | Booking Engine Completion (cancel + stay modify + prefs + polish) | ✅ |
 | 12 | PMS Lite (Front Desk board, status actions, room status board) | ✅ |
-| 13 | CRM Lite (derived guest search + Guest 360) | ✅ first slice |
+| 13 | CRM Lite (derived guest search + Guest 360 + open leads) | ✅ |
 | 14–15 | Payments, SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)

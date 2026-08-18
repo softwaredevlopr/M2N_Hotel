@@ -53,6 +53,8 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 - Do not merge two emails because phones match. Name is search-only.
 - Repeat guest means two or more **bookings** at that hotel.
 - Grain is per hotel: the same email at two properties is two guests.
+- Open lead = inquiry at that hotel in `pending`, `contacted`, or `quoted`.
+  Staff notes stay on the booking/inquiry row; Guest 360 is read-only.
 
 ## 5. Booking rules (Phase 10A)
 

@@ -8,6 +8,7 @@ const {
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 const STAY_STATUSES = ["checked_in", "checked_out"];
+const OPEN_LEAD_STATUSES = ["pending", "contacted", "quoted"];
 
 /**
  * Derived guest identity (Phase 13 CRM Lite). Not stored.
@@ -93,7 +94,8 @@ function sourceRowsSql(hotelParam, extraBooking = "", extraInquiry = "") {
       b.guest_phone,
       b.created_at,
       'booking'::text AS source_kind,
-      b.booking_status
+      b.booking_status,
+      NULL::varchar AS inquiry_status
     FROM bookings b
     WHERE b.hotel_id = $${hotelParam}
       ${extraBooking}
@@ -105,7 +107,8 @@ function sourceRowsSql(hotelParam, extraBooking = "", extraInquiry = "") {
       i.guest_phone,
       i.created_at,
       'inquiry'::text AS source_kind,
-      NULL::varchar AS booking_status
+      NULL::varchar AS booking_status,
+      i.status AS inquiry_status
     FROM inquiries i
     WHERE i.hotel_id = $${hotelParam}
       ${extraInquiry}
@@ -125,6 +128,7 @@ function mapSummaryRow(row) {
     booking_count: bookingCount,
     inquiry_count: Number(row.inquiry_count) || 0,
     stay_count: Number(row.stay_count) || 0,
+    open_lead_count: Number(row.open_lead_count) || 0,
     is_repeat_guest: bookingCount >= 2,
     first_seen_at: row.first_seen_at,
     last_activity_at: row.last_activity_at,
@@ -179,6 +183,10 @@ async function listGuests({ hotelId, q, limit: limitRaw, offset: offsetRaw }) {
           WHERE src.source_kind = 'booking'
             AND src.booking_status IN ('${STAY_STATUSES.join("', '")}')
         )::int AS stay_count,
+        COUNT(*) FILTER (
+          WHERE src.source_kind = 'inquiry'
+            AND src.inquiry_status IN ('${OPEN_LEAD_STATUSES.join("', '")}')
+        )::int AS open_lead_count,
         MIN(src.created_at) AS first_seen_at,
         MAX(src.created_at) AS last_activity_at,
         (
@@ -297,6 +305,33 @@ async function getGuestProfile({ hotelId, key }) {
   const stayCount = bookings.filter((row) =>
     STAY_STATUSES.includes(row.booking_status)
   ).length;
+  const openLeads = inquiries.filter((row) =>
+    OPEN_LEAD_STATUSES.includes(row.status)
+  );
+  const staffNotes = [
+    ...bookings
+      .filter((row) => trimOrNull(row.admin_notes))
+      .map((row) => ({
+        source_kind: "booking",
+        id: row.id,
+        hotel_id: row.hotel_id,
+        label: row.booking_number,
+        status: row.booking_status,
+        admin_notes: row.admin_notes,
+        created_at: row.created_at,
+      })),
+    ...inquiries
+      .filter((row) => trimOrNull(row.admin_notes))
+      .map((row) => ({
+        source_kind: "inquiry",
+        id: row.id,
+        hotel_id: row.hotel_id,
+        label: row.guest_name,
+        status: row.status,
+        admin_notes: row.admin_notes,
+        created_at: row.created_at,
+      })),
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const createdTimes = timeline.map((row) => row.at);
 
   return {
@@ -313,10 +348,13 @@ async function getGuestProfile({ hotelId, key }) {
         booking_count: bookings.length,
         inquiry_count: inquiries.length,
         stay_count: stayCount,
+        open_lead_count: openLeads.length,
         is_repeat_guest: bookings.length >= 2,
         first_seen_at: createdTimes[createdTimes.length - 1] || null,
         last_activity_at: createdTimes[0] || null,
       },
+      open_leads: openLeads,
+      staff_notes: staffNotes,
       bookings,
       inquiries,
     },
@@ -329,4 +367,5 @@ module.exports = {
   parseIdentityKey,
   DEFAULT_LIMIT,
   MAX_LIMIT,
+  OPEN_LEAD_STATUSES,
 };

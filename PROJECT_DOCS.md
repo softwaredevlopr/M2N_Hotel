@@ -69,7 +69,7 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 10I | Persistent inventory dates (stop-sell/allotment/overbooking) | ✅ Complete |
 | 11 | Booking Engine Completion | ✅ |
 | 12 | PMS Lite | ✅ |
-| 13 | CRM Lite (derived guest search + 360) | ✅ First slice |
+| 13 | CRM Lite (derived guest search + 360 + open leads) | ✅ |
 | 14 | Payments & Invoice | ⬜ |
 | 15 | Multi-Property SaaS | ⬜ |
 
@@ -224,6 +224,10 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   APIs: `GET /api/admin/guests`, `GET /api/admin/guests/profile`. UI:
   `/admin/guests`. Smoke: `npm run verify:crm`. No schema.
 
+- ✅ **Phase 13 — CRM Lite open leads on Guest 360** — inquiries in
+  `pending` / `contacted` / `quoted`; read-only source-record `admin_notes`.
+  Smoke: `npm run verify:crm`. No schema.
+
 ---
 
 ## 3b. Historical status bullets (preserved detail)
@@ -376,8 +380,8 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 - ⬜ Production contact details (replace placeholders).
 - ⬜ Run `005` / `006` on non-local environments (operator checklist in
   deployment docs).
-- ⬜ Remaining Phase **13** CRM Lite (open leads via existing inquiry
-  statuses/notes; no dated follow-up table until approved).
+- ⬜ Full CRM (guest master / merge) or dated follow-up table — only if
+  separately approved.
 - ⬜ Phases **14–15** (payments → SaaS).
 
 > Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older

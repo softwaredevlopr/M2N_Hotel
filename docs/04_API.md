@@ -1,6 +1,6 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-16  
+> **Status:** Living document · **Last updated:** 2026-08-17  
 > **Base URL (local):** `http://localhost:5001`  
 > **Frontend env:** `NEXT_PUBLIC_API_URL`
 
@@ -509,16 +509,22 @@ Query: `hotel_id` (required UUID), `q` (optional name/email/phone), `limit`
 Response: `{ success, hotel_id, count, total, limit, offset, data[] }`.
 
 Each row: `identity_key`, `identity_type`, `display_name`, `email`, `phone`,
-`booking_count`, `inquiry_count`, `stay_count`, `is_repeat_guest`,
-`first_seen_at`, `last_activity_at`. Search finds identities; counts still
-cover all of that hotel’s source rows for the matched key.
+`booking_count`, `inquiry_count`, `stay_count`, `open_lead_count`,
+`is_repeat_guest`, `first_seen_at`, `last_activity_at`. Search finds
+identities; counts still cover all of that hotel’s source rows for the
+matched key.
 
 **`GET /api/admin/guests/profile`**
 
 Query: `hotel_id` (required UUID), `key` (`email:…` or `phone:…`).
 
 Response: `{ success, hotel_id, data }` with `contact`, `summary`,
-`bookings[]`, `inquiries[]`. `404` if no rows at that hotel for the key.
+`open_leads[]`, `staff_notes[]`, `bookings[]`, `inquiries[]`.
+
+`summary.open_lead_count` and `open_leads[]` are inquiries in `pending`,
+`contacted`, or `quoted` at that hotel. `staff_notes[]` is read-only
+`admin_notes` from matching bookings and inquiries. Note edits use existing
+inquiry/booking detail APIs. `404` if no rows at that hotel for the key.
 `400` for missing/invalid `hotel_id` or `key`.
 
 Smoke: `npm run verify:crm`. Admin UI: `/admin/guests`,

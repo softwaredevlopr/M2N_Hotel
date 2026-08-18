@@ -114,8 +114,8 @@ migration. JWT `GET /api/admin/guests` and `/api/admin/guests/profile`; UI at
 `/admin/guests`. Identity is email-primary; phone last-10 only when email is
 empty. Verify: `npm run verify:crm`.
 
-**Upcoming:** remaining CRM Lite (existing inquiry statuses/notes; no dated
-follow-up table until approved); Phases 14–15; staging cutover per
+**Upcoming:** Full CRM (guest master / merge) only if separately approved; no
+dated follow-up table until approved; Phases 14–15; staging cutover per
 [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 

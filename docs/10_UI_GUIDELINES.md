@@ -67,8 +67,10 @@
 - Hotel selector required before listing derived guests (empty state until
   chosen). Search is name / email / phone at that hotel only.
 - Repeat-guest badge when the identity has two or more bookings at the hotel.
-  View 360 opens `/admin/guests/profile` with contact, summary, booking and
-  inquiry history. Rows link to existing booking and inquiry detail pages.
+  Open-lead count when the identity has inquiries in `pending`, `contacted`,
+  or `quoted`. View 360 opens `/admin/guests/profile` with contact, summary,
+  open leads, read-only staff notes, and booking/inquiry history. Notes are
+  edited on existing booking and inquiry detail pages.
 - No merge UI, dated follow-ups, or guest master editor.
 
 **Admin inventory calendar (`/admin/inventory`)**

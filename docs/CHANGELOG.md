@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 13 CRM Lite open-leads visibility on Guest 360 ✅
+
+- **What changed.** Guest 360 now surfaces hotel-scoped open leads from
+  existing inquiries in `pending`, `contacted`, or `quoted`, plus read-only
+  source-record `admin_notes`. Notes are edited only on existing booking and
+  inquiry detail pages. No follow-up table, no guest master, no new writes.
+- **Files modified:** `crmGuest.service.js`, `verifyCrm.js`, `guests/page.js`,
+  `guests/profile/page.js`, docs.
+- **APIs added/changed:** `GET /api/admin/guests` rows include
+  `open_lead_count`. `GET /api/admin/guests/profile` adds
+  `summary.open_lead_count`, `open_leads[]`, and `staff_notes[]`.
+- **Database changes:** none.
+- **Frontend changes:** Guest 360 open-leads table and staff-notes panel
+  (read-only, links to detail pages); guests list shows an open-lead count.
+- **Backend changes:** derived counts/lists from existing inquiry statuses and
+  `admin_notes`. Public APIs unchanged.
+- **Remaining work:** Full CRM (guest master / merge) only if separately
+  approved; no dated follow-up table until approved; Phases 14–15; non-local
+  migrate `005`–`007`; placeholder contacts.
+
 ### Added — Phase 13 CRM Lite derived guest search + Guest 360 ✅
 
 - **What changed.** Hotel-scoped admin guest directory and Guest 360 over

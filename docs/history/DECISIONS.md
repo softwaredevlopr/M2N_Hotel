@@ -1390,6 +1390,37 @@ backfill, and still need merge UX for typos and family emails.
   for Lite; heuristic splits remain either way.
 - Merge on email OR phone. Rejected — silently fuses different people.
 
+### ADR-0040 — Phase 13 open leads reuse inquiry statuses and source-record notes
+
+**Date:** 2026-08-17
+
+**Status:** Accepted
+
+**Context**
+CRM Lite needs follow-up visibility without a dated task table. Inquiries
+already have statuses `pending` / `contacted` / `quoted` / `confirmed` /
+`declined` / `cancelled`, and both `inquiries.admin_notes` and
+`bookings.admin_notes` already exist. Staff already edit those notes on
+inquiry and booking detail pages.
+
+**Decision**
+- Open lead = an inquiry at that `hotel_id` whose status is `pending`,
+  `contacted`, or `quoted`.
+- `confirmed` / `declined` / `cancelled` are not open leads.
+- Guest 360 shows `open_leads[]` and read-only `staff_notes[]` from source
+  records with non-empty `admin_notes`.
+- Note writes stay on existing `PATCH /api/inquiries/:id/status` and booking
+  PATCH. No guest-profile notepad. No follow-up table. No schema.
+
+**Consequences**
+- Open-lead counts are hotel-scoped and identity-scoped like the rest of CRM
+  Lite.
+- Closing a lead is an inquiry status change on the existing detail page.
+
+**Alternatives considered**
+- Dated `follow_ups` table. Rejected — not approved for Lite.
+- Profile-level notes. Rejected — would duplicate source-record notes.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*
