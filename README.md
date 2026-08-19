@@ -12,7 +12,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 ---
 
-## Current status (Phases 1–13 first slice)
+## Current status (Phases 1–14 Lite backend)
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -37,7 +37,8 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 11 | Booking Engine Completion (cancel + stay modify + prefs + polish) | ✅ |
 | 12 | PMS Lite (Front Desk board, status actions, room status board) | ✅ |
 | 13 | CRM Lite (derived guest search + Guest 360 + open leads) | ✅ |
-| 14–15 | Payments, SaaS | ⬜ Upcoming |
+| 14 | Payments & Invoice Lite (manual ledger + invoice APIs; no UI/gateway) | ✅ backend / ⬜ UI |
+| 15 | Multi-Property SaaS | ⬜ Upcoming |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)
 
@@ -51,7 +52,8 @@ Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PR
 | `/booking/[bookingNumber]` | Booking confirmation + contact-verified lookup |
 | `/admin/login` → `/admin/*` | Admin console (front desk, guests, bookings, inventory, inquiries, hotels, room types, rooms, media, tariffs) |
 
-> Bookings are requests, not prepaid reservations — no payment gateway yet.
+> Bookings are not prepaid via a gateway. Staff may record cash/UPI/card/bank
+> payments on the admin JWT APIs; there is no public checkout or live gateway.
 > Booking quotes read "Price on request" until a nightly `base_price` is set per
 > room type in Admin → Room Types (all seeded values are `0.00`).
 

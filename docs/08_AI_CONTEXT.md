@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-16  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -22,9 +22,10 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** Phase 13 CRM Lite (search + 360 + open leads) ✅; Full CRM / dated
-  follow-ups only if approved; Phases 14–15; operator staging cutover
-  ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`/`006`/`007`
+- **Next:** Phase 13 CRM Lite (search + 360 + open leads) ✅; Phase 14 Lite
+  backend (ledger + invoices) ✅; admin finance UI next; Full CRM / dated
+  follow-ups only if approved; Phase 15; operator staging cutover
+  ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`–`008`
   still pending.
 - Guest cancel / modify / notification prefs: contact-verified
   `POST /api/bookings/:bookingNumber/{cancel,modify,notification-preferences}`.
@@ -36,6 +37,9 @@
 - CRM Lite guests are a read model over bookings/inquiries (`/admin/guests`);
   no guests table ([ADR-0039](history/DECISIONS.md)). Open leads reuse inquiry
   statuses; notes stay on source records ([ADR-0040](history/DECISIONS.md)).
+- Phase 14 Lite finance: hotel-scoped `booking_payments` / `booking_invoices`
+  ([ADR-0041](history/DECISIONS.md)). Admin JWT nested under
+  `/api/admin/bookings/:id/payments` and `/invoices`. No UI, no gateway.
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 

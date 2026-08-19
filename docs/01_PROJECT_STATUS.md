@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-16  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -57,10 +57,13 @@
 | Phase 12 — Room status board | ✅ Complete (no schema) |
 | Phase 13 — CRM Lite guest search + 360 | ✅ First slice (no schema) |
 | Phase 13 — CRM Lite open leads on 360 | ✅ (no schema) |
+| Phase 14 — Payments & Invoice Lite schema (`008`) | ✅ |
+| Phase 14 — admin payment/invoice APIs | ✅ (no UI / no gateway) |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
-Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) ✅
-· Next: Full CRM only if approved; Phases 14–15; staging cutover
+Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) ✅ ·
+Phase **14** Lite backend (ledger + invoices) ✅ · Next: Phase 14 admin finance
+UI; Full CRM only if approved; Phase 15; staging cutover
 
 ---
 
@@ -248,6 +251,28 @@ Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) �
 - Guests list includes `open_lead_count`. No follow-up table, no schema.
 - Smoke: `npm run verify:crm`.
 
+### Phase 14 — Payments & Invoice Lite schema ✅
+
+- Migration `008_booking_payments_and_invoices.sql` adds hotel-scoped
+  `hotel_invoice_sequences`, `booking_invoices`, and `booking_payments`.
+- Existing `bookings.payment_status` (`unpaid` \| `partial` \| `paid` \|
+  `refunded`) is unchanged and remains the summary field.
+- [ADR-0041](history/DECISIONS.md). No gateway, no folio, no ERP.
+
+### Phase 14 — admin payment and invoice APIs ✅
+
+- JWT nested routes under `/api/admin/bookings/:id/payments` and `/invoices`.
+- Required `hotel_id` query; booking hotel must match.
+- Manual ledger: append-only `payment` / `refund` rows (amount always `> 0`);
+  mistaken rows are voided, not deleted. Refunds cannot exceed net collected.
+- Invoices: draft → issue → void; at most one issued invoice per booking;
+  reissue via a new draft with `replaces_invoice_id`.
+- Every ledger write and invoice issue/void recomputes `bookings.payment_status`
+  in the same transaction. Billed total = issued invoice `total_amount` when
+  present, else `bookings.total_amount`.
+- No admin UI, no public payment APIs, no live gateway.
+- Smoke: `npm run verify:phase14`.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -266,10 +291,11 @@ Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) �
 ## 4. Pending / Next Up
 
 1. Provision staging/production hosts + secrets; non-local migrate
-   `005`/`006`/`007`.
+   `005`/`006`/`007`/`008`.
 2. Replace placeholder contact details before public launch.
-3. Remaining Phase **13** only if separately approved (Full CRM guest master /
-   merge, or a dated follow-up table). Otherwise Phases **14–15** per
+3. Phase **14** admin Payments & Invoices UI on booking detail (no gateway).
+4. Remaining Phase **13** only if separately approved (Full CRM guest master /
+   merge, or a dated follow-up table). Otherwise Phase **15** per
    [13 — Roadmap](13_ROADMAP.md).
 
 ---
@@ -289,6 +315,8 @@ Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) �
 
 | Date | Update |
 |------|--------|
+| 2026-08-19 | Phase 14 Lite admin payment/invoice APIs (no UI/gateway) |
+| 2026-08-18 | Phase 14 Lite schema foundation (migration `008`, ADR-0041) |
 | 2026-08-17 | Phase 13 CRM Lite open leads + source-record notes on Guest 360 |
 | 2026-08-16 | Phase 13 CRM Lite derived guest search + Guest 360 (no schema) |
 | 2026-08-16 | Admin console shell uses full desktop viewport width (`AdminGuard`) |

@@ -1,6 +1,6 @@
 # 09 — Business Rules
 
-> **Status:** Living document · **Last updated:** 2026-08-16
+> **Status:** Living document · **Last updated:** 2026-08-19
 
 ---
 
@@ -128,7 +128,20 @@ Domain rules the product must enforce. Schema changes require explicit approval.
 - Missing rows keep physical − sold behaviour. Channel-split / PMS / OTA
   inventory tables are out of scope.
 
-## 9. Upcoming domain areas
+## 9. Payments & invoices (Phase 14 Lite)
 
-Admin UI/CRUD to edit inventory date rows is still pending. Payments/invoicing
-remain Phase 14.
+- Every payment and invoice row carries `hotel_id`; writes require matching
+  `hotel_id` and booking hotel.
+- Ledger is append-only. Amounts are always positive. Refunds are new
+  `entry_type = refund` rows. Mistakes are voided, never hard-deleted or
+  edited in place. Refunds cannot exceed net collected.
+- At most one issued invoice per booking. Issued invoices snapshot seller,
+  buyer, stay, and amounts. Correction is void + reissue (new number).
+- `bookings.payment_status` is the denormalized summary; finance APIs recompute
+  it in the same transaction as ledger/invoice writes.
+- No live payment gateway, no folio, no accounting/ERP in Lite.
+
+## 10. Upcoming domain areas
+
+Inventory date admin UI is complete (Phase 10E/10I). Phase 14 admin finance UI
+and a live payment gateway remain out of this Lite slice.

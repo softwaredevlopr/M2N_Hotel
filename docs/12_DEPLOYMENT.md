@@ -1,8 +1,8 @@
 # 12 — Deployment
 
-> **Status:** Living document · **Last updated:** 2026-08-11  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Scope:** Deployment architecture and readiness for the **current** M2N Hotels
-> stack (Phases 1–10I + `bookings.admin_notes`).  
+> stack (through Phase 14 Lite schema `008` + booking engine).  
 > **Hard rule:** This guide does **not** authorize running migrations or deploys
 > against staging/production until an operator explicitly executes those steps.
 
@@ -189,9 +189,12 @@ Current migration set:
 | `004_bookings.sql` | Bookings |
 | `005_room_type_inventory_dates.sql` | Stop-sell / allotment / overbooking |
 | `006_booking_admin_notes.sql` | Private `bookings.admin_notes` |
+| `007_booking_notification_preferences.sql` | Guest notification prefs JSONB |
+| `008_booking_payments_and_invoices.sql` | Phase 14 Lite ledger + invoices |
 
-Local development already has `001`–`006`. Non-local apply is a **manual operator
-action** — see [§6](#6-migration-005--006-safe-rollout).
+Local development already has `001`–`008`. Non-local apply is a **manual operator
+action** — see [§6](#6-migration-005--006-safe-rollout). Include `007` and `008`
+when that environment is behind.
 
 ### 3.4 Start
 

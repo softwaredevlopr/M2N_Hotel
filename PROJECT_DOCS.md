@@ -70,7 +70,7 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 11 | Booking Engine Completion | ✅ |
 | 12 | PMS Lite | ✅ |
 | 13 | CRM Lite (derived guest search + 360 + open leads) | ✅ |
-| 14 | Payments & Invoice | ⬜ |
+| 14 | Payments & Invoice Lite (manual ledger + invoice APIs) | ✅ backend / ⬜ UI |
 | 15 | Multi-Property SaaS | ⬜ |
 
 Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre hotel ka content ya photos share nahi karta.
@@ -180,7 +180,8 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   readiness guide (architecture, env matrix, 005/006 rollout checklist). No
   staging/production cutover yet.
 
-**Next:** Phases 13–15; operator non-local migrate (`005`–`007`) + host cutover.
+**Next:** Phase 14 admin Payments & Invoices UI; Phase 15; operator non-local
+migrate (`005`–`008`) + host cutover.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -227,6 +228,14 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
 - ✅ **Phase 13 — CRM Lite open leads on Guest 360** — inquiries in
   `pending` / `contacted` / `quoted`; read-only source-record `admin_notes`.
   Smoke: `npm run verify:crm`. No schema.
+
+- ✅ **Phase 14 Lite — payments & invoice schema** — migration `008`
+  (`booking_payments`, `booking_invoices`, `hotel_invoice_sequences`).
+  [ADR-0041](docs/history/DECISIONS.md). No gateway.
+
+- ✅ **Phase 14 Lite — admin payment/invoice APIs** — hotel-scoped JWT
+  ledger record/refund/void and invoice draft/issue/void/reissue; transactional
+  `bookings.payment_status` sync. Smoke: `npm run verify:phase14`. No frontend.
 
 ---
 

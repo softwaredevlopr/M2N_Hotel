@@ -114,9 +114,16 @@ migration. JWT `GET /api/admin/guests` and `/api/admin/guests/profile`; UI at
 `/admin/guests`. Identity is email-primary; phone last-10 only when email is
 empty. Verify: `npm run verify:crm`.
 
-**Upcoming:** Full CRM (guest master / merge) only if separately approved; no
-dated follow-up table until approved; Phases 14–15; staging cutover per
-[`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
+**Completed (Phase 14 Lite backend):** hotel-scoped manual payment ledger and
+invoice draft/issue/void APIs over migration `008` (`booking_payments`,
+`booking_invoices`, `hotel_invoice_sequences`). No payment gateway, no admin
+UI, no ERP. Ledger writes and invoice issue/void sync
+`bookings.payment_status` in the same transaction ([ADR-0041](docs/history/DECISIONS.md)).
+Verify: `npm run verify:phase14`.
+
+**Upcoming:** Phase 14 admin Payments & Invoices UI; Full CRM (guest master /
+merge) only if separately approved; no dated follow-up table until approved;
+Phase 15; staging cutover per [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

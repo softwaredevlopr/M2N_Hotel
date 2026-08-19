@@ -1,7 +1,7 @@
 # 03 — Database
 
-> **Status:** Living document · **Last updated:** 2026-08-08  
-> **Source of truth:** `backend/migrations/001_initial_schema.sql` … `005_room_type_inventory_dates.sql`  
+> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Source of truth:** `backend/migrations/001_initial_schema.sql` … `008_booking_payments_and_invoices.sql`  
 > **Rule:** Do not change schema without explicit approval.
 
 ---
@@ -44,6 +44,7 @@ Template: `backend/.env.example`. Never commit real credentials.
 | `005_room_type_inventory_dates.sql` | Per-night stop-sell / allotment / overbooking (Phase 10I) |
 | `006_booking_admin_notes.sql` | Private staff notes on bookings |
 | `007_booking_notification_preferences.sql` | Guest channel prefs JSONB (Phase 11) |
+| `008_booking_payments_and_invoices.sql` | Manual payment ledger + invoices (Phase 14 Lite) |
 
 ```bash
 cd backend
@@ -118,7 +119,7 @@ Direct reservations, slug/`hotel_id`-scoped for multi-property support.
 | `adults` / `children` / `number_of_rooms` | `> 0` / `>= 0` / `> 0` |
 | `booking_source` | `website`, `admin`, `phone`, `walk_in`, `ota` |
 | `booking_status` | `pending`, `confirmed`, `checked_in`, `checked_out`, `cancelled`, `no_show` |
-| `payment_status` | `unpaid`, `partial`, `paid`, `refunded` |
+| `payment_status` | `unpaid`, `partial`, `paid`, `refunded` — summary field; Phase 14 ledger writes recompute it transactionally |
 | `special_requests` | Nullable free text |
 | `subtotal` / `tax_amount` / `total_amount` | `NUMERIC(12,2)`, all `>= 0` |
 | `currency` | `CHAR(3)`, defaults to the hotel's `currency_code` |
@@ -163,6 +164,32 @@ Night formula: `base = COALESCE(allotment, physical)`;
 `sell_limit = base + overbooking_allowance`;
 `available = stop_sell ? 0 : max(0, sell_limit - sold)`.
 
+### `hotel_invoice_sequences` (Phase 14 Lite, migration 008)
+
+Per-hotel yearly invoice number allocator. PK `(hotel_id, year)`. `last_sequence`
+increments on issue. Hotel code is **not** stored here — derived from
+`hotels.slug` (or `metadata.invoice_prefix`) at issue time.
+
+### `booking_invoices` (Phase 14 Lite, migration 008)
+
+Immutable issued invoice snapshots. Status `draft` \| `issued` \| `void`.
+Unique `(hotel_id, invoice_number)`. Partial unique: one `issued` row per
+`booking_id`. Lifecycle CHECK: draft has no `issued_at`/`voided_at`; issued has
+`issued_at`; void has both. Amounts: `total_amount = subtotal + tax_amount`.
+Optional GSTIN/PAN/HSN/place_of_supply. `replaces_invoice_id` for reissue after
+void. FK hotel/booking `ON DELETE RESTRICT`.
+
+### `booking_payments` (Phase 14 Lite, migration 008)
+
+Append-only ledger. `entry_type` `payment` \| `refund`; `amount > 0`;
+`payment_method` `cash` \| `card` \| `upi` \| `bank_transfer` \| `other`;
+`status` `active` \| `void` (void requires `voided_at`). Optional
+`idempotency_key` unique per hotel when set. Optional
+`external_provider` / `external_transaction_id` for a future gateway (unused).
+Net paid = active payments − active refunds.
+
+See [ADR-0041](history/DECISIONS.md).
+
 ### `admin_users` (migration 002)
 
 | Column | Notes |
@@ -180,6 +207,9 @@ hotels 1──* hotel_amenities *──1 amenities
 hotels 1──* room_types 1──* rooms
 hotels 1──* inquiries (optional room_type_id)
 hotels 1──* bookings *──1 room_types (optional room_id, optional created_by_admin_id)
+hotels 1──* booking_payments *──1 bookings
+hotels 1──* booking_invoices *──1 bookings
+hotels 1──* hotel_invoice_sequences
 hotels 1──* tariff_rates (optional room_type_id)
 hotels 1──* room_type_inventory_dates *──1 room_types
 admin_users (standalone auth)
@@ -192,6 +222,7 @@ admin_users (standalone auth)
 | `scripts/seed.js` | `npm run seed` | Hotels, amenities, media, room types, rooms |
 | `scripts/seedAdmin.js` | `npm run seed:admin` | First super admin (`ADMIN_*` env) |
 | `scripts/testBookings.js` | `npm run test:bookings` | Dev smoke test for the booking APIs; deletes every booking it creates |
+| `scripts/verifyPhase14.js` | `npm run verify:phase14` | Payment ledger + invoice API smoke; deletes its self-test booking |
 
 `bookings` is transactional data and is intentionally **not** seeded — reference
 data only.
@@ -204,3 +235,4 @@ data only.
 | Media category | URL path `/uploads/hotels/{id}/{Category}/…` |
 | Room activate/deactivate | `available` / `out_of_service` |
 | CRM guest 360 | Derived at read time from `bookings` + `inquiries` (no guests table) |
+| Seller GSTIN / invoice prefix | `hotels.metadata.billing.*` / `metadata.invoice_prefix` (no new hotel columns) |

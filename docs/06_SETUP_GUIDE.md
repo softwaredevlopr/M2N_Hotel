@@ -1,6 +1,6 @@
 # 06 — Setup Guide
 
-> **Status:** Living document · **Last updated:** 2026-08-11  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Related:** [`../README.md`](../README.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) ·
 > [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md)
 
@@ -42,7 +42,7 @@ cd ../frontend && npm install
 
 ```bash
 cd backend
-npm run migrate      # applies pending 001–006 (alphabetical via schema_migrations)
+npm run migrate      # applies pending 001–008 (alphabetical via schema_migrations)
 npm run seed         # hotels / rooms / media seed (optional)
 npm run seed:admin   # create first admin
 ```

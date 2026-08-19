@@ -1,6 +1,6 @@
 # 05 — Folder Structure
 
-> **Status:** Living document · **Last updated:** 2026-08-16
+> **Status:** Living document · **Last updated:** 2026-08-19
 
 ---
 
@@ -77,7 +77,9 @@ backend/
 │   ├── booking.routes.js, adminBooking.routes.js
 │   ├── adminInventory.routes.js, adminGuest.routes.js
 ├── controllers/
-├── services/                 ← booking, inventory, crmGuest, email, bookingNotification
+├── services/                 ← booking, inventory, crmGuest, bookingPayment,
+│                                 bookingInvoice, bookingFinanceShared, email,
+│                                 bookingNotification
 │   └── email/                ← provider abstraction + HTML templates (Phase 10F)
 ├── middleware/               ← validate, adminAuth, error
 ├── validators/
@@ -90,10 +92,12 @@ backend/
 │   ├── 004_bookings.sql
 │   ├── 005_room_type_inventory_dates.sql
 │   ├── 006_booking_admin_notes.sql
-│   └── 007_booking_notification_preferences.sql
+│   ├── 007_booking_notification_preferences.sql
+│   └── 008_booking_payments_and_invoices.sql
 └── scripts/
     ├── seed.js, seedAdmin.js, runMigrations.js
-    ├── verifyCrm.js
+    ├── verifyCrm.js, verifyPhase14.js
+    ├── verifyFrontDesk.js
 ```
 
 ## 4. Hotel image folders (public)

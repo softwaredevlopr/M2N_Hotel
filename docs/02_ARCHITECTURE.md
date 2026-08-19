@@ -1,6 +1,6 @@
 # 02 — Architecture
 
-> **Status:** Living document · **Last updated:** 2026-08-16  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Related:** [04 — API](04_API.md) · [03 — Database](03_DATABASE.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md)
 
 ---
@@ -71,6 +71,8 @@ GET  /api/rooms/types              /api/admin/room-types
 GET  /api/rooms                    /api/admin/rooms
 POST /api/inquiries                /api/admin/media
                                    /api/admin/guests (Phase 13, JWT)
+                                   /api/admin/bookings/:id/payments|invoices
+                                     (Phase 14 Lite, JWT)
 Photos under frontend/public       uploads under backend/uploads
 ```
 
@@ -101,7 +103,9 @@ Photos under frontend/public       uploads under backend/uploads
 - Services: `backend/services/` holds multi-step domain logic that needs a
   transaction or locking, so controllers stay request-shaped. Uses:
   `booking.service.js` (Phase 10A), `inventory.service.js` (Phase 10D),
-  `crmGuest.service.js` (Phase 13 derived guest 360), and
+  `crmGuest.service.js` (Phase 13 derived guest 360),
+  `bookingPayment.service.js` / `bookingInvoice.service.js` (Phase 14 Lite),
+  and
   `email/` + `bookingNotification.service.js` (Phase 10F outbound guest mail).
 
 Public and admin surfaces are split into sibling files per module
@@ -151,6 +155,7 @@ models.
 | Bookings | ✅ Phase 10C/10G | `/api/admin/bookings` + list/detail/create UI |
 | Front Desk | ✅ Phase 12 PMS Lite | `/admin/front-desk` over hotel-scoped stats, list, status actions, room board |
 | Guests | ✅ Phase 13 CRM Lite | `/admin/guests` over derived `GET /api/admin/guests` + profile |
+| Payments / invoices | ✅ Phase 14 Lite APIs / ⬜ UI | Nested `/api/admin/bookings/:id/payments` and `/invoices`; no admin UI yet |
 | Inquiries | ✅ Phase 10H | `/api/inquiries` (POST public; admin JWT for rest) + UI |
 | Inventory | ✅ Phase 10D/10E/10I + write APIs | `/api/admin/inventory/*` + `/admin/inventory` UI; date upsert/delete |
 | Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |

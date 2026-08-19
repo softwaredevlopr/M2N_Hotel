@@ -12,6 +12,20 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 14 — Lite admin payment and invoice APIs (2026-08-19)
+
+- Hotel-scoped JWT ledger and invoice APIs over migration `008`
+  ([ADR-0041](DECISIONS.md)).
+- Manual payments/refunds/voids; invoice draft/issue/void/reissue.
+- Transactional `bookings.payment_status` sync. No UI, no gateway.
+- Smoke: `npm run verify:phase14`.
+
+### Phase 14 — Lite payments and invoice schema (2026-08-18)
+
+- `008_booking_payments_and_invoices.sql`: `booking_payments`,
+  `booking_invoices`, `hotel_invoice_sequences`.
+- [ADR-0041](DECISIONS.md). No application code in the schema commit.
+
 ### Phase 13 — CRM Lite open leads on Guest 360 (2026-08-17)
 
 - Open leads = inquiries in `pending` / `contacted` / `quoted` at that hotel

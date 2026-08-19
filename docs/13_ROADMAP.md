@@ -1,6 +1,6 @@
 # 13 — Roadmap
 
-> **Status:** Living document · **Last updated:** 2026-08-16  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Related:** [01 — Project Status](01_PROJECT_STATUS.md) · [00 — Overview](00_PROJECT_OVERVIEW.md)
 
 ---
@@ -211,9 +211,19 @@ Guest relationship layer over existing bookings and inquiries (no guest table).
 - Out of scope here: merge UI, loyalty, campaigns, SMS/WhatsApp, marketing
   automation, guest master table, dated follow-up table
 
-### Phase 14 — Payments & Invoice ⬜
+### Phase 14 — Payments & Invoice 🔶 Lite (backend)
 
-Payment capture, receipts/invoices, reconciliation hooks.
+Manual payments and GST-ready invoice snapshots without a gateway or ERP
+([ADR-0041](history/DECISIONS.md)).
+
+- ✅ Migration `008` — `booking_payments`, `booking_invoices`,
+  `hotel_invoice_sequences`
+- ✅ Admin JWT ledger APIs (record payment/refund, void)
+- ✅ Admin JWT invoice draft / issue / void / reissue
+- ✅ Transactional `bookings.payment_status` sync
+- ⬜ Admin booking-detail Payments & Invoices UI
+- Out of scope for Lite: live payment gateway, folio engine, credit notes,
+  GSTR/accounting export
 
 ### Phase 15 — Multi-Property SaaS ⬜
 

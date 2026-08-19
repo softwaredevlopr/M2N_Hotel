@@ -1,6 +1,6 @@
 # 00 — Project Overview
 
-> **Status:** Living document · **Last updated:** 2026-08-16  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [01 — Status](01_PROJECT_STATUS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -34,11 +34,12 @@ hotels, room types, rooms, and media.
 
 ## 2. Vision
 
-1. **Phases 1–13 first slice (done)** — Public multi-hotel site, booking
+1. **Phases 1–14 Lite backend (done)** — Public multi-hotel site, booking
    inquiries, admin CRUD, API-driven pages, rates, inventory, booking engine,
-   PMS Lite Front Desk, and CRM Lite derived guest 360.
-2. **Remaining Phase 13 / Phases 14–15 (upcoming)** — CRM Lite open leads,
-   payments, SaaS.
+   PMS Lite Front Desk, CRM Lite derived guest 360, and Phase 14 Lite
+   payment/invoice APIs (no finance UI, no gateway).
+2. **Remaining Phase 14 UI / Phase 15 (upcoming)** — admin Payments & Invoices
+   UI, then multi-property SaaS. Full CRM / dated follow-ups only if approved.
 3. **Phase 15 (goal)** — Multi-tenant SaaS with self-serve onboarding.
 
 Everything is **data-driven and slug-scoped**. Hotels never share each other’s

@@ -9,6 +9,16 @@ const {
   updateBookingSchema,
   updateBookingStatusSchema,
 } = require("../validators/booking.validator");
+const adminBookingPaymentController = require("../controllers/adminBookingPayment.controller");
+const adminBookingInvoiceController = require("../controllers/adminBookingInvoice.controller");
+const {
+  recordLedgerEntrySchema,
+  voidLedgerEntrySchema,
+  createDraftInvoiceSchema,
+  refreshDraftInvoiceSchema,
+  issueInvoiceSchema,
+  voidInvoiceSchema,
+} = require("../validators/bookingFinance.validator");
 
 const router = express.Router();
 
@@ -42,6 +52,39 @@ router.patch(
   "/:id",
   validate(updateBookingSchema),
   adminBookingController.updateBooking
+);
+router.get("/:id/payments", adminBookingPaymentController.listPayments);
+router.post(
+  "/:id/payments",
+  validate(recordLedgerEntrySchema),
+  adminBookingPaymentController.recordPayment
+);
+router.post(
+  "/:id/payments/:paymentId/void",
+  validate(voidLedgerEntrySchema),
+  adminBookingPaymentController.voidPayment
+);
+router.get("/:id/invoices", adminBookingInvoiceController.listInvoices);
+router.post(
+  "/:id/invoices",
+  validate(createDraftInvoiceSchema),
+  adminBookingInvoiceController.createDraftInvoice
+);
+router.get("/:id/invoices/:invoiceId", adminBookingInvoiceController.getInvoice);
+router.patch(
+  "/:id/invoices/:invoiceId",
+  validate(refreshDraftInvoiceSchema),
+  adminBookingInvoiceController.refreshDraftInvoice
+);
+router.post(
+  "/:id/invoices/:invoiceId/issue",
+  validate(issueInvoiceSchema),
+  adminBookingInvoiceController.issueInvoice
+);
+router.post(
+  "/:id/invoices/:invoiceId/void",
+  validate(voidInvoiceSchema),
+  adminBookingInvoiceController.voidInvoice
 );
 
 module.exports = router;

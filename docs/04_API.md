@@ -1,6 +1,6 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-17  
+> **Status:** Living document · **Last updated:** 2026-08-19  
 > **Base URL (local):** `http://localhost:5001`  
 > **Frontend env:** `NEXT_PUBLIC_API_URL`
 
@@ -19,7 +19,8 @@
 - [9. Tariffs (Phase 9)](#9-tariffs-phase-9)
 - [10. Bookings (Phase 10A)](#10-bookings-phase-10a)
 - [11. Admin guests (Phase 13 CRM Lite)](#11-admin-guests-phase-13-crm-lite)
-- [12. Errors & security](#12-errors--security)
+- [12. Admin payments & invoices (Phase 14 Lite)](#12-admin-payments--invoices-phase-14-lite)
+- [13. Errors & security](#13-errors--security)
 
 ---
 
@@ -74,6 +75,15 @@
 | `POST` | `/api/admin/bookings/:id/cancel` | JWT | 11 |
 | `PATCH` | `/api/admin/bookings/:id/status` | JWT | 10A |
 | `PATCH` | `/api/admin/bookings/:id/assign-room` | JWT | 10A |
+| `GET` | `/api/admin/bookings/:id/payments` | JWT | 14 |
+| `POST` | `/api/admin/bookings/:id/payments` | JWT | 14 |
+| `POST` | `/api/admin/bookings/:id/payments/:paymentId/void` | JWT | 14 |
+| `GET` | `/api/admin/bookings/:id/invoices` | JWT | 14 |
+| `POST` | `/api/admin/bookings/:id/invoices` | JWT | 14 |
+| `GET` | `/api/admin/bookings/:id/invoices/:invoiceId` | JWT | 14 |
+| `PATCH` | `/api/admin/bookings/:id/invoices/:invoiceId` | JWT | 14 |
+| `POST` | `/api/admin/bookings/:id/invoices/:invoiceId/issue` | JWT | 14 |
+| `POST` | `/api/admin/bookings/:id/invoices/:invoiceId/void` | JWT | 14 |
 | `GET` | `/api/admin/inventory/calendar` | JWT | 10D |
 | `GET` | `/api/admin/inventory/day` | JWT | 10D |
 | `GET` | `/api/admin/inventory/overlaps` | JWT | 10D |
@@ -337,6 +347,15 @@ Wrong contact → identical `404`. Response is the guest-safe booking payload.
 | `POST` | `/api/admin/bookings/:id/cancel` |
 | `PATCH` | `/api/admin/bookings/:id/status` |
 | `PATCH` | `/api/admin/bookings/:id/assign-room` |
+| `GET` | `/api/admin/bookings/:id/payments` |
+| `POST` | `/api/admin/bookings/:id/payments` |
+| `POST` | `/api/admin/bookings/:id/payments/:paymentId/void` |
+| `GET` | `/api/admin/bookings/:id/invoices` |
+| `POST` | `/api/admin/bookings/:id/invoices` |
+| `GET` | `/api/admin/bookings/:id/invoices/:invoiceId` |
+| `PATCH` | `/api/admin/bookings/:id/invoices/:invoiceId` |
+| `POST` | `/api/admin/bookings/:id/invoices/:invoiceId/issue` |
+| `POST` | `/api/admin/bookings/:id/invoices/:invoiceId/void` |
 
 **List filters:** `hotel_id`, `room_type_id`, `booking_status`, `payment_status`,
 `booking_source`, `check_in_from`, `check_in_to`, `check_out_from`,
@@ -413,6 +432,10 @@ refused on terminal bookings.
 **Statuses:** `pending`, `confirmed`, `checked_in`, `checked_out`, `cancelled`,
 `no_show`. **Payment:** `unpaid`, `partial`, `paid`, `refunded`.
 **Sources:** `website`, `admin`, `phone`, `walk_in`, `ota`.
+
+Phase 14 ledger writes recompute `payment_status` transactionally (see §12).
+The existing `PATCH` payment_status field still accepts those four values
+directly (pre-Phase-14 staff override).
 
 ## 10b. Inventory calendar (Phase 10D + 10I)
 
@@ -530,7 +553,82 @@ inquiry/booking detail APIs. `404` if no rows at that hotel for the key.
 Smoke: `npm run verify:crm`. Admin UI: `/admin/guests`,
 `/admin/guests/profile`.
 
-## 12. Errors & security
+## 12. Admin payments & invoices (Phase 14 Lite)
+
+Hotel-scoped manual finance over `booking_payments` and `booking_invoices`
+([ADR-0041](history/DECISIONS.md)). JWT + `requireAdminAuth`. **Required query
+on every call:** `hotel_id` (UUID). The booking must belong to that hotel
+(`400` mismatch, `404` unknown booking). No public routes. No live gateway.
+No admin UI in this slice.
+
+Smoke: `npm run verify:phase14`.
+
+### Payment ledger
+
+Amount is always **positive**; sign comes from `entry_type`. Methods:
+`cash`, `card`, `upi`, `bank_transfer`, `other`. Currency must match the
+booking. Optional `idempotency_key` is unique per `(hotel_id, key)` — replay
+returns the existing row (`200`).
+
+**`GET /api/admin/bookings/:id/payments`** — list + summary
+`{ active_payments, active_refunds, net_paid }`.
+
+**`POST /api/admin/bookings/:id/payments`** — record a row.
+
+Body: `entry_type` (`payment` \| `refund`), `payment_method`, `amount` (`> 0`).
+Optional: `currency`, `recorded_at` (ISO timestamp), `reference_code`,
+`notes`, `idempotency_key`, `external_provider`, `external_transaction_id`.
+
+`201` on insert, `200` on idempotent replay. Refunds that exceed net collected
+return `400`. Response includes `data` (ledger row), `payment_status`,
+`net_paid`, `billed_total`.
+
+**`POST /api/admin/bookings/:id/payments/:paymentId/void`** — body
+`{ void_reason }` (required). Sets `status=void` + `voided_at`. Already void
+→ `409`. No hard delete.
+
+### Invoices
+
+Statuses: `draft` → `issued` → `void` only. At most one **issued** invoice per
+booking. Drafts use a `DRAFT-…` placeholder number. Issue allocates
+`{HOTEL_CODE}-{YYYY}-{SEQ6}` from `hotels.slug` (optional
+`metadata.invoice_prefix` override) via `hotel_invoice_sequences`. Seller GSTIN
+/ PAN / HSN snapshot from `hotels.metadata.billing` when present; tax label
+from `metadata.tariff_settings.gst`. Issued snapshot is immutable except void.
+
+**`GET /api/admin/bookings/:id/invoices`** — list.
+
+**`POST /api/admin/bookings/:id/invoices`** — create draft (`201`). Optional
+`replaces_invoice_id` (must be a **void** invoice on this booking). Optional
+buyer/seller GST fields, `hsn_sac`, `place_of_supply`, `tax_rate_label`,
+`tax_rate_percent`, `line_description`, `notes`, `subtotal`, `tax_amount`.
+
+**`GET /api/admin/bookings/:id/invoices/:invoiceId`** — one invoice.
+
+**`PATCH /api/admin/bookings/:id/invoices/:invoiceId`** — refresh a **draft**
+from current booking/hotel (optional same override fields). Non-draft → `409`.
+
+**`POST /api/admin/bookings/:id/invoices/:invoiceId/issue`** — issue a draft.
+Already issued → `200` idempotent. Second issued invoice while one is active
+→ `409`. Then syncs `payment_status`.
+
+**`POST /api/admin/bookings/:id/invoices/:invoiceId/void`** — body
+`{ void_reason }`. Only **issued** invoices. Reissue: void, then create a new
+draft with `replaces_invoice_id`.
+
+### `bookings.payment_status` sync
+
+On every payment/refund/void and invoice issue/void, in one transaction:
+
+1. Lock the booking `FOR UPDATE`.
+2. `net_paid` = SUM(active payments) − SUM(active refunds).
+3. `billed_total` = issued invoice `total_amount` if one exists, else
+   `bookings.total_amount`.
+4. Status: `unpaid` if billed ≤ 0, or net ≤ 0 with no active ledger;
+   `refunded` if net ≤ 0 after ledger activity; `partial` if
+   `0 < net < billed`; `paid` if `net >= billed`.
+
+## 13. Errors & security
 
 - Validation: `400` with `errors` array where applicable.
 - Auth: `401` / `403` for admin routes.

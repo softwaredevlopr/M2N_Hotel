@@ -9,6 +9,44 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 14 Lite admin payment and invoice APIs ✅
+
+- **What changed.** Admin JWT APIs record a hotel-scoped manual payment ledger
+  and invoice draft/issue/void/reissue flows over migration `008`. Ledger
+  writes and invoice issue/void sync `bookings.payment_status` in the same
+  transaction. No frontend, no live payment gateway, no ERP.
+- **Files modified:** `adminBooking.routes.js`, `adminBookingPayment.controller.js`,
+  `adminBookingInvoice.controller.js`, `bookingPayment.service.js`,
+  `bookingInvoice.service.js`, `bookingFinanceShared.js`,
+  `bookingFinance.validator.js`, `bookingFinanceConstants.js`, `invoiceNumber.js`,
+  `verifyPhase14.js`, `package.json`, docs.
+- **APIs added/changed:** JWT nested routes under
+  `/api/admin/bookings/:id/payments` and `/api/admin/bookings/:id/invoices`
+  (required `hotel_id` query). Existing public and admin booking contracts
+  unchanged.
+- **Database changes:** none in this slice (uses `008` already applied).
+- **Frontend changes:** none.
+- **Backend changes:** append-only ledger (`payment` / `refund`, void-only
+  corrections); invoice snapshot on issue; slug-derived
+  `{HOTEL_CODE}-{YYYY}-{SEQ6}` numbers via `hotel_invoice_sequences`.
+- **Remaining work:** Phase 14 admin finance UI; no gateway/ERP in Lite;
+  non-local migrate `005`–`008`; placeholder contacts; Phase 15.
+
+### Added — Phase 14 Lite payments and invoice schema foundation ✅
+
+- **What changed.** Additive migration `008_booking_payments_and_invoices.sql`
+  plus [ADR-0041](history/DECISIONS.md). No application/API/frontend in that
+  schema-only commit.
+- **Files modified:** `008_booking_payments_and_invoices.sql`,
+  `docs/history/DECISIONS.md` (documented here with the API follow-up).
+- **APIs added/changed:** none in the schema-only commit.
+- **Database changes:** `hotel_invoice_sequences`, `booking_invoices`,
+  `booking_payments`. `bookings.payment_status` CHECK unchanged.
+- **Frontend changes:** none.
+- **Backend changes:** schema only.
+- **Remaining work:** application APIs (this slice, above); admin UI; gateway
+  out of scope.
+
 ### Added — Phase 13 CRM Lite open-leads visibility on Guest 360 ✅
 
 - **What changed.** Guest 360 now surfaces hotel-scoped open leads from
