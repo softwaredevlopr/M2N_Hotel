@@ -221,7 +221,7 @@ Manual payments and GST-ready invoice snapshots without a gateway or ERP
 - ✅ Admin JWT ledger APIs (record payment/refund, void)
 - ✅ Admin JWT invoice draft / issue / void / reissue
 - ✅ Transactional `bookings.payment_status` sync
-- ⬜ Admin booking-detail Payments & Invoices UI
+- ✅ Admin booking-detail Payments & Invoices UI (`/admin/bookings/[id]`)
 - Out of scope for Lite: live payment gateway, folio engine, credit notes,
   GSTR/accounting export
 

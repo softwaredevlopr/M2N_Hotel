@@ -21,6 +21,8 @@ import { listAdminRooms } from "@/lib/adminRooms";
 import { clearAdminSession } from "@/lib/adminAuth";
 import StatusBadge from "@/components/admin/StatusBadge";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import BookingPaymentsPanel from "@/components/admin/BookingPaymentsPanel";
+import BookingInvoicesPanel from "@/components/admin/BookingInvoicesPanel";
 import { useToast } from "@/components/admin/Toast";
 import { calculateStayTotals, nightsBetween } from "@/lib/bookingPricing";
 import { formatPrice } from "@/lib/format";
@@ -141,6 +143,7 @@ export default function AdminBookingDetailPage() {
   const [stayAvailability, setStayAvailability] = useState(null);
   const [stayAvailabilityLoading, setStayAvailabilityLoading] = useState(false);
   const [confirmStaySave, setConfirmStaySave] = useState(false);
+  const [issuedInvoice, setIssuedInvoice] = useState(null);
 
   const applyBookingState = useCallback((data) => {
     setBooking(data);
@@ -157,6 +160,20 @@ export default function AdminBookingDetailPage() {
     setStayAvailability(null);
     setConfirmStaySave(false);
   }, []);
+
+  const refreshBookingAfterFinance = useCallback(async () => {
+    const result = await getAdminBooking(id);
+    if (result.unauthorized) {
+      clearAdminSession();
+      router.replace("/admin/login");
+      return;
+    }
+    if (!result.ok) {
+      toast.error(formatApiError(result, "Unable to refresh booking."));
+      return;
+    }
+    applyBookingState(result.data?.data || null);
+  }, [id, router, toast, applyBookingState]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1074,6 +1091,27 @@ export default function AdminBookingDetailPage() {
             />
           </dl>
         </Section>
+      </div>
+
+      <div className="mt-6 space-y-6">
+        <BookingPaymentsPanel
+          bookingId={booking.id}
+          hotelId={booking.hotel_id}
+          currency={currency}
+          bookingTotal={booking.total_amount}
+          paymentStatus={booking.payment_status}
+          issuedInvoiceTotal={
+            issuedInvoice ? issuedInvoice.total_amount : null
+          }
+          onFinanceChange={refreshBookingAfterFinance}
+        />
+        <BookingInvoicesPanel
+          bookingId={booking.id}
+          hotelId={booking.hotel_id}
+          currency={currency}
+          onFinanceChange={refreshBookingAfterFinance}
+          onInvoicesChange={setIssuedInvoice}
+        />
       </div>
 
       <ConfirmDialog

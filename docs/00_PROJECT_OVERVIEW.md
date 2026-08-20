@@ -34,12 +34,12 @@ hotels, room types, rooms, and media.
 
 ## 2. Vision
 
-1. **Phases 1–14 Lite backend (done)** — Public multi-hotel site, booking
-   inquiries, admin CRUD, API-driven pages, rates, inventory, booking engine,
-   PMS Lite Front Desk, CRM Lite derived guest 360, and Phase 14 Lite
-   payment/invoice APIs (no finance UI, no gateway).
-2. **Remaining Phase 14 UI / Phase 15 (upcoming)** — admin Payments & Invoices
-   UI, then multi-property SaaS. Full CRM / dated follow-ups only if approved.
+1. **Phases 1–14 Lite (done)** — Public multi-hotel site, booking inquiries,
+   admin CRUD, API-driven pages, rates, inventory, booking engine, PMS Lite
+   Front Desk, CRM Lite derived guest 360, and Phase 14 Lite payment/invoice
+   APIs + booking-detail finance UI (no live gateway).
+2. **Phase 15 (upcoming)** — multi-property SaaS. Full CRM / dated follow-ups
+   only if approved.
 3. **Phase 15 (goal)** — Multi-tenant SaaS with self-serve onboarding.
 
 Everything is **data-driven and slug-scoped**. Hotels never share each other’s

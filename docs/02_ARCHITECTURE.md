@@ -155,7 +155,7 @@ models.
 | Bookings | ✅ Phase 10C/10G | `/api/admin/bookings` + list/detail/create UI |
 | Front Desk | ✅ Phase 12 PMS Lite | `/admin/front-desk` over hotel-scoped stats, list, status actions, room board |
 | Guests | ✅ Phase 13 CRM Lite | `/admin/guests` over derived `GET /api/admin/guests` + profile |
-| Payments / invoices | ✅ Phase 14 Lite APIs / ⬜ UI | Nested `/api/admin/bookings/:id/payments` and `/invoices`; no admin UI yet |
+| Payments / invoices | ✅ Phase 14 Lite | Nested JWT APIs + `/admin/bookings/[id]` panels; no gateway |
 | Inquiries | ✅ Phase 10H | `/api/inquiries` (POST public; admin JWT for rest) + UI |
 | Inventory | ✅ Phase 10D/10E/10I + write APIs | `/api/admin/inventory/*` + `/admin/inventory` UI; date upsert/delete |
 | Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |

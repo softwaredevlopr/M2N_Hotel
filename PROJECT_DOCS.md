@@ -70,7 +70,7 @@ with a JWT admin console. The long-term goal remains **multi-tenant SaaS**.
 | 11 | Booking Engine Completion | ✅ |
 | 12 | PMS Lite | ✅ |
 | 13 | CRM Lite (derived guest search + 360 + open leads) | ✅ |
-| 14 | Payments & Invoice Lite (manual ledger + invoice APIs) | ✅ backend / ⬜ UI |
+| 14 | Payments & Invoice Lite (APIs + booking-detail UI) | ✅ |
 | 15 | Multi-Property SaaS | ⬜ |
 
 Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre hotel ka content ya photos share nahi karta.
@@ -180,8 +180,8 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   readiness guide (architecture, env matrix, 005/006 rollout checklist). No
   staging/production cutover yet.
 
-**Next:** Phase 14 admin Payments & Invoices UI; Phase 15; operator non-local
-migrate (`005`–`008`) + host cutover.
+**Next:** Phase 15; operator non-local migrate (`005`–`008`) + host cutover.
+Full CRM / dated follow-ups only if separately approved.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -235,7 +235,11 @@ migrate (`005`–`008`) + host cutover.
 
 - ✅ **Phase 14 Lite — admin payment/invoice APIs** — hotel-scoped JWT
   ledger record/refund/void and invoice draft/issue/void/reissue; transactional
-  `bookings.payment_status` sync. Smoke: `npm run verify:phase14`. No frontend.
+  `bookings.payment_status` sync. Smoke: `npm run verify:phase14`. No gateway.
+
+- ✅ **Phase 14 Lite — admin booking-detail finance UI** —
+  `/admin/bookings/[id]` Payments + Invoices panels over those APIs. No schema
+  change. No gateway.
 
 ---
 

@@ -12,6 +12,13 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 14 — Lite booking-detail Payments & Invoices UI (2026-08-20)
+
+- `/admin/bookings/[id]` Payments + Invoices panels over JWT finance APIs.
+- Manual ledger record/void/refund; invoice draft/issue/void/reissue.
+- No gateway, no schema. Smoke: `npm run build` (frontend) +
+  `npm run verify:phase14`.
+
 ### Phase 14 — Lite admin payment and invoice APIs (2026-08-19)
 
 - Hotel-scoped JWT ledger and invoice APIs over migration `008`

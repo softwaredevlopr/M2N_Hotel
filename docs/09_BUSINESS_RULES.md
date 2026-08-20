@@ -139,9 +139,10 @@ Domain rules the product must enforce. Schema changes require explicit approval.
   buyer, stay, and amounts. Correction is void + reissue (new number).
 - `bookings.payment_status` is the denormalized summary; finance APIs recompute
   it in the same transaction as ledger/invoice writes.
+- Admin UI: `/admin/bookings/[id]` Payments and Invoices panels.
 - No live payment gateway, no folio, no accounting/ERP in Lite.
 
 ## 10. Upcoming domain areas
 
-Inventory date admin UI is complete (Phase 10E/10I). Phase 14 admin finance UI
-and a live payment gateway remain out of this Lite slice.
+Inventory date admin UI is complete (Phase 10E/10I). Phase 14 Lite finance APIs
+and booking-detail UI are complete. A live payment gateway remains out of Lite.

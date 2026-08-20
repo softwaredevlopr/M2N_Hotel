@@ -60,7 +60,7 @@ frontend/
         ├── adminAuth.js
         ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js,
         │   adminTariffs.js, adminBookings.js, adminInventory.js, adminInquiries.js,
-        │   adminGuests.js
+        │   adminGuests.js, adminBookingFinance.js
 
 ## 3. Backend
 

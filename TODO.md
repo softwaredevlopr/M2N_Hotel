@@ -126,9 +126,9 @@
 - [x] Phase 13 — CRM Lite open leads + source-record notes on Guest 360
 - [ ] Phase 13 Full CRM (guest master / merge) — only if separately approved
 - [ ] Dated follow-up table — only if separately approved
-- [x] Phase 14 Lite — schema `008` + admin payment/invoice APIs (no UI/gateway).
+- [x] Phase 14 Lite — schema `008` + admin payment/invoice APIs (no gateway).
       Smoke: `npm run verify:phase14`.
-- [ ] Phase 14 — admin Payments & Invoices UI on booking detail
+- [x] Phase 14 — admin booking-detail Payments & Invoices UI
 - [ ] Phase 14 — live payment gateway / ERP (not in Lite)
 - [ ] Phase 15 — Multi-Property SaaS
 
@@ -138,5 +138,5 @@
 
 Phases **1–12** complete; Phase **13** CRM Lite (guest search + 360 + open
 leads) shipped — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
-Remaining: Phase 14 admin finance UI; Full CRM / dated follow-ups only if
-approved; non-local migrate `005`–`008`; placeholder contacts; Phase 15.
+Remaining: Full CRM / dated follow-ups only if approved; non-local migrate
+`005`–`008`; placeholder contacts; Phase 15.

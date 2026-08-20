@@ -23,8 +23,8 @@
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
 - **Next:** Phase 13 CRM Lite (search + 360 + open leads) ✅; Phase 14 Lite
-  backend (ledger + invoices) ✅; admin finance UI next; Full CRM / dated
-  follow-ups only if approved; Phase 15; operator staging cutover
+  (ledger + invoices + booking-detail UI) ✅; Full CRM / dated follow-ups only
+  if approved; Phase 15; operator staging cutover
   ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`–`008`
   still pending.
 - Guest cancel / modify / notification prefs: contact-verified
@@ -39,7 +39,8 @@
   statuses; notes stay on source records ([ADR-0040](history/DECISIONS.md)).
 - Phase 14 Lite finance: hotel-scoped `booking_payments` / `booking_invoices`
   ([ADR-0041](history/DECISIONS.md)). Admin JWT nested under
-  `/api/admin/bookings/:id/payments` and `/invoices`. No UI, no gateway.
+  `/api/admin/bookings/:id/payments` and `/invoices`. Booking-detail UI on
+  `/admin/bookings/[id]`. No gateway.
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 

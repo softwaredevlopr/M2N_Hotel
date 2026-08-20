@@ -58,12 +58,13 @@
 | Phase 13 — CRM Lite guest search + 360 | ✅ First slice (no schema) |
 | Phase 13 — CRM Lite open leads on 360 | ✅ (no schema) |
 | Phase 14 — Payments & Invoice Lite schema (`008`) | ✅ |
-| Phase 14 — admin payment/invoice APIs | ✅ (no UI / no gateway) |
+| Phase 14 — admin payment/invoice APIs | ✅ (no gateway) |
+| Phase 14 — booking-detail Payments & Invoices UI | ✅ |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
 Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) ✅ ·
-Phase **14** Lite backend (ledger + invoices) ✅ · Next: Phase 14 admin finance
-UI; Full CRM only if approved; Phase 15; staging cutover
+Phase **14** Lite (ledger + invoices + booking-detail UI) ✅ · Next: Full CRM
+only if approved; Phase 15; staging cutover
 
 ---
 
@@ -273,6 +274,16 @@ UI; Full CRM only if approved; Phase 15; staging cutover
 - No admin UI, no public payment APIs, no live gateway.
 - Smoke: `npm run verify:phase14`.
 
+### Phase 14 — admin booking-detail Payments & Invoices UI ✅
+
+- `/admin/bookings/[id]` adds Payments and Invoices panels over the JWT finance
+  APIs. Summary shows payment status, billed total, collected, refunded, net,
+  and outstanding. Staff can record payment/refund, void mistaken ledger rows,
+  and draft/issue/void/reissue invoices. No gateway, no card PAN collection.
+- Files: `adminBookingFinance.js`, `BookingPaymentsPanel.js`,
+  `BookingInvoicesPanel.js`, booking detail page, `StatusBadge` styles.
+- Smoke: frontend `npm run build`; backend `npm run verify:phase14`.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -293,8 +304,7 @@ UI; Full CRM only if approved; Phase 15; staging cutover
 1. Provision staging/production hosts + secrets; non-local migrate
    `005`/`006`/`007`/`008`.
 2. Replace placeholder contact details before public launch.
-3. Phase **14** admin Payments & Invoices UI on booking detail (no gateway).
-4. Remaining Phase **13** only if separately approved (Full CRM guest master /
+3. Remaining Phase **13** only if separately approved (Full CRM guest master /
    merge, or a dated follow-up table). Otherwise Phase **15** per
    [13 — Roadmap](13_ROADMAP.md).
 
@@ -315,6 +325,7 @@ UI; Full CRM only if approved; Phase 15; staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-08-20 | Phase 14 Lite booking-detail Payments & Invoices UI |
 | 2026-08-19 | Phase 14 Lite admin payment/invoice APIs (no UI/gateway) |
 | 2026-08-18 | Phase 14 Lite schema foundation (migration `008`, ADR-0041) |
 | 2026-08-17 | Phase 13 CRM Lite open leads + source-record notes on Guest 360 |

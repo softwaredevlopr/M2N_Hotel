@@ -561,7 +561,8 @@ on every call:** `hotel_id` (UUID). The booking must belong to that hotel
 (`400` mismatch, `404` unknown booking). No public routes. No live gateway.
 No admin UI in this slice.
 
-Smoke: `npm run verify:phase14`.
+Smoke: `npm run verify:phase14`. Admin UI: `/admin/bookings/[id]` Payments and
+Invoices panels.
 
 ### Payment ledger
 

@@ -1,6 +1,6 @@
 # 10 — UI Guidelines
 
-> **Status:** Living document · **Last updated:** 2026-08-16
+> **Status:** Living document · **Last updated:** 2026-08-20
 
 ---
 
@@ -100,6 +100,11 @@
 - **Cancel booking** uses ConfirmDialog; cancellation reason is optional.
   No-show still requires a reason via the status dialog.
 - Cancel / no-show reasons map to `cancellation_reason` (not internal notes).
+- **Payments** and **Invoices** panels (Phase 14 Lite) sit below the main
+  two-column grid. Payments: balance summary, record payment/refund form,
+  ledger table with void (ConfirmDialog + reason). Invoices: list with
+  draft/issue/void/reissue. Always scoped to the booking’s `hotel_id`. No
+  card PAN fields.
 
 **Admin inquiries (`/admin/inquiries`)**
 

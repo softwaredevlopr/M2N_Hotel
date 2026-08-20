@@ -9,6 +9,23 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 14 Lite admin booking-detail Payments & Invoices UI ✅
+
+- **What changed.** Booking detail (`/admin/bookings/[id]`) now includes
+  Payments and Invoices panels over the committed Phase 14 JWT APIs. Staff can
+  see balances, record cash/card/UPI/bank/other ledger entries, void mistaken
+  rows, and draft/issue/void/reissue invoices. No gateway, no ERP, no schema
+  change.
+- **Files modified:** `adminBookingFinance.js`, `BookingPaymentsPanel.js`,
+  `BookingInvoicesPanel.js`, `bookings/[id]/page.js`, `StatusBadge.js`, docs.
+- **APIs added/changed:** none (consumes existing nested finance routes).
+- **Database changes:** none.
+- **Frontend changes:** finance panels on booking detail; hotel_id scoped to
+  the loaded booking.
+- **Backend changes:** none.
+- **Remaining work:** live gateway / ERP out of Lite; non-local migrate
+  `005`–`008`; placeholder contacts; Phase 15.
+
 ### Added — Phase 14 Lite admin payment and invoice APIs ✅
 
 - **What changed.** Admin JWT APIs record a hotel-scoped manual payment ledger
