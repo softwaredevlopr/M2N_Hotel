@@ -7,6 +7,12 @@ const {
   OCCUPANCY_TYPES,
   ALLOWED_TARIFF_STATUSES,
 } = require("../utils/tariffConstants");
+const {
+  appendPermittedHotelScope,
+  assertHotelAccess,
+  assertHotelRecordAccess,
+  assertResourceHotelAccess,
+} = require("../utils/adminTenancy");
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -220,8 +226,9 @@ const listTariffs = asyncHandler(async (req, res) => {
   const conditions = [];
 
   if (hotelId) {
-    params.push(hotelId);
-    conditions.push(`tr.hotel_id = $${params.length}`);
+    appendPermittedHotelScope(conditions, params, req.tenancy, "tr.hotel_id", hotelId);
+  } else {
+    appendPermittedHotelScope(conditions, params, req.tenancy, "tr.hotel_id");
   }
   if (roomTypeId) {
     params.push(roomTypeId);
@@ -260,9 +267,12 @@ const listTariffs = asyncHandler(async (req, res) => {
 
 const getTariffById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Tariff rate not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "tariff_rates",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Tariff rate not found: ${id}`,
+  });
 
   const result = await query(
     `SELECT ${TARIFF_FIELDS}
@@ -286,6 +296,8 @@ const createTariff = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  assertHotelAccess(req.tenancy, payload.hotel_id);
 
   await assertHotelExists(payload.hotel_id);
   if (payload.room_type_id) {
@@ -329,9 +341,12 @@ const createTariff = asyncHandler(async (req, res) => {
 
 const updateTariff = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Tariff rate not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "tariff_rates",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Tariff rate not found: ${id}`,
+  });
 
   const existing = await query(
     `SELECT id, hotel_id FROM tariff_rates WHERE id = $1 LIMIT 1`,
@@ -348,6 +363,7 @@ const updateTariff = asyncHandler(async (req, res) => {
 
   const hotelId = payload.hotel_id || existing.rows[0].hotel_id;
   if (payload.hotel_id) {
+    assertHotelAccess(req.tenancy, payload.hotel_id);
     await assertHotelExists(payload.hotel_id);
   }
   if (payload.room_type_id) {
@@ -393,9 +409,12 @@ const updateTariff = asyncHandler(async (req, res) => {
 
 const deleteTariff = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Tariff rate not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "tariff_rates",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Tariff rate not found: ${id}`,
+  });
 
   const result = await query(
     `DELETE FROM tariff_rates WHERE id = $1
@@ -415,9 +434,7 @@ const deleteTariff = asyncHandler(async (req, res) => {
 
 const getTariffSettings = asyncHandler(async (req, res) => {
   const { hotelId } = req.params;
-  if (!UUID_REGEX.test(hotelId)) {
-    throw new AppError(`Hotel not found: ${hotelId}`, 404);
-  }
+  await assertHotelRecordAccess(req.tenancy, hotelId);
 
   const result = await query(
     `SELECT id, slug, name, metadata FROM hotels WHERE id = $1 LIMIT 1`,
@@ -446,9 +463,7 @@ const getTariffSettings = asyncHandler(async (req, res) => {
 
 const updateTariffSettings = asyncHandler(async (req, res) => {
   const { hotelId } = req.params;
-  if (!UUID_REGEX.test(hotelId)) {
-    throw new AppError(`Hotel not found: ${hotelId}`, 404);
-  }
+  await assertHotelRecordAccess(req.tenancy, hotelId);
 
   const existing = await query(
     `SELECT id, metadata FROM hotels WHERE id = $1 LIMIT 1`,

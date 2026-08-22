@@ -2,6 +2,7 @@ const express = require("express");
 const adminTariffController = require("../controllers/adminTariff.controller");
 const validate = require("../middleware/validate.middleware");
 const { requireAdminAuth } = require("../middleware/adminAuth.middleware");
+const { resolveAdminTenancy } = require("../middleware/adminTenancy.middleware");
 const {
   createTariffSchema,
   updateTariffSchema,
@@ -11,6 +12,7 @@ const {
 const router = express.Router();
 
 router.use(requireAdminAuth);
+router.use(resolveAdminTenancy);
 
 router.get("/settings/:hotelId", adminTariffController.getTariffSettings);
 router.patch(

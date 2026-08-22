@@ -31,6 +31,10 @@ const {
   normalizeNotificationPreferences,
   parseNotificationPreferences,
 } = require("../utils/notificationPreferences");
+const {
+  appendPermittedHotelScope,
+  assertHotelAccess,
+} = require("../utils/adminTenancy");
 
 const MAX_ADULTS = 30;
 const MAX_CHILDREN = 30;
@@ -90,7 +94,7 @@ async function fetchBookingById(id) {
   return withNormalizedPrefs(result.rows[0] || null);
 }
 
-async function requireBooking(id) {
+async function requireBooking(id, tenancy) {
   if (!UUID_REGEX.test(id)) {
     throw new AppError(`Booking not found: ${id}`, 404);
   }
@@ -98,6 +102,9 @@ async function requireBooking(id) {
   if (!booking) {
     throw new AppError(`Booking not found: ${id}`, 404);
   }
+  assertHotelAccess(tenancy, booking.hotel_id, {
+    notFoundMessage: `Booking not found: ${id}`,
+  });
   return booking;
 }
 
@@ -109,8 +116,15 @@ const listBookings = asyncHandler(async (req, res) => {
     typeof req.query.hotel_id === "string" &&
     UUID_REGEX.test(req.query.hotel_id)
   ) {
-    params.push(req.query.hotel_id);
-    conditions.push(`b.hotel_id = $${params.length}`);
+    appendPermittedHotelScope(
+      conditions,
+      params,
+      req.tenancy,
+      "b.hotel_id",
+      req.query.hotel_id
+    );
+  } else {
+    appendPermittedHotelScope(conditions, params, req.tenancy, "b.hotel_id");
   }
 
   if (
@@ -292,6 +306,10 @@ const getBookingStats = asyncHandler(async (req, res) => {
     return sendValidationError(res, hotelErrors);
   }
 
+  if (hotelId) {
+    assertHotelAccess(req.tenancy, hotelId);
+  }
+
   const byStatusParams = [];
   let byStatusWhere = "";
   const opsParams = [today];
@@ -305,6 +323,19 @@ const getBookingStats = asyncHandler(async (req, res) => {
     opsWhere = "WHERE hotel_id = $2";
     roomParams.push(hotelId);
     roomHotelClause = "AND hotel_id = $2";
+  } else if (!req.tenancy.isPlatformAdmin) {
+    if (!req.tenancy.permittedHotelIds.length) {
+      byStatusWhere = "WHERE FALSE";
+      opsWhere = "WHERE FALSE";
+      roomHotelClause = "AND FALSE";
+    } else {
+      byStatusParams.push(req.tenancy.permittedHotelIds);
+      byStatusWhere = "WHERE hotel_id = ANY($1::uuid[])";
+      opsParams.push(req.tenancy.permittedHotelIds);
+      opsWhere = "WHERE hotel_id = ANY($2::uuid[])";
+      roomParams.push(req.tenancy.permittedHotelIds);
+      roomHotelClause = "AND hotel_id = ANY($2::uuid[])";
+    }
   }
 
   const [byStatus, ops, occupancy] = await Promise.all([
@@ -385,7 +416,7 @@ const getBookingStats = asyncHandler(async (req, res) => {
 });
 
 const getBookingById = asyncHandler(async (req, res) => {
-  const booking = await requireBooking(req.params.id);
+  const booking = await requireBooking(req.params.id, req.tenancy);
   return sendSuccess(res, 200, { data: booking });
 });
 
@@ -467,6 +498,8 @@ const createBooking = asyncHandler(async (req, res) => {
     return sendValidationError(res, errors);
   }
 
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Hotel not found" });
+
   const { bookingId } = await bookingService.createBooking({
     hotel_id: hotelId,
     room_type_id: roomTypeId,
@@ -504,7 +537,7 @@ const createBooking = asyncHandler(async (req, res) => {
 });
 
 const updateBookingStatus = asyncHandler(async (req, res) => {
-  const booking = await requireBooking(req.params.id);
+  const booking = await requireBooking(req.params.id, req.tenancy);
   const body = req.body || {};
   const errors = [];
 
@@ -603,7 +636,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
  * BOOKING_STATUS_TRANSITIONS (... → cancelled).
  */
 const cancelBooking = asyncHandler(async (req, res) => {
-  const booking = await requireBooking(req.params.id);
+  const booking = await requireBooking(req.params.id, req.tenancy);
   const body = req.body || {};
   const errors = [];
 
@@ -659,7 +692,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
  * assignment is only meaningful for single-room reservations.
  */
 const assignRoom = asyncHandler(async (req, res) => {
-  const booking = await requireBooking(req.params.id);
+  const booking = await requireBooking(req.params.id, req.tenancy);
   const roomIdRaw = trimOrNull((req.body || {}).room_id);
 
   if (roomIdRaw === null) {
@@ -711,7 +744,7 @@ const assignRoom = asyncHandler(async (req, res) => {
 });
 
 const updateBooking = asyncHandler(async (req, res) => {
-  const booking = await requireBooking(req.params.id);
+  const booking = await requireBooking(req.params.id, req.tenancy);
   const body = req.body || {};
   const errors = [];
   const updates = {};

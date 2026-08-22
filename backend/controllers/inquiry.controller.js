@@ -3,6 +3,11 @@ const { sendSuccess, sendValidationError } = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { AppError } = require("../middleware/error.middleware");
 const { INQUIRY_STATUSES } = require("../validators/inquiry.validator");
+const {
+  appendPermittedHotelScope,
+  assertHotelAccess,
+  assertResourceHotelAccess,
+} = require("../utils/adminTenancy");
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -124,17 +129,26 @@ const listInquiries = asyncHandler(async (req, res) => {
   const conditions = [];
   const params = [];
 
-  if (typeof req.query.hotel_slug === "string" && req.query.hotel_slug.length > 0) {
-    params.push(req.query.hotel_slug);
-    conditions.push(`h.slug = $${params.length}`);
-  }
-
   if (
     typeof req.query.hotel_id === "string" &&
     UUID_REGEX.test(req.query.hotel_id)
   ) {
-    params.push(req.query.hotel_id);
-    conditions.push(`i.hotel_id = $${params.length}`);
+    appendPermittedHotelScope(
+      conditions,
+      params,
+      req.tenancy,
+      "i.hotel_id",
+      req.query.hotel_id
+    );
+  } else if (typeof req.query.hotel_slug === "string" && req.query.hotel_slug.length > 0) {
+    params.push(req.query.hotel_slug);
+    conditions.push(`h.slug = $${params.length}`);
+    if (!req.tenancy.isPlatformAdmin) {
+      params.push(req.tenancy.permittedHotelIds);
+      conditions.push(`i.hotel_id = ANY($${params.length}::uuid[])`);
+    }
+  } else {
+    appendPermittedHotelScope(conditions, params, req.tenancy, "i.hotel_id");
   }
 
   if (
@@ -203,10 +217,12 @@ const listInquiries = asyncHandler(async (req, res) => {
 
 const getInquiryById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Inquiry not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "inquiries",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Inquiry not found: ${id}`,
+  });
 
   const result = await query(
     `SELECT ${INQUIRY_FIELDS}
@@ -227,10 +243,12 @@ const getInquiryById = asyncHandler(async (req, res) => {
 
 const updateInquiryStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Inquiry not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "inquiries",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Inquiry not found: ${id}`,
+  });
 
   const adminNotes =
     typeof req.body.admin_notes === "string" && req.body.admin_notes.length > 0
@@ -259,10 +277,12 @@ const updateInquiryStatus = asyncHandler(async (req, res) => {
 
 const deleteInquiry = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Inquiry not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "inquiries",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Inquiry not found: ${id}`,
+  });
 
   const result = await query(
     `DELETE FROM inquiries

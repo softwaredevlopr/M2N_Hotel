@@ -1489,6 +1489,72 @@ SaaS, every financial record must preserve `hotel_id` isolation.
 - Multiple concurrently issued invoices per booking in Lite. Rejected — deposit /
   split-billing is out of scope for the first Phase 14 slice.
 
+### ADR-0042 — Phase 15 Lite multi-property SaaS tenancy (tenant isolation foundation)
+
+**Date:** 2026-08-20
+
+**Status:** Accepted
+
+**Context**
+The platform serves multiple hotels from one installation but lacks a tenant
+(operator) boundary. `admin_users` has no hotel or tenant link; JWT carries
+only `sub`, `email`, and `role`; `requireAdminAuth` authenticates login only.
+Any authenticated admin can access any hotel by supplying `hotel_id`. ADR-0007
+deferred hotel-scoped `hotel_admin` assignments. Phase 15 roadmap requires
+self-serve onboarding, tenant isolation, and operator billing — starting with
+the smallest schema that preserves existing `hotels` and all `hotel_id` child
+tables (bookings, inventory, CRM Lite, Phase 14 finance).
+
+**Decision**
+- Add migration `009_tenancy_lite.sql`:
+  - **`tenants`** — operator / SaaS account (`name`, unique `slug`, `status`,
+    billing stub fields `plan_code`, `subscription_status`, `trial_ends_at`,
+    `current_period_end`, `billing_email`, `metadata` JSONB).
+  - **`tenant_memberships`** — links `admin_users` to `tenants` with
+    `membership_role` ∈ `owner` | `admin` | `staff`; unique
+    `(tenant_id, admin_user_id)`.
+  - **`hotels.tenant_id`** — NOT NULL FK → `tenants(id) ON DELETE RESTRICT`.
+- Keep **`hotels.slug` globally unique** (public URLs unchanged).
+- Keep **`admin_users` schema unchanged**; login identity stays global.
+- **Role semantics:**
+  - `admin_users.role = super_admin` — M2N platform staff; cross-tenant support
+    (enforcement deferred to AuthZ task).
+  - `admin_users.role = hotel_admin` — tenant operator; access via memberships.
+  - `tenant_memberships.membership_role` — tenant-level permissions only.
+- **Lite access model:** one membership grants access to **all hotels** under
+  that tenant. No `hotel_memberships` (per-property ACL) in this migration.
+- **Non-destructive backfill** in migration 009:
+  - Insert default tenant `M2N Hotels` / slug `m2n-hotels`, `status=active`,
+    `plan_code=lite`, `subscription_status=active`.
+  - Set `hotels.tenant_id` for all existing hotels to that tenant.
+  - Insert `tenant_memberships` as `owner` for every active `admin_users` row.
+- **No changes** to operational tables (`bookings`, `booking_payments`,
+  `booking_invoices`, `room_types`, `rooms`, `inquiries`, `tariff_rates`,
+  `room_type_inventory_dates`, etc.) — isolation path is
+  `row.hotel_id → hotels.tenant_id → membership.tenant_id`.
+- **AuthZ middleware and API hardening** are explicitly **out of scope** for
+  this ADR/migration — follow-on task after 009 is verified.
+- **Operator billing stub** lives on `tenants` columns only; no Stripe/gateway,
+  no `saas_invoices` table in Lite.
+
+**Consequences**
+- Existing hotel UUIDs, booking rows, and finance records are untouched.
+- Secure tenant isolation requires the AuthZ enforcement layer (membership
+  lookup + `assertHotelAccess` on every admin route) before production SaaS.
+- Multi-tenant users (multiple memberships) require tenant switch UX later.
+- Per-hotel admin restriction remains deferred until `hotel_memberships`.
+
+**Alternatives considered**
+- `hotel = tenant` (one row per operator property). Rejected — operators often
+  run multiple properties; billing is at operator level.
+- `admin_users.hotel_id` single FK. Rejected — blocks multi-hotel operators;
+  ADR-0007 already deferred this pattern.
+- `tenant_id` on every child table. Rejected — redundant with `hotels.tenant_id`
+  and risks drift; enforce via join.
+- PostgreSQL RLS. Deferred — application-layer AuthZ first.
+- Per-hotel ACL in Lite. Rejected — out of approved scope; all tenant members
+  see all tenant hotels in Phase 15 Lite.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

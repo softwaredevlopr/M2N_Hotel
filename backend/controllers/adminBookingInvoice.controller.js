@@ -9,6 +9,11 @@ const {
   parseInvoiceOverrides,
   parseRequiredString,
 } = require("../validators/bookingFinance.validator");
+const { assertHotelAccess } = require("../utils/adminTenancy");
+
+function authorizeFinanceHotel(req, hotelId) {
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Booking not found" });
+}
 
 const listInvoices = asyncHandler(async (req, res) => {
   const errors = [];
@@ -17,6 +22,8 @@ const listInvoices = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  authorizeFinanceHotel(req, hotelId);
 
   const payload = await bookingInvoiceService.listInvoices({ hotelId, bookingId });
   return sendSuccess(res, 200, payload);
@@ -30,6 +37,8 @@ const getInvoice = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  authorizeFinanceHotel(req, hotelId);
 
   const payload = await bookingInvoiceService.getInvoice({
     hotelId,
@@ -54,6 +63,8 @@ const createDraftInvoice = asyncHandler(async (req, res) => {
     return sendValidationError(res, errors);
   }
 
+  authorizeFinanceHotel(req, hotelId);
+
   const payload = await bookingInvoiceService.createDraftInvoice({
     hotelId,
     bookingId,
@@ -73,6 +84,8 @@ const refreshDraftInvoice = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  authorizeFinanceHotel(req, hotelId);
 
   const payload = await bookingInvoiceService.refreshDraftInvoice({
     hotelId,
@@ -95,6 +108,8 @@ const issueInvoice = asyncHandler(async (req, res) => {
     return sendValidationError(res, errors);
   }
 
+  authorizeFinanceHotel(req, hotelId);
+
   const payload = await bookingInvoiceService.issueInvoice({
     hotelId,
     bookingId,
@@ -116,6 +131,8 @@ const voidInvoice = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  authorizeFinanceHotel(req, hotelId);
 
   const payload = await bookingInvoiceService.voidInvoice({
     hotelId,

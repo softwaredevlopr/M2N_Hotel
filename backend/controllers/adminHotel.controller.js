@@ -3,6 +3,11 @@ const { sendSuccess, sendValidationError } = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { AppError } = require("../middleware/error.middleware");
 const { ALLOWED_HOTEL_STATUSES } = require("../validators/adminHotel.validator");
+const {
+  appendPermittedHotelScope,
+  assertHotelRecordAccess,
+  resolveCreateTenantId,
+} = require("../utils/adminTenancy");
 
 const HOTEL_FIELDS = `
   id, slug, name, tagline, description, email, phone, website_url,
@@ -191,6 +196,8 @@ const listHotels = asyncHandler(async (req, res) => {
     conditions.push(`status = $${params.length}`);
   }
 
+  appendPermittedHotelScope(conditions, params, req.tenancy, "id");
+
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const result = await query(
@@ -209,9 +216,7 @@ const listHotels = asyncHandler(async (req, res) => {
 
 const getHotelById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Hotel not found: ${id}`, 404);
-  }
+  await assertHotelRecordAccess(req.tenancy, id);
 
   const result = await query(
     `SELECT ${HOTEL_FIELDS} FROM hotels WHERE id = $1 LIMIT 1`,
@@ -232,18 +237,20 @@ const createHotel = asyncHandler(async (req, res) => {
   }
 
   try {
+    const tenantId = await resolveCreateTenantId(req);
     const result = await query(
       `INSERT INTO hotels (
-         slug, name, tagline, description, email, phone, website_url,
+         tenant_id, slug, name, tagline, description, email, phone, website_url,
          address_line1, address_line2, city, state, country, postal_code,
          timezone, check_in_time, check_out_time, currency_code, star_rating,
          status, is_featured, metadata
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21::jsonb
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22::jsonb
        )
        RETURNING ${HOTEL_FIELDS}`,
       [
+        tenantId,
         payload.slug,
         payload.name,
         payload.tagline,
@@ -279,9 +286,7 @@ const createHotel = asyncHandler(async (req, res) => {
 
 const updateHotel = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Hotel not found: ${id}`, 404);
-  }
+  await assertHotelRecordAccess(req.tenancy, id);
 
   const existing = await query(`SELECT id FROM hotels WHERE id = $1 LIMIT 1`, [
     id,
@@ -331,9 +336,7 @@ const updateHotel = asyncHandler(async (req, res) => {
 
 const deleteHotel = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Hotel not found: ${id}`, 404);
-  }
+  await assertHotelRecordAccess(req.tenancy, id);
 
   const result = await query(
     `DELETE FROM hotels WHERE id = $1

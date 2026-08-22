@@ -13,6 +13,11 @@ const {
   uploadsRoot,
   ensureDir,
 } = require("../utils/mediaCategory");
+const {
+  appendPermittedHotelScope,
+  assertHotelAccess,
+  assertResourceHotelAccess,
+} = require("../utils/adminTenancy");
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -128,8 +133,9 @@ const listMedia = asyncHandler(async (req, res) => {
     );
   }
   if (hotelId) {
-    params.push(hotelId);
-    conditions.push(`m.hotel_id = $${params.length}`);
+    appendPermittedHotelScope(conditions, params, req.tenancy, "m.hotel_id", hotelId);
+  } else {
+    appendPermittedHotelScope(conditions, params, req.tenancy, "m.hotel_id");
   }
   if (status) {
     params.push(status);
@@ -162,9 +168,12 @@ const listMedia = asyncHandler(async (req, res) => {
 
 const getMediaById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Media not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "hotel_media",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Media not found: ${id}`,
+  });
 
   const result = await query(
     `SELECT ${MEDIA_FIELDS}
@@ -220,6 +229,8 @@ const uploadMedia = asyncHandler(async (req, res) => {
     return sendValidationError(res, errors);
   }
 
+  assertHotelAccess(req.tenancy, hotelId);
+
   await assertHotelExists(hotelId);
 
   // File already stored in category folder by multer diskStorage.
@@ -260,9 +271,12 @@ const uploadMedia = asyncHandler(async (req, res) => {
 
 const updateMedia = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Media not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "hotel_media",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Media not found: ${id}`,
+  });
 
   const existing = await query(
     `SELECT * FROM hotel_media WHERE id = $1 LIMIT 1`,
@@ -353,6 +367,7 @@ const updateMedia = asyncHandler(async (req, res) => {
 
   const nextHotelId = payload.hotel_id || row.hotel_id;
   if (payload.hotel_id) {
+    assertHotelAccess(req.tenancy, payload.hotel_id);
     await assertHotelExists(payload.hotel_id);
   }
 
@@ -387,9 +402,12 @@ const updateMedia = asyncHandler(async (req, res) => {
 
 const deleteMedia = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Media not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "hotel_media",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Media not found: ${id}`,
+  });
 
   const result = await query(
     `DELETE FROM hotel_media WHERE id = $1

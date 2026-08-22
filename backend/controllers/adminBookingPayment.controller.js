@@ -1,6 +1,7 @@
 const { sendSuccess, sendValidationError } = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const bookingPaymentService = require("../services/bookingPayment.service");
+const { assertHotelAccess } = require("../utils/adminTenancy");
 const {
   parseBookingIdParam,
   parseHotelIdQuery,
@@ -17,6 +18,8 @@ const listPayments = asyncHandler(async (req, res) => {
     return sendValidationError(res, errors);
   }
 
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Booking not found" });
+
   const payload = await bookingPaymentService.listPayments({ hotelId, bookingId });
   return sendSuccess(res, 200, payload);
 });
@@ -29,6 +32,8 @@ const recordPayment = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Booking not found" });
 
   const payload = await bookingPaymentService.recordLedgerEntry({
     hotelId,
@@ -60,6 +65,8 @@ const voidPayment = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Booking not found" });
 
   const payload = await bookingPaymentService.voidPaymentEntry({
     hotelId,

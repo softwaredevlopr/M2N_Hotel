@@ -5,6 +5,11 @@ const { AppError } = require("../middleware/error.middleware");
 const {
   ALLOWED_ROOM_TYPE_STATUSES,
 } = require("../validators/adminRoomType.validator");
+const {
+  appendPermittedHotelScope,
+  assertHotelAccess,
+  assertResourceHotelAccess,
+} = require("../utils/adminTenancy");
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -220,8 +225,9 @@ const listRoomTypes = asyncHandler(async (req, res) => {
     );
   }
   if (hotelId) {
-    params.push(hotelId);
-    conditions.push(`rt.hotel_id = $${params.length}`);
+    appendPermittedHotelScope(conditions, params, req.tenancy, "rt.hotel_id", hotelId);
+  } else {
+    appendPermittedHotelScope(conditions, params, req.tenancy, "rt.hotel_id");
   }
   if (status) {
     params.push(status);
@@ -250,9 +256,12 @@ const listRoomTypes = asyncHandler(async (req, res) => {
 
 const getRoomTypeById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Room type not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "room_types",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Room type not found: ${id}`,
+  });
 
   const result = await query(
     `SELECT ${ROOM_TYPE_FIELDS}
@@ -275,6 +284,8 @@ const createRoomType = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  assertHotelAccess(req.tenancy, payload.hotel_id);
 
   const hotel = await query(`SELECT id FROM hotels WHERE id = $1 LIMIT 1`, [
     payload.hotel_id,
@@ -329,9 +340,12 @@ const createRoomType = asyncHandler(async (req, res) => {
 
 const updateRoomType = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Room type not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "room_types",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Room type not found: ${id}`,
+  });
 
   const existing = await query(
     `SELECT id, hotel_id, metadata FROM room_types WHERE id = $1 LIMIT 1`,
@@ -356,6 +370,7 @@ const updateRoomType = asyncHandler(async (req, res) => {
   }
 
   if (payload.hotel_id) {
+    assertHotelAccess(req.tenancy, payload.hotel_id);
     const hotel = await query(`SELECT id FROM hotels WHERE id = $1 LIMIT 1`, [
       payload.hotel_id,
     ]);
@@ -412,9 +427,12 @@ const updateRoomType = asyncHandler(async (req, res) => {
 
 const deleteRoomType = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (!UUID_REGEX.test(id)) {
-    throw new AppError(`Room type not found: ${id}`, 404);
-  }
+  await assertResourceHotelAccess(req.tenancy, {
+    table: "room_types",
+    idColumn: "id",
+    id,
+    notFoundMessage: `Room type not found: ${id}`,
+  });
 
   const result = await query(
     `DELETE FROM room_types WHERE id = $1

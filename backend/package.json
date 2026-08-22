@@ -20,6 +20,7 @@
     "verify:front-desk": "node scripts/verifyFrontDesk.js",
     "verify:crm": "node scripts/verifyCrm.js",
     "verify:phase14": "node scripts/verifyPhase14.js",
+    "verify:phase15": "node scripts/verifyPhase15.js",
     "verify:inventory-dates": "node scripts/verifyInventoryDateWrites.js",
     "set:base-prices": "node scripts/setRoomTypeBasePrices.js",
     "verify:base-prices": "node scripts/verifyRoomTypeBasePrices.js"

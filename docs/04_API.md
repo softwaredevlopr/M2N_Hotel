@@ -28,6 +28,13 @@
 
 - JSON responses; success shape typically `{ success: true, … }`.
 - Admin routes require `Authorization: Bearer <access_token>`.
+- **Phase 15 Lite tenancy (admin):** after JWT auth, `resolveAdminTenancy`
+  loads active `tenant_memberships` into `req.tenancy`. `hotel_admin` users may
+  access only hotels whose `hotels.tenant_id` matches a membership.
+  Client-supplied `hotel_id` (query/body/path) is never trusted alone — every
+  hotel-scoped admin handler validates access. Cross-tenant access returns
+  **404** (not 403). `super_admin` retains platform-wide access for support.
+  Per-hotel ACL within a tenant is **not** implemented in Lite (ADR-0042).
 - Rate limits: `/api` 300/15min; `POST /api/inquiries` and `POST /api/bookings`
   20/15min (override with `WRITE_RATE_LIMIT_MAX`); `GET /api/bookings/:number`
   60/15min (`BOOKING_LOOKUP_RATE_LIMIT_MAX`); `POST /api/admin/auth/login` 20/15min.

@@ -4,6 +4,7 @@ const multer = require("multer");
 const adminMediaController = require("../controllers/adminMedia.controller");
 const validate = require("../middleware/validate.middleware");
 const { requireAdminAuth } = require("../middleware/adminAuth.middleware");
+const { resolveAdminTenancy } = require("../middleware/adminTenancy.middleware");
 const { updateMediaSchema } = require("../validators/adminMedia.validator");
 const {
   MEDIA_CATEGORIES,
@@ -14,6 +15,7 @@ const {
 const router = express.Router();
 
 router.use(requireAdminAuth);
+router.use(resolveAdminTenancy);
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -12,6 +12,9 @@ SQL migrations for the M2N Hotels PostgreSQL database.
 | `004_bookings.sql` | Direct reservations — bookings table (Phase 10A) |
 | `005_room_type_inventory_dates.sql` | Per-night stop-sell / allotment / overbooking (Phase 10I) |
 | `006_booking_admin_notes.sql` | Private staff notes — `bookings.admin_notes` |
+| `007_booking_notification_preferences.sql` | Guest channel prefs on `bookings` |
+| `008_booking_payments_and_invoices.sql` | Phase 14 payment ledger + invoice snapshots |
+| `009_tenancy_lite.sql` | Phase 15 Lite — `tenants`, `tenant_memberships`, `hotels.tenant_id` |
 
 ## Run
 

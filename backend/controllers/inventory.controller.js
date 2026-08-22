@@ -10,6 +10,13 @@ const {
   parseUpsertInventoryDateBody,
   parseDeleteInventoryDateQuery,
 } = require("../validators/adminInventory.validator");
+const { assertHotelAccess } = require("../utils/adminTenancy");
+
+async function authorizeInventoryHotel(req, { hotelId, hotelSlug }) {
+  const hotel = await inventoryService.resolveHotel({ hotelId, hotelSlug });
+  assertHotelAccess(req.tenancy, hotel.id, { notFoundMessage: "Hotel not found" });
+  return hotel;
+}
 
 function parseCalendarQuery(req, { requireHotelId = false } = {}) {
   const q = req.query || {};
@@ -46,6 +53,8 @@ const getAdminInventoryCalendar = asyncHandler(async (req, res) => {
     parseCalendarQuery(req, { requireHotelId: false });
   if (errors.length > 0) return sendValidationError(res, errors);
 
+  await authorizeInventoryHotel(req, { hotelId, hotelSlug });
+
   const data = await inventoryService.getInventoryCalendar({
     hotelId,
     hotelSlug,
@@ -71,7 +80,7 @@ const getAdminInventoryDay = asyncHandler(async (req, res) => {
   const date = parseDate(q.date, "date", errors);
   if (errors.length > 0) return sendValidationError(res, errors);
 
-  const hotel = await inventoryService.resolveHotel({ hotelId });
+  const hotel = await authorizeInventoryHotel(req, { hotelId });
   const day = await inventoryService.getDayInventory({
     hotelId: hotel.id,
     roomTypeId,
@@ -112,7 +121,7 @@ const getAdminInventoryOverlaps = asyncHandler(async (req, res) => {
   }
   if (errors.length > 0) return sendValidationError(res, errors);
 
-  const hotel = await inventoryService.resolveHotel({ hotelId });
+  const hotel = await authorizeInventoryHotel(req, { hotelId });
   const stay = await inventoryService.getStayPeakSold({
     hotelId: hotel.id,
     roomTypeId,
@@ -181,6 +190,8 @@ const upsertAdminInventoryDate = asyncHandler(async (req, res) => {
   } = parseUpsertInventoryDateBody(req.body || {});
   if (errors.length > 0) return sendValidationError(res, errors);
 
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Hotel not found" });
+
   const { row, created } = await inventoryService.upsertInventoryDate({
     hotelId,
     roomTypeId,
@@ -214,6 +225,8 @@ const deleteAdminInventoryDate = asyncHandler(async (req, res) => {
   const { hotelId, roomTypeId, inventoryDate, errors } =
     parseDeleteInventoryDateQuery(req.query || {});
   if (errors.length > 0) return sendValidationError(res, errors);
+
+  assertHotelAccess(req.tenancy, hotelId, { notFoundMessage: "Hotel not found" });
 
   const deleted = await inventoryService.deleteInventoryDate({
     hotelId,

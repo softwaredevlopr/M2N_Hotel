@@ -2,6 +2,7 @@ const { sendSuccess, sendValidationError } = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { parseUuid, trimOrNull } = require("../validators/booking.validator");
 const crmGuestService = require("../services/crmGuest.service");
+const { assertHotelAccess } = require("../utils/adminTenancy");
 
 const listGuests = asyncHandler(async (req, res) => {
   const errors = [];
@@ -11,6 +12,8 @@ const listGuests = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  assertHotelAccess(req.tenancy, hotelId);
 
   const payload = await crmGuestService.listGuests({
     hotelId,
@@ -29,6 +32,8 @@ const getGuestProfile = asyncHandler(async (req, res) => {
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }
+
+  assertHotelAccess(req.tenancy, hotelId);
 
   const payload = await crmGuestService.getGuestProfile({
     hotelId,

@@ -33,16 +33,22 @@ This document tracks security practices and requirements.
 
 ## 3. Authentication & Authorization
 
-- **Admin (Roadmap Phase 3 — JWT):**
+- **Admin (Roadmap Phase 3 — JWT; Phase 15 Lite tenancy):**
   - `POST /api/admin/auth/login` issues a Bearer access token (`jsonwebtoken`).
   - Passwords hashed with **bcryptjs** (`password_hash` only; never returned).
   - `requireAdminAuth` middleware verifies Bearer JWT and attaches `req.admin`.
-  - Roles: `super_admin`, `hotel_admin` (hotel-scoped assignments come later).
+  - `resolveAdminTenancy` (Phase 15 Lite) loads active `tenant_memberships` and
+    attaches `req.tenancy` on all `/api/admin/*` routes except login.
+  - Roles: `super_admin` (platform-wide bypass), `hotel_admin` (tenant member via
+    `tenant_memberships`; membership roles `owner` / `admin` / `staff`).
+  - Hotel-scoped admin APIs validate that the target hotel belongs to a permitted
+    tenant before read/write. Unauthorized cross-tenant access returns **404**.
   - Generic invalid-login message; inactive accounts rejected with 403.
   - Login rate-limited (20 / 15 min) in addition to the general `/api` limiter.
 - Env: `JWT_SECRET` (required), `JWT_EXPIRES_IN` (default `8h`), plus
   `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` for `npm run seed:admin` only.
-- Protected modules: `/api/admin/hotels`, `/room-types`, `/rooms`, `/media`.
+- Protected modules: all `/api/admin/*` routes (hotels, room-types, rooms,
+  media, tariffs, bookings, inventory, guests, admin inquiry CRUD).
 
 ## 4. Data Protection
 
