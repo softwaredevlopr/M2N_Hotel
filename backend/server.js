@@ -115,6 +115,19 @@ const adminLoginLimiter = rateLimit({
 });
 app.use("/api/admin/auth/login", adminLoginLimiter);
 
+// Stricter limit for public self-serve onboarding (account + tenant creation).
+const adminOnboardingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many onboarding attempts. Please wait a while before trying again.",
+  },
+});
+app.use("/api/admin/onboarding", adminOnboardingLimiter);
+
 // Serve uploaded hotel media (admin uploads). Public GETs for hotels still
 // return URLs; this makes relative /uploads/... paths resolvable.
 app.use(
