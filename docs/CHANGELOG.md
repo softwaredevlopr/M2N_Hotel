@@ -9,6 +9,51 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 15 Lite self-serve onboarding (API + admin UI) ✅
+
+- **What changed.** Public self-serve operator onboarding: backend
+  `POST /api/admin/onboarding` creates tenant, `hotel_admin` owner,
+  `tenant_memberships` (`owner`), and first `draft` hotel in one transaction;
+  returns JWT session data. Frontend `/admin/onboarding` matches admin login
+  styling; successful signup stores the existing admin session and redirects to
+  `/admin/dashboard`. Login page links to onboarding and vice versa. No new schema
+  in this slice (uses migration `009`).
+- **Files modified:** `adminOnboarding.controller.js`, `adminOnboarding.routes.js`,
+  `adminOnboarding.validator.js`, `routes/index.js`, `server.js`,
+  `verifyPhase15Onboarding.js`, `package.json`, `frontend/src/lib/api.js`,
+  `frontend/src/app/admin/onboarding/page.js`, `frontend/src/app/admin/login/page.js`,
+  docs.
+- **APIs added/changed:** `POST /api/admin/onboarding` (public, 10 req / 15 min).
+  Unique conflicts → 409 generic message. Success 201:
+  `{ tenant, admin, hotel, access_token, token_type, expires_in }`.
+- **Database changes:** none (transactional inserts into existing `009` tables).
+- **Frontend changes:** `/admin/onboarding` form
+  (`tenant_name`, `tenant_slug`, `owner_name`, `owner_email`, `owner_password`,
+  `hotel_name`, `hotel_slug`, optional `city`/`state`/`country`/`phone`);
+  `adminOnboard()` client; slug auto-fill via `slugifyHotelName`.
+- **Backend changes:** onboarding controller + validator + rate limiter.
+- **Remaining work:** operator billing stub UI; live payment gateway out of
+  scope; non-local migrate `005`–`009`; placeholder contacts.
+
+### Added — Phase 15 Lite tenant isolation (migration `009` + AuthZ) ✅
+
+- **What changed.** Multi-tenant operator boundary: migration `009_tenancy_lite.sql`
+  (`tenants`, `tenant_memberships`, `hotels.tenant_id` + backfill). Admin JWT
+  routes use `resolveAdminTenancy` + `assertHotelAccess` — `hotel_admin` users
+  may access only hotels under their tenant membership; cross-tenant access
+  returns **404**; `super_admin` bypasses for platform support. Lite model: one
+  membership grants all hotels of that tenant (no per-hotel ACL).
+- **Files modified:** `009_tenancy_lite.sql`, `adminTenancy.js`,
+  `resolveAdminTenancy` middleware, hotel-scoped admin handlers, `verifyPhase15.js`,
+  `verifyTenancySchema.js`, `package.json`, docs ([ADR-0042](history/DECISIONS.md)).
+- **APIs added/changed:** no new public routes; existing admin routes enforce
+  tenant membership on `hotel_id` scope.
+- **Database changes:** migration `009` (additive + non-destructive backfill).
+- **Frontend changes:** none in this slice.
+- **Backend changes:** tenancy middleware and route hardening.
+- **Remaining work:** self-serve onboarding UI (follow-up slice above); operator
+  billing; gateway out of scope.
+
 ### Added — Phase 14 Lite admin booking-detail Payments & Invoices UI ✅
 
 - **What changed.** Booking detail (`/admin/bookings/[id]`) now includes

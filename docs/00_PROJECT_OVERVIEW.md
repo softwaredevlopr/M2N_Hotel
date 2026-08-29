@@ -38,9 +38,11 @@ hotels, room types, rooms, and media.
    admin CRUD, API-driven pages, rates, inventory, booking engine, PMS Lite
    Front Desk, CRM Lite derived guest 360, and Phase 14 Lite payment/invoice
    APIs + booking-detail finance UI (no live gateway).
-2. **Phase 15 (upcoming)** — multi-property SaaS. Full CRM / dated follow-ups
-   only if approved.
-3. **Phase 15 (goal)** — Multi-tenant SaaS with self-serve onboarding.
+2. **Phase 15 Lite (in progress)** — tenant isolation + self-serve onboarding
+   complete; operator billing stub UI and payment gateway remain out of scope
+   for Lite. Full CRM / dated follow-ups only if approved.
+3. **Phase 15 (goal)** — Multi-tenant SaaS with operator billing (no gateway in
+   Lite).
 
 Everything is **data-driven and slug-scoped**. Hotels never share each other’s
 photos or content.

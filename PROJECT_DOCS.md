@@ -180,8 +180,9 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   readiness guide (architecture, env matrix, 005/006 rollout checklist). No
   staging/production cutover yet.
 
-**Next:** Phase 15; operator non-local migrate (`005`–`008`) + host cutover.
-Full CRM / dated follow-ups only if separately approved.
+**Next:** Phase 15 operator billing stub UI (no gateway); operator non-local
+migrate (`005`–`009`) + host cutover. Full CRM / dated follow-ups only if
+separately approved.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -240,6 +241,22 @@ Full CRM / dated follow-ups only if separately approved.
 - ✅ **Phase 14 Lite — admin booking-detail finance UI** —
   `/admin/bookings/[id]` Payments + Invoices panels over those APIs. No schema
   change. No gateway.
+
+- ✅ **Phase 15 Lite — tenant isolation** — migration `009`
+  (`tenants`, `tenant_memberships`, `hotels.tenant_id` + backfill).
+  `resolveAdminTenancy` + `assertHotelAccess` on hotel-scoped admin APIs;
+  cross-tenant access → 404; `super_admin` bypass
+  ([ADR-0042](docs/history/DECISIONS.md)). Smoke: `npm run verify:phase15`.
+
+- ✅ **Phase 15 — self-serve onboarding API** — public
+  `POST /api/admin/onboarding` (10 req / 15 min). Transaction creates tenant
+  (`trial`/`lite`/`trialing`), `hotel_admin` owner, `owner` membership, first
+  `draft` hotel; returns JWT + `admin` profile. Smoke:
+  `npm run verify:phase15-onboarding`. No new schema in this slice.
+
+- ✅ **Phase 15 — admin onboarding UI** — `/admin/onboarding` (public);
+  matches login design; `adminOnboard()` client; success stores existing admin
+  session and redirects to `/admin/dashboard`; login ↔ onboarding links.
 
 ---
 

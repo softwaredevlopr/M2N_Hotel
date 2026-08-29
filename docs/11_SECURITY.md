@@ -38,13 +38,15 @@ This document tracks security practices and requirements.
   - Passwords hashed with **bcryptjs** (`password_hash` only; never returned).
   - `requireAdminAuth` middleware verifies Bearer JWT and attaches `req.admin`.
   - `resolveAdminTenancy` (Phase 15 Lite) loads active `tenant_memberships` and
-    attaches `req.tenancy` on all `/api/admin/*` routes except login.
+    attaches `req.tenancy` on protected `/api/admin/*` routes (not login or
+    public onboarding).
   - Roles: `super_admin` (platform-wide bypass), `hotel_admin` (tenant member via
     `tenant_memberships`; membership roles `owner` / `admin` / `staff`).
   - Hotel-scoped admin APIs validate that the target hotel belongs to a permitted
     tenant before read/write. Unauthorized cross-tenant access returns **404**.
   - Generic invalid-login message; inactive accounts rejected with 403.
-  - Login rate-limited (20 / 15 min) in addition to the general `/api` limiter.
+  - Login rate-limited (20 / 15 min); public onboarding rate-limited (10 / 15 min)
+    in addition to the general `/api` limiter.
 - Env: `JWT_SECRET` (required), `JWT_EXPIRES_IN` (default `8h`), plus
   `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` for `npm run seed:admin` only.
 - Protected modules: all `/api/admin/*` routes (hotels, room-types, rooms,
@@ -67,7 +69,8 @@ Implemented (see `backend/server.js` and `backend/middleware/`):
   (20 / 15 min, `WRITE_RATE_LIMIT_MAX`), a lookup limiter on
   `GET /api/bookings/:bookingNumber` (60 / 15 min,
   `BOOKING_LOOKUP_RATE_LIMIT_MAX`), and a stricter limiter on
-  `POST /api/admin/auth/login` (20 / 15 min).
+  `POST /api/admin/auth/login` (20 / 15 min), and
+  `POST /api/admin/onboarding` (10 / 15 min).
 - **Request-size limits** — JSON and urlencoded bodies capped at 100kb.
 - **Input validation** — `validate` middleware + controller-level checks.
 - **Guest booking lookup** — requires the booking number *plus* the email or

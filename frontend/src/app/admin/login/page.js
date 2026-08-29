@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
 import { adminLogin } from "@/lib/api";
@@ -171,6 +172,16 @@ export default function AdminLoginPage() {
             )}
             {isLoading ? "Signing in…" : "Login"}
           </button>
+
+          <p className="mt-6 text-center text-sm text-cream-muted">
+            New operator?{" "}
+            <Link
+              href="/admin/onboarding"
+              className="text-gold transition-colors hover:text-gold-soft"
+            >
+              Create hotel account
+            </Link>
+          </p>
         </form>
       </div>
     </div>

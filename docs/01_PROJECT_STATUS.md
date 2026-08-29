@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Status:** Living document · **Last updated:** 2026-08-29  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -60,11 +60,17 @@
 | Phase 14 — Payments & Invoice Lite schema (`008`) | ✅ |
 | Phase 14 — admin payment/invoice APIs | ✅ (no gateway) |
 | Phase 14 — booking-detail Payments & Invoices UI | ✅ |
+| Phase 15 Lite — tenant isolation (migration `009` + AuthZ) | ✅ |
+| Phase 15 — self-serve onboarding API | ✅ |
+| Phase 15 — admin onboarding UI (`/admin/onboarding`) | ✅ |
+| Phase 15 — operator billing stub UI | ⬜ Pending |
+| Phase 15 — payment gateway / SaaS billing | ⬜ Out of scope (Lite) |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
 Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) ✅ ·
-Phase **14** Lite (ledger + invoices + booking-detail UI) ✅ · Next: Full CRM
-only if approved; Phase 15; staging cutover
+Phase **14** Lite (ledger + invoices + booking-detail UI) ✅ · Phase **15** Lite
+(tenant isolation + self-serve onboarding) ✅ · Next: operator billing stub UI;
+Full CRM only if approved; staging cutover
 
 ---
 
@@ -284,6 +290,38 @@ only if approved; Phase 15; staging cutover
   `BookingInvoicesPanel.js`, booking detail page, `StatusBadge` styles.
 - Smoke: frontend `npm run build`; backend `npm run verify:phase14`.
 
+### Phase 15 Lite — tenant isolation ✅
+
+- Migration `009_tenancy_lite.sql`: `tenants`, `tenant_memberships`,
+  `hotels.tenant_id` with non-destructive backfill for existing hotels
+  ([ADR-0042](history/DECISIONS.md)).
+- `resolveAdminTenancy` + `assertHotelAccess` on hotel-scoped admin APIs;
+  cross-tenant `hotel_id` → **404**; inactive memberships excluded;
+  `super_admin` platform bypass.
+- Lite semantics: membership grants all hotels under that tenant (no per-hotel
+  ACL). Smoke: `npm run verify:phase15`.
+
+### Phase 15 — self-serve onboarding ✅
+
+- Public `POST /api/admin/onboarding` (no JWT; 10 requests / 15 min).
+- Single transaction creates: `tenants` row (`trial` / `lite` / `trialing`),
+  `admin_users` (`hotel_admin`), `tenant_memberships` (`owner`), first
+  `hotels` row (`draft`). Unique conflicts → 409 generic message.
+- Returns 201 with `tenant`, `admin`, `hotel`, `access_token`, `token_type`,
+  `expires_in`. Smoke: `npm run verify:phase15-onboarding`.
+- No new schema in this slice (uses migration `009` tables).
+
+### Phase 15 — admin onboarding UI ✅
+
+- Public `/admin/onboarding` (outside protected shell); matches `/admin/login`
+  visual design.
+- Form fields align with backend validator; optional location/phone; password
+  min 8; slug auto-fill from names (`slugifyHotelName`), editable.
+- Success: `setAdminSession(access_token, admin)` → `/admin/dashboard`.
+  Authenticated visitors redirect to dashboard (same as login).
+- `/admin/login` ↔ `/admin/onboarding` navigation links.
+- Client: `adminOnboard()` in `frontend/src/lib/api.js`.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -304,9 +342,10 @@ only if approved; Phase 15; staging cutover
 1. Provision staging/production hosts + secrets; non-local migrate
    `005`/`006`/`007`/`008`.
 2. Replace placeholder contact details before public launch.
-3. Remaining Phase **13** only if separately approved (Full CRM guest master /
-   merge, or a dated follow-up table). Otherwise Phase **15** per
-   [13 — Roadmap](13_ROADMAP.md).
+3. Phase **15** operator billing stub UI (read-only plan/subscription from
+   `tenants` columns; no payment gateway).
+4. Remaining Phase **13** only if separately approved (Full CRM guest master /
+   merge, or a dated follow-up table).
 
 ---
 
@@ -325,6 +364,9 @@ only if approved; Phase 15; staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-08-29 | Phase 15 admin onboarding UI (`/admin/onboarding`) + docs sync |
+| 2026-08-26 | Phase 15 self-serve onboarding API (`POST /api/admin/onboarding`) |
+| 2026-08-22 | Phase 15 Lite tenant isolation (migration `009` + AuthZ) |
 | 2026-08-20 | Phase 14 Lite booking-detail Payments & Invoices UI |
 | 2026-08-19 | Phase 14 Lite admin payment/invoice APIs (no UI/gateway) |
 | 2026-08-18 | Phase 14 Lite schema foundation (migration `008`, ADR-0041) |

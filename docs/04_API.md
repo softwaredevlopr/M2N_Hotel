@@ -1,6 +1,6 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Status:** Living document · **Last updated:** 2026-08-29  
 > **Base URL (local):** `http://localhost:5001`  
 > **Frontend env:** `NEXT_PUBLIC_API_URL`
 
@@ -37,7 +37,8 @@
   Per-hotel ACL within a tenant is **not** implemented in Lite (ADR-0042).
 - Rate limits: `/api` 300/15min; `POST /api/inquiries` and `POST /api/bookings`
   20/15min (override with `WRITE_RATE_LIMIT_MAX`); `GET /api/bookings/:number`
-  60/15min (`BOOKING_LOOKUP_RATE_LIMIT_MAX`); `POST /api/admin/auth/login` 20/15min.
+  60/15min (`BOOKING_LOOKUP_RATE_LIMIT_MAX`); `POST /api/admin/auth/login` 20/15min;
+  `POST /api/admin/onboarding` 10/15min.
 - JSON/urlencoded body size: 100kb (multipart uploads use Multer, max 5MB images).
 
 ## 2. Endpoint index
@@ -58,6 +59,7 @@
 | `PATCH` | `/api/inquiries/:id/status` | JWT | 2/10H |
 | `DELETE` | `/api/inquiries/:id` | JWT | 10H |
 | `POST` | `/api/admin/auth/login` | — | 3 |
+| `POST` | `/api/admin/onboarding` | — | 15 |
 | `GET` | `/api/admin/auth/me` | JWT | 3 |
 | `CRUD` | `/api/admin/hotels` | JWT | 4 |
 | `CRUD` | `/api/admin/room-types` | JWT | 5 |
@@ -147,10 +149,35 @@ Statuses: `pending`, `contacted`, `quoted`, `confirmed`, `declined`, `cancelled`
 
 Full detail in [section 10](#10-bookings-phase-10a).
 
-## 4. Admin authentication (Phase 3)
+## 4. Admin authentication (Phase 3 / 15 onboarding)
 
 **POST `/api/admin/auth/login`**  
 Body: `{ email, password }` → `{ admin, access_token, token_type, expires_in }`
+
+**POST `/api/admin/onboarding`** (Phase 15 — public, no JWT)  
+Creates a new operator account in one transaction: `tenants` row
+(`status=trial`, `plan_code=lite`, `subscription_status=trialing`),
+`admin_users` (`role=hotel_admin`), `tenant_memberships` (`membership_role=owner`),
+and first `hotels` row (`status=draft`). Rate limit: **10 requests / 15 minutes**.
+
+Required body:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `tenant_name` | string | Operator / company name |
+| `tenant_slug` | string | Unique tenant slug |
+| `owner_name` | string | Owner full name |
+| `owner_email` | string | Login email (unique) |
+| `owner_password` | string | Min 8 characters |
+| `hotel_name` | string | First property name |
+| `hotel_slug` | string | Unique hotel slug (global) |
+
+Optional: `city`, `state`, `country` (defaults to `India` when omitted),
+`phone`.
+
+Success **201** → `{ data: { tenant, admin, hotel, access_token, token_type, expires_in } }`.  
+Unique constraint conflicts → **409** with generic message (no internal detail).  
+Validation errors → **400** with `errors[]`.
 
 **GET `/api/admin/auth/me`** — Bearer required.
 

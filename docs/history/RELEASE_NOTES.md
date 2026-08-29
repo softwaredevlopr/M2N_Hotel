@@ -12,6 +12,22 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 15 — Lite self-serve onboarding API + admin UI (2026-08-29)
+
+- Public `POST /api/admin/onboarding` — creates tenant, `hotel_admin` owner,
+  `owner` membership, and first `draft` hotel in one transaction; returns JWT.
+  Rate limit: 10 / 15 min. Unique conflicts → 409 generic message.
+- `/admin/onboarding` public signup form; `setAdminSession` → `/admin/dashboard`.
+  Login page links to onboarding. No new schema (uses `009`).
+- Smoke: `npm run verify:phase15-onboarding`; frontend `npm run build`.
+
+### Phase 15 — Lite tenant isolation (2026-08-22)
+
+- Migration `009_tenancy_lite.sql` — `tenants`, `tenant_memberships`,
+  `hotels.tenant_id` with backfill ([ADR-0042](DECISIONS.md)).
+- `resolveAdminTenancy` + `assertHotelAccess` on hotel-scoped admin APIs.
+- Smoke: `npm run verify:phase15`.
+
 ### Phase 14 — Lite booking-detail Payments & Invoices UI (2026-08-20)
 
 - `/admin/bookings/[id]` Payments + Invoices panels over JWT finance APIs.

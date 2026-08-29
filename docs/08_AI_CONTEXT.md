@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Status:** Living document · **Last updated:** 2026-08-29  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -22,11 +22,10 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** Phase 13 CRM Lite (search + 360 + open leads) ✅; Phase 14 Lite
-  (ledger + invoices + booking-detail UI) ✅; Full CRM / dated follow-ups only
-  if approved; Phase 15; operator staging cutover
-  ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`–`008`
-  still pending.
+- **Next:** Phase 15 Lite tenant isolation + self-serve onboarding ✅; operator
+  billing stub UI pending (no gateway); Full CRM / dated follow-ups only if
+  approved; operator staging cutover ([12 — Deployment](12_DEPLOYMENT.md)).
+  Non-local migrate for `005`–`009` still pending.
 - Guest cancel / modify / notification prefs: contact-verified
   `POST /api/bookings/:bookingNumber/{cancel,modify,notification-preferences}`.
 - Admin cancel: `POST /api/admin/bookings/:id/cancel`; stay modify via hardened
@@ -41,6 +40,11 @@
   ([ADR-0041](history/DECISIONS.md)). Admin JWT nested under
   `/api/admin/bookings/:id/payments` and `/invoices`. Booking-detail UI on
   `/admin/bookings/[id]`. No gateway.
+- Phase 15 Lite tenancy: migration `009`; `resolveAdminTenancy` +
+  `assertHotelAccess` on hotel-scoped admin APIs ([ADR-0042](history/DECISIONS.md)).
+  Public `POST /api/admin/onboarding` creates tenant + owner + first hotel;
+  admin UI `/admin/onboarding` → `setAdminSession` → `/admin/dashboard`.
+  Smoke: `verify:phase15`, `verify:phase15-onboarding`.
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 

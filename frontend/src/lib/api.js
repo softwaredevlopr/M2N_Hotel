@@ -489,4 +489,45 @@ export async function adminLogin({ email, password }) {
   }
 }
 
+/**
+ * Public self-serve onboarding — POST /api/admin/onboarding
+ * Returns { ok, status, data, networkError?, message? }
+ * On success, data includes tenant, admin, hotel, access_token, token_type, expires_in
+ */
+export async function adminOnboard(payload) {
+  const url = `${API_BASE_URL}/api/admin/onboarding`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    return {
+      ok: response.ok && data?.success === true,
+      status: response.status,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      networkError: true,
+      message: error?.message || "Network error",
+    };
+  }
+}
+
 export { API_BASE_URL };

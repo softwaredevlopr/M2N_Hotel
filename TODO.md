@@ -129,8 +129,13 @@
 - [x] Phase 14 Lite — schema `008` + admin payment/invoice APIs (no gateway).
       Smoke: `npm run verify:phase14`.
 - [x] Phase 14 — admin booking-detail Payments & Invoices UI
-- [ ] Phase 14 — live payment gateway / ERP (not in Lite)
-- [ ] Phase 15 — Multi-Property SaaS
+- [x] Phase 15 Lite — migration `009` tenant isolation + AuthZ.
+      Smoke: `npm run verify:phase15`.
+- [x] Phase 15 — self-serve onboarding API (`POST /api/admin/onboarding`).
+      Smoke: `npm run verify:phase15-onboarding`.
+- [x] Phase 15 — admin onboarding UI (`/admin/onboarding`).
+- [ ] Phase 15 — operator billing stub UI (read-only; no gateway)
+- [ ] Phase 15 — live payment gateway / SaaS billing (not in Lite)
 
 ---
 
@@ -138,5 +143,5 @@
 
 Phases **1–12** complete; Phase **13** CRM Lite (guest search + 360 + open
 leads) shipped — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
-Remaining: Full CRM / dated follow-ups only if approved; non-local migrate
-`005`–`008`; placeholder contacts; Phase 15.
+Remaining: Full CRM / dated follow-ups only if approved; Phase 15 operator
+billing stub UI; non-local migrate `005`–`009`; placeholder contacts.
