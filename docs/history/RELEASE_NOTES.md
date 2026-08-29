@@ -12,6 +12,17 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 15 — Lite operator billing stub (2026-08-29)
+
+- `GET /api/admin/tenant` — JWT read-only tenant billing summary (safe fields
+  only; no `metadata` or timestamps). Tenant resolution per Phase 15 Lite
+  (`resolveReadTenantId`): single membership auto-resolve; 403 / 400 / 404 rules;
+  `super_admin` defaults to `m2n-hotels` or explicit `tenant_id`.
+- `/admin/billing` read-only UI + Billing nav item. No Stripe/Razorpay, checkout,
+  plan changes, cancellation, or invoices. No schema change.
+- Smoke: `npm run verify:phase15-billing` (22/22); `verify:phase15` (23/23);
+  `verify:phase15-onboarding` (27/27); frontend `npm run build`.
+
 ### Phase 15 — Lite self-serve onboarding API + admin UI (2026-08-29)
 
 - Public `POST /api/admin/onboarding` — creates tenant, `hotel_admin` owner,

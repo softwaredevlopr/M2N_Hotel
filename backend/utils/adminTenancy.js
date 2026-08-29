@@ -143,31 +143,38 @@ async function assertHotelRecordAccess(tenancy, hotelId, notFoundMessage = "Hote
   return hotelId;
 }
 
-async function resolveCreateTenantId(req) {
-  const tenancy = req.tenancy;
+async function resolveTenantId(
+  tenancy,
+  requestedTenantId,
+  {
+    accessDeniedMessage = "Tenant not found",
+    missingDefaultStatus = 404,
+    missingDefaultMessage = "Tenant not found",
+  } = {}
+) {
   assertTenancyResolved(tenancy);
 
-  const requestedTenantId =
-    typeof req.body?.tenant_id === "string" && UUID_REGEX.test(req.body.tenant_id)
-      ? req.body.tenant_id
+  const normalizedRequest =
+    typeof requestedTenantId === "string" && UUID_REGEX.test(requestedTenantId)
+      ? requestedTenantId
       : null;
 
   if (tenancy.isPlatformAdmin) {
-    if (requestedTenantId) {
+    if (normalizedRequest) {
       const tenant = await query(`SELECT id FROM tenants WHERE id = $1 LIMIT 1`, [
-        requestedTenantId,
+        normalizedRequest,
       ]);
       if (tenant.rows.length === 0) {
         throw new AppError("Tenant not found", 404);
       }
-      return requestedTenantId;
+      return normalizedRequest;
     }
 
     const defaultTenant = await query(
       `SELECT id FROM tenants WHERE slug = 'm2n-hotels' LIMIT 1`
     );
     if (defaultTenant.rows.length === 0) {
-      throw new AppError("tenant_id is required to create a hotel", 400);
+      throw new AppError(missingDefaultMessage, missingDefaultStatus);
     }
     return defaultTenant.rows[0].id;
   }
@@ -176,11 +183,11 @@ async function resolveCreateTenantId(req) {
     throw new AppError("No tenant access configured for this account", 403);
   }
 
-  if (requestedTenantId) {
-    if (!tenancy.tenantIds.includes(requestedTenantId)) {
-      throw new AppError("Hotel not found", 404);
+  if (normalizedRequest) {
+    if (!tenancy.tenantIds.includes(normalizedRequest)) {
+      throw new AppError(accessDeniedMessage, 404);
     }
-    return requestedTenantId;
+    return normalizedRequest;
   }
 
   if (tenancy.tenantIds.length === 1) {
@@ -188,6 +195,29 @@ async function resolveCreateTenantId(req) {
   }
 
   throw new AppError("tenant_id is required when you belong to multiple tenants", 400);
+}
+
+async function resolveCreateTenantId(req) {
+  const tenancy = req.tenancy;
+  const requestedTenantId =
+    typeof req.body?.tenant_id === "string" && UUID_REGEX.test(req.body.tenant_id)
+      ? req.body.tenant_id
+      : null;
+
+  return resolveTenantId(tenancy, requestedTenantId, {
+    accessDeniedMessage: "Hotel not found",
+    missingDefaultStatus: 400,
+    missingDefaultMessage: "tenant_id is required to create a hotel",
+  });
+}
+
+async function resolveReadTenantId(tenancy, query = {}) {
+  const requestedTenantId =
+    typeof query.tenant_id === "string" && UUID_REGEX.test(query.tenant_id)
+      ? query.tenant_id
+      : null;
+
+  return resolveTenantId(tenancy, requestedTenantId);
 }
 
 module.exports = {
@@ -200,4 +230,6 @@ module.exports = {
   assertResourceHotelAccess,
   assertHotelRecordAccess,
   resolveCreateTenantId,
+  resolveReadTenantId,
+  resolveTenantId,
 };

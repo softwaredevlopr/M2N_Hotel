@@ -180,9 +180,9 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   readiness guide (architecture, env matrix, 005/006 rollout checklist). No
   staging/production cutover yet.
 
-**Next:** Phase 15 operator billing stub UI (no gateway); operator non-local
-migrate (`005`–`009`) + host cutover. Full CRM / dated follow-ups only if
-separately approved.
+**Next:** future SaaS payment gateway / subscription management (out of Lite);
+operator non-local migrate (`005`–`009`) + host cutover. Full CRM / dated
+follow-ups only if separately approved.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -257,6 +257,11 @@ separately approved.
 - ✅ **Phase 15 — admin onboarding UI** — `/admin/onboarding` (public);
   matches login design; `adminOnboard()` client; success stores existing admin
   session and redirects to `/admin/dashboard`; login ↔ onboarding links.
+
+- ✅ **Phase 15 — operator billing stub** — `GET /api/admin/tenant` (JWT;
+  read-only safe tenant fields; `resolveReadTenantId` tenancy rules). Admin UI
+  `/admin/billing` + Billing nav; no Stripe/Razorpay/checkout/plan mutation.
+  Smoke: `npm run verify:phase15-billing`. No schema change.
 
 ---
 

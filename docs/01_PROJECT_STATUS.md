@@ -63,14 +63,15 @@
 | Phase 15 Lite — tenant isolation (migration `009` + AuthZ) | ✅ |
 | Phase 15 — self-serve onboarding API | ✅ |
 | Phase 15 — admin onboarding UI (`/admin/onboarding`) | ✅ |
-| Phase 15 — operator billing stub UI | ⬜ Pending |
-| Phase 15 — payment gateway / SaaS billing | ⬜ Out of scope (Lite) |
+| Phase 15 — operator billing stub UI (`/admin/billing`) | ✅ |
+| Phase 15 — SaaS payment gateway / subscription management | ⬜ Out of scope (Lite) |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
 Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) ✅ ·
 Phase **14** Lite (ledger + invoices + booking-detail UI) ✅ · Phase **15** Lite
-(tenant isolation + self-serve onboarding) ✅ · Next: operator billing stub UI;
-Full CRM only if approved; staging cutover
+(tenant isolation + self-serve onboarding + operator billing stub) ✅ · Next:
+future SaaS payment integration (out of Lite); Full CRM only if approved;
+staging cutover
 
 ---
 
@@ -322,6 +323,20 @@ Full CRM only if approved; staging cutover
 - `/admin/login` ↔ `/admin/onboarding` navigation links.
 - Client: `adminOnboard()` in `frontend/src/lib/api.js`.
 
+### Phase 15 — operator billing stub ✅
+
+- `GET /api/admin/tenant` (JWT + `resolveAdminTenancy`; optional `?tenant_id=`).
+  Safe read-only fields: `id`, `name`, `slug`, `status`, `plan_code`,
+  `subscription_status`, `trial_ends_at`, `current_period_end`, `billing_email`.
+  Omits `metadata`, `created_at`, `updated_at`. Resolution: one membership
+  auto-resolve; zero → 403; multiple without `tenant_id` → 400; cross-tenant
+  `tenant_id` → 404; `super_admin` defaults to `m2n-hotels` or explicit
+  `tenant_id`. GET-only — no plan changes or payment writes.
+- `/admin/billing` read-only UI (operator name, slug, plan, subscription/account
+  status, billing email, trial end, period end); Billing nav item; informational
+  notice that gateway/plan management is future work. No Stripe/Razorpay/checkout.
+- Smoke: `npm run verify:phase15-billing` (22/22). No schema change.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -340,10 +355,10 @@ Full CRM only if approved; staging cutover
 ## 4. Pending / Next Up
 
 1. Provision staging/production hosts + secrets; non-local migrate
-   `005`/`006`/`007`/`008`.
+   `005`/`006`/`007`/`008`/`009`.
 2. Replace placeholder contact details before public launch.
-3. Phase **15** operator billing stub UI (read-only plan/subscription from
-   `tenants` columns; no payment gateway).
+3. Future **Phase 15** SaaS payment gateway / subscription management (explicitly
+   out of Lite scope — no Stripe/Razorpay/checkout/plan mutation yet).
 4. Remaining Phase **13** only if separately approved (Full CRM guest master /
    merge, or a dated follow-up table).
 
@@ -364,6 +379,7 @@ Full CRM only if approved; staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-08-29 | Phase 15 operator billing stub (`GET /api/admin/tenant`, `/admin/billing`) |
 | 2026-08-29 | Phase 15 admin onboarding UI (`/admin/onboarding`) + docs sync |
 | 2026-08-26 | Phase 15 self-serve onboarding API (`POST /api/admin/onboarding`) |
 | 2026-08-22 | Phase 15 Lite tenant isolation (migration `009` + AuthZ) |

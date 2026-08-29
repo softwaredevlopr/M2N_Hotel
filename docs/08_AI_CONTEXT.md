@@ -22,10 +22,11 @@
   `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
-- **Next:** Phase 15 Lite tenant isolation + self-serve onboarding ✅; operator
-  billing stub UI pending (no gateway); Full CRM / dated follow-ups only if
-  approved; operator staging cutover ([12 — Deployment](12_DEPLOYMENT.md)).
-  Non-local migrate for `005`–`009` still pending.
+- **Next:** Phase 15 Lite foundation ✅ (tenant isolation, onboarding, read-only
+  billing stub); future SaaS payment gateway out of Lite; Full CRM / dated
+  follow-ups only if approved; operator staging cutover
+  ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`–`009` still
+  pending.
 - Guest cancel / modify / notification prefs: contact-verified
   `POST /api/bookings/:bookingNumber/{cancel,modify,notification-preferences}`.
 - Admin cancel: `POST /api/admin/bookings/:id/cancel`; stay modify via hardened
@@ -44,7 +45,8 @@
   `assertHotelAccess` on hotel-scoped admin APIs ([ADR-0042](history/DECISIONS.md)).
   Public `POST /api/admin/onboarding` creates tenant + owner + first hotel;
   admin UI `/admin/onboarding` → `setAdminSession` → `/admin/dashboard`.
-  Smoke: `verify:phase15`, `verify:phase15-onboarding`.
+  `GET /api/admin/tenant` + `/admin/billing` read-only billing stub (no gateway).
+  Smoke: `verify:phase15`, `verify:phase15-onboarding`, `verify:phase15-billing`.
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
 

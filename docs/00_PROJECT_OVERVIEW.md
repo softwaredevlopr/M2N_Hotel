@@ -38,11 +38,12 @@ hotels, room types, rooms, and media.
    admin CRUD, API-driven pages, rates, inventory, booking engine, PMS Lite
    Front Desk, CRM Lite derived guest 360, and Phase 14 Lite payment/invoice
    APIs + booking-detail finance UI (no live gateway).
-2. **Phase 15 Lite (in progress)** — tenant isolation + self-serve onboarding
-   complete; operator billing stub UI and payment gateway remain out of scope
-   for Lite. Full CRM / dated follow-ups only if approved.
-3. **Phase 15 (goal)** — Multi-tenant SaaS with operator billing (no gateway in
-   Lite).
+2. **Phase 15 Lite (foundation complete)** — tenant isolation, self-serve
+   onboarding, and read-only operator billing stub are implemented. Live SaaS
+   payment gateway / subscription management remains future work (no Stripe/
+   Razorpay in Lite). Full CRM / dated follow-ups only if approved.
+3. **Phase 15 (goal)** — Full multi-tenant SaaS billing with payment gateway
+   integration (deferred beyond Lite).
 
 Everything is **data-driven and slug-scoped**. Hotels never share each other’s
 photos or content.
@@ -71,7 +72,8 @@ photos or content.
 **Out of scope (until later phases)**
 
 - Housekeeping workflow, folio, payment capture, guest master / Full CRM,
-  multi-tenant SaaS billing.
+  live SaaS payment gateway / subscription billing (read-only billing stub is
+  implemented; checkout and plan mutation are not).
 - Changing DB schema without explicit approval.
 
 ---

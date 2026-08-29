@@ -26,6 +26,11 @@ const STYLES = {
   contacted: "border-sky-500/40 bg-sky-500/10 text-sky-200",
   quoted: "border-violet-500/40 bg-violet-500/10 text-violet-200",
   declined: "border-rose-500/40 bg-rose-500/10 text-rose-200",
+  // Tenant / subscription statuses (Phase 15 billing stub)
+  trial: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  trialing: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  past_due: "border-rose-500/40 bg-rose-500/10 text-rose-200",
+  suspended: "border-amber-500/40 bg-amber-500/10 text-amber-200",
 };
 
 export default function StatusBadge({ status }) {

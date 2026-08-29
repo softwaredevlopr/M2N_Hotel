@@ -225,10 +225,10 @@ Manual payments and GST-ready invoice snapshots without a gateway or ERP
 - Out of scope for Lite: live payment gateway, folio engine, credit notes,
   GSTR/accounting export
 
-### Phase 15 — Multi-Property SaaS 🔶 Lite (in progress)
+### Phase 15 — Multi-Property SaaS 🔶 Lite (foundation complete)
 
-Tenant isolation, self-serve onboarding, and operator billing for multi-property
-operators ([ADR-0042](history/DECISIONS.md)).
+Tenant isolation, self-serve onboarding, and read-only operator billing for
+multi-property operators ([ADR-0042](history/DECISIONS.md)).
 
 - ✅ Migration `009` — `tenants`, `tenant_memberships`, `hotels.tenant_id`
   (backfill default tenant)
@@ -238,9 +238,13 @@ operators ([ADR-0042](history/DECISIONS.md)).
   membership + first hotel; JWT on success; 10 req / 15 min
 - ✅ Admin UI `/admin/onboarding` + login ↔ onboarding links; auto session +
   redirect to `/admin/dashboard`
-- ⬜ Operator billing stub UI (`tenants.plan_code`, `subscription_status`, etc.;
-  read-only; no Stripe/gateway)
-- Out of scope for Lite: live payment gateway, per-hotel ACL within tenant, ERP
+- ✅ `GET /api/admin/tenant` — read-only billing summary (safe tenant fields
+  only); smoke `verify:phase15-billing`
+- ✅ Admin UI `/admin/billing` — read-only plan/subscription view; Billing nav
+  item; no payment actions
+- ⬜ Live SaaS payment gateway / subscription management (Stripe, Razorpay,
+  checkout, plan mutation, cancellation — future; out of Lite)
+- Out of scope for Lite: per-hotel ACL within tenant, ERP
 
 ---
 

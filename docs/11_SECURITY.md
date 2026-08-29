@@ -50,7 +50,8 @@ This document tracks security practices and requirements.
 - Env: `JWT_SECRET` (required), `JWT_EXPIRES_IN` (default `8h`), plus
   `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` for `npm run seed:admin` only.
 - Protected modules: all `/api/admin/*` routes (hotels, room-types, rooms,
-  media, tariffs, bookings, inventory, guests, admin inquiry CRUD).
+  media, tariffs, bookings, inventory, guests, admin inquiry CRUD, tenant
+  billing summary).
 
 ## 4. Data Protection
 

@@ -9,6 +9,35 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Added — Phase 15 Lite operator billing stub (API + admin UI) ✅
+
+- **What changed.** Read-only operator billing summary for authenticated admins.
+  `GET /api/admin/tenant` returns safe tenant fields only (no `metadata`,
+  `created_at`, or `updated_at`). Tenant resolution reuses Phase 15 Lite
+  conventions: single membership auto-resolve; zero memberships → 403; multiple
+  memberships require `?tenant_id=` or 400; cross-tenant `tenant_id` → 404;
+  `super_admin` defaults to `m2n-hotels` when omitted, or may pass `tenant_id`
+  explicitly. Frontend `/admin/billing` shows plan, subscription/account status,
+  billing email, trial end, and current period end with a read-only notice that
+  payment gateway / plan changes are future work. Billing nav item added. No
+  Stripe/Razorpay, checkout, plan mutation, cancellation, or invoices UI. No
+  schema change.
+- **Files modified:** `adminTenant.controller.js`, `adminTenant.routes.js`,
+  `adminTenancy.js` (`resolveReadTenantId`), `routes/index.js`,
+  `verifyPhase15Billing.js`, `package.json`, `frontend/src/lib/adminTenant.js`,
+  `frontend/src/app/admin/(protected)/billing/page.js`,
+  `frontend/src/components/admin/AdminGuard.js`, `StatusBadge.js`, docs.
+- **APIs added/changed:** `GET /api/admin/tenant` (JWT + `resolveAdminTenancy`;
+  optional `?tenant_id=`). Response fields: `id`, `name`, `slug`, `status`,
+  `plan_code`, `subscription_status`, `trial_ends_at`, `current_period_end`,
+  `billing_email`. GET-only.
+- **Database changes:** none.
+- **Frontend changes:** `/admin/billing` read-only page; `getAdminTenant()` client.
+- **Backend changes:** tenant summary controller + verifier
+  (`verify:phase15-billing` — 22/22 passed).
+- **Remaining work:** live SaaS payment gateway / subscription management (out of
+  Lite); non-local migrate `005`–`009`; placeholder contacts.
+
 ### Added — Phase 15 Lite self-serve onboarding (API + admin UI) ✅
 
 - **What changed.** Public self-serve operator onboarding: backend
@@ -32,8 +61,8 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
   `hotel_name`, `hotel_slug`, optional `city`/`state`/`country`/`phone`);
   `adminOnboard()` client; slug auto-fill via `slugifyHotelName`.
 - **Backend changes:** onboarding controller + validator + rate limiter.
-- **Remaining work:** operator billing stub UI; live payment gateway out of
-  scope; non-local migrate `005`–`009`; placeholder contacts.
+- **Remaining work:** live payment gateway out of scope; non-local migrate
+  `005`–`009`; placeholder contacts.
 
 ### Added — Phase 15 Lite tenant isolation (migration `009` + AuthZ) ✅
 
@@ -51,8 +80,8 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 - **Database changes:** migration `009` (additive + non-destructive backfill).
 - **Frontend changes:** none in this slice.
 - **Backend changes:** tenancy middleware and route hardening.
-- **Remaining work:** self-serve onboarding UI (follow-up slice above); operator
-  billing; gateway out of scope.
+- **Remaining work:** operator billing stub (follow-up slice above); gateway out
+  of scope.
 
 ### Added — Phase 14 Lite admin booking-detail Payments & Invoices UI ✅
 

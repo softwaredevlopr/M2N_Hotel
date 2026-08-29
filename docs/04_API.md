@@ -60,6 +60,7 @@
 | `DELETE` | `/api/inquiries/:id` | JWT | 10H |
 | `POST` | `/api/admin/auth/login` | — | 3 |
 | `POST` | `/api/admin/onboarding` | — | 15 |
+| `GET` | `/api/admin/tenant` | JWT | 15 |
 | `GET` | `/api/admin/auth/me` | JWT | 3 |
 | `CRUD` | `/api/admin/hotels` | JWT | 4 |
 | `CRUD` | `/api/admin/room-types` | JWT | 5 |
@@ -180,6 +181,39 @@ Unique constraint conflicts → **409** with generic message (no internal detail
 Validation errors → **400** with `errors[]`.
 
 **GET `/api/admin/auth/me`** — Bearer required.
+
+**GET `/api/admin/tenant`** (Phase 15 — JWT + `resolveAdminTenancy`)  
+Read-only current operator / tenant billing summary. Optional query:
+`?tenant_id=<uuid>`.
+
+**Tenant resolution**
+
+| Caller | Behavior |
+|--------|----------|
+| `hotel_admin`, one active membership | Auto-resolves that tenant |
+| `hotel_admin`, zero memberships | **403** — no tenant access configured |
+| `hotel_admin`, multiple memberships | **400** if `tenant_id` omitted; **404** if `tenant_id` not in memberships |
+| `super_admin`, no `tenant_id` | Defaults to `m2n-hotels` tenant (Lite convention) |
+| `super_admin`, with `tenant_id` | Returns that tenant if it exists (**404** if unknown) |
+
+Success **200** → `{ data: { … } }` with **only** these fields:
+
+| Field | Type |
+|-------|------|
+| `id` | UUID |
+| `name` | string |
+| `slug` | string |
+| `status` | `trial` \| `active` \| `suspended` \| `cancelled` |
+| `plan_code` | string (e.g. `lite`) |
+| `subscription_status` | `trialing` \| `active` \| `past_due` \| `cancelled` |
+| `trial_ends_at` | ISO timestamp or `null` |
+| `current_period_end` | ISO timestamp or `null` |
+| `billing_email` | string or `null` |
+
+Does **not** return `metadata`, `created_at`, `updated_at`, or membership
+details. **GET-only** — no plan changes, checkout, or payment gateway.
+
+Smoke: `npm run verify:phase15-billing`.
 
 Env: `JWT_SECRET`, `JWT_EXPIRES_IN`.
 

@@ -15,6 +15,7 @@ const adminBookingRoutes = require("./adminBooking.routes");
 const adminInventoryRoutes = require("./adminInventory.routes");
 const adminGuestRoutes = require("./adminGuest.routes");
 const adminOnboardingRoutes = require("./adminOnboarding.routes");
+const adminTenantRoutes = require("./adminTenant.routes");
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.use("/api/tariffs", tariffRoutes);
 router.use("/api/bookings", bookingRoutes);
 router.use("/api/admin/auth", adminAuthRoutes);
 router.use("/api/admin/onboarding", adminOnboardingRoutes);
+router.use("/api/admin/tenant", adminTenantRoutes);
 router.use("/api/admin/hotels", adminHotelRoutes);
 router.use("/api/admin/room-types", adminRoomTypeRoutes);
 router.use("/api/admin/rooms", adminRoomRoutes);
