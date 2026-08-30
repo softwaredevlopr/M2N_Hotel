@@ -1,8 +1,9 @@
 # 12 — Deployment
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Status:** Living document · **Last updated:** 2026-08-30  
 > **Scope:** Deployment architecture and readiness for the **current** M2N Hotels
-> stack (through Phase 14 Lite schema `008` + booking engine).  
+> stack (through Phase 15 Lite: migrations `001`–`009`, tenant isolation,
+> self-serve onboarding, read-only operator billing).  
 > **Hard rule:** This guide does **not** authorize running migrations or deploys
 > against staging/production until an operator explicitly executes those steps.
 
@@ -22,12 +23,13 @@ Related:
 3. [Backend deployment](#3-backend-deployment)
 4. [Frontend deployment](#4-frontend-deployment)
 5. [PostgreSQL deployment](#5-postgresql-deployment)
-6. [Migration 005 / 006 safe rollout](#6-migration-005--006-safe-rollout)
+6. [Staging cutover runbook (migrations 005–009)](#6-staging-cutover-runbook-migrations-005009)
 7. [Security checklist](#7-security-checklist)
 8. [Pre-production checklist](#8-pre-production-checklist)
 9. [Rollback / recovery](#9-rollback--recovery)
 10. [Future CI/CD (recommended only)](#10-future-cicd-recommended-only)
-11. [Remaining blockers](#11-remaining-blockers)
+11. [Deployment risks](#11-deployment-risks)
+12. [Remaining blockers](#12-remaining-blockers)
 
 ---
 
@@ -191,10 +193,24 @@ Current migration set:
 | `006_booking_admin_notes.sql` | Private `bookings.admin_notes` |
 | `007_booking_notification_preferences.sql` | Guest notification prefs JSONB |
 | `008_booking_payments_and_invoices.sql` | Phase 14 Lite ledger + invoices |
+| `009_tenancy_lite.sql` | Phase 15 Lite — `tenants`, `tenant_memberships`, `hotels.tenant_id` |
 
-Local development already has `001`–`008`. Non-local apply is a **manual operator
-action** — see [§6](#6-migration-005--006-safe-rollout). Include `007` and `008`
-when that environment is behind.
+**Migration runner behaviour** (`scripts/runMigrations.js`):
+
+- Applies pending `migrations/*.sql` in **alphabetical filename order**.
+- **Skips** files already recorded in `schema_migrations` (safe to re-run).
+- Each **new** file runs inside a **transaction** (SQL + insert into
+  `schema_migrations`); rolls back that file on error.
+- **Never** manually `INSERT` into `schema_migrations` without executing and
+  validating the matching SQL file.
+
+Local development should already have `001`–`009`. **Staging and production must
+reach `009` before deploying the current Phase 15 API** (`main` at `3f65b11` and
+later). The API expects `tenants`, `tenant_memberships`, and `hotels.tenant_id`
+for tenant isolation, self-serve onboarding, and `GET /api/admin/tenant`.
+
+Non-local apply is a **manual operator action** — see
+[§6 Staging cutover runbook](#6-staging-cutover-runbook-migrations-005009).
 
 ### 3.4 Start
 
@@ -219,7 +235,7 @@ metadata. Do not treat a process that listens but fails `/health` as healthy.
 - Run under a process manager or platform supervisor (systemd, PM2, Render,
   Railway, etc.) with **auto-restart** on crash.
 - Zero-downtime: prefer rolling restart of API instances **after** migrations that
-  are additive/compatible (005/006 are additive).
+  are additive/compatible (`005`–`009` are additive).
 - Persist `backend/uploads/` across restarts (named volume or object storage).
   Multiple API replicas without shared storage will break media URLs.
 
@@ -324,85 +340,279 @@ environment from a single job to avoid concurrent migrators.
 
 ---
 
-## 6. Migration 005 / 006 safe rollout
+## 6. Staging cutover runbook (migrations 005–009)
 
 **This section is a checklist only. Do not execute it against non-local
 environments from an AI session unless an operator explicitly runs it.**
 
-Local development already applied `005` and `006`. Staging/production may still
-be behind (often through `004` or earlier).
+Local development should already have `001`–`009`. Staging/production may still
+be behind (often through `004` or earlier). **Deploying the current Phase 15 API
+without migration `009` will fail** — tenant isolation, onboarding, and billing
+routes expect `tenants`, `tenant_memberships`, and `hotels.tenant_id`.
 
-### 6.1 Required order
+### 6.1 Phase 15 deployment prerequisites
+
+After `009_tenancy_lite.sql` is applied and verified:
+
+| Object | Purpose |
+|--------|---------|
+| `tenants` | Operator / SaaS billing account (`slug`, `status`, `plan_code`, `subscription_status`, trial/period dates) |
+| `tenant_memberships` | Links `admin_users` to tenants (`owner` / `admin` / `staff`) |
+| `hotels.tenant_id` | Property ownership; every hotel row must reference a tenant |
+
+Migration `009` **backfills** a default tenant (`m2n-hotels`) and assigns all
+existing hotels and active admin users to it. New properties can also be created
+via **self-serve onboarding** (`POST /api/admin/onboarding`, public, rate-limited)
+and the admin UI at `/admin/onboarding`.
+
+Operators can view a **read-only tenant/billing summary** after login:
+`GET /api/admin/tenant` (JWT) and `/admin/billing` (no payment gateway; Lite stub only).
+
+### 6.2 Safe staging deployment order
+
+Execute in this order on the **target staging environment**:
 
 1. **Backup** the target database; store restore instructions.
 2. **Verify target environment** — confirm host, DB name, and that secrets point
    at staging vs production (never mix).
-3. **Inspect `schema_migrations`**
-
-   ```sql
-   SELECT filename, executed_at
-   FROM schema_migrations
-   ORDER BY filename;
-   ```
-
-4. **Verify pending migrations** — expect missing rows for any of
-   `005_room_type_inventory_dates.sql` / `006_booking_admin_notes.sql` (and
-   earlier files if the environment is older).
-5. **Apply** with the existing runner:
+3. **Inspect `schema_migrations`** (read-only) — see [§6.3](#63-powershell--psql-examples).
+4. **Confirm pending migrations** — identify any missing `005`–`009` filenames.
+5. **Run migrate** from `backend/` with staging `DATABASE_URL` / `DB_*` set:
 
    ```bash
    cd backend
    npm run migrate
    ```
 
-6. **Verify migration records** — both filenames present in `schema_migrations`.
-7. **Verify inventory schema (005)**
+   The runner skips already-recorded files; each new file runs transactionally.
+   **Never** manually `INSERT` into `schema_migrations` without executing and
+   validating the SQL file.
+6. **Verify schema through `009`** — tables, columns, backfill (§6.4).
+7. **Deploy backend** (API) with staging secrets (`NODE_ENV=production`,
+   `JWT_SECRET`, `DATABASE_URL` or `DB_*`, `FRONTEND_URL`, optional email vars).
+8. **Verify API roots** — `GET /` and `GET /health` on the staging API origin.
+9. **Run Phase 15 verifiers** against staging (§6.6) with
+   `TEST_BASE_URL=https://api-staging.example.com` (placeholder).
+10. **Configure frontend build-time env** — `NEXT_PUBLIC_API_BASE_URL` (or legacy
+    `NEXT_PUBLIC_API_URL`), `NEXT_PUBLIC_SITE_URL`.
+11. **Build and deploy frontend** (`npm run build` then host `next start` or platform deploy).
+12. **Browser smoke tests** — matrix in [§6.5](#65-post-deploy-smoke-matrix).
 
-   ```sql
-   SELECT column_name
-   FROM information_schema.columns
-   WHERE table_schema = 'public'
-     AND table_name = 'room_type_inventory_dates'
-   ORDER BY ordinal_position;
-   ```
+Prefer: **backup → migrate through 009 → deploy API → verify scripts → build/deploy web → smoke**.
 
-   Expect columns including `allotment`, `stop_sell`, `overbooking_allowance`,
-   `source`, and unique `(hotel_id, room_type_id, inventory_date)`.
+### 6.3 PowerShell / psql examples
 
-8. **Verify `bookings.admin_notes` (006)**
+Use the PostgreSQL 17 client (adjust path if your install differs):
 
-   ```sql
-   SELECT data_type, is_nullable, column_default
-   FROM information_schema.columns
-   WHERE table_schema = 'public'
-     AND table_name = 'bookings'
-     AND column_name = 'admin_notes';
-   ```
+```powershell
+$psql = "C:\Program Files\PostgreSQL\17\bin\psql.exe"
+$env:PGPASSWORD = "<DB_PASSWORD_PLACEHOLDER>"
+$conn = "-h <DB_HOST_PLACEHOLDER> -p 5432 -U <DB_USER_PLACEHOLDER> -d <DB_NAME_PLACEHOLDER>"
+```
 
-   Expect `data_type = text`, `is_nullable = YES`, default NULL.
+**Inspect applied migrations (read-only):**
 
-9. **Health / API smoke** (against that environment’s API):
+```powershell
+& $psql $conn -c "SELECT filename, executed_at FROM schema_migrations ORDER BY filename;"
+```
 
-   - `GET /health`
-   - Public hotels / room types
-   - `GET /api/bookings/availability` (sample slug + dates)
-   - Admin JWT login + inventory calendar + booking detail
-   - Confirm public booking create/lookup **omit** `admin_notes`; admin detail
-     **includes** it when set
+**Identify missing 005–009** (expect zero rows when fully migrated):
 
-10. **If verification fails** — stop traffic to the bad release; restore from the
-    pre-migration backup if schema/data is inconsistent. See [§9](#9-rollback--recovery).
-    Do **not** casually `DROP COLUMN` / `DROP TABLE` on production without a
-    written restore plan.
+```powershell
+& $psql $conn -c @"
+SELECT f AS missing_migration
+FROM (VALUES
+  ('005_room_type_inventory_dates.sql'),
+  ('006_booking_admin_notes.sql'),
+  ('007_booking_notification_preferences.sql'),
+  ('008_booking_payments_and_invoices.sql'),
+  ('009_tenancy_lite.sql')
+) AS required(f)
+WHERE f NOT IN (SELECT filename FROM schema_migrations);
+"@
+```
 
-### 6.2 Compatibility notes
+**Check tenants (Phase 15 backfill):**
 
-- `005` and `006` are **additive**. Application versions that do not yet read
-  inventory overrides or `admin_notes` generally remain compatible after migrate.
-- Prefer: migrate DB → deploy API that understands 005/006 → deploy frontend.
-- Running new API code that **requires** `admin_notes` against a DB missing `006`
-  will error on admin booking SELECTs — apply `006` before or with that API
-  release.
+```powershell
+& $psql $conn -c "SELECT id, slug, name, status, plan_code, subscription_status FROM tenants ORDER BY slug;"
+```
+
+**Check tenant_memberships:**
+
+```powershell
+& $psql $conn -c @"
+SELECT tm.id, t.slug AS tenant_slug, au.email, tm.membership_role, tm.is_active
+FROM tenant_memberships tm
+JOIN tenants t ON t.id = tm.tenant_id
+JOIN admin_users au ON au.id = tm.admin_user_id
+ORDER BY t.slug, au.email;
+"@
+```
+
+**Check hotels.tenant_id** (every hotel should have a non-null `tenant_id` after 009):
+
+```powershell
+& $psql $conn -c @"
+SELECT h.slug, h.name, t.slug AS tenant_slug, h.tenant_id IS NOT NULL AS has_tenant
+FROM hotels h
+LEFT JOIN tenants t ON t.id = h.tenant_id
+ORDER BY h.slug;
+"@
+```
+
+**Run migrations** (from repo root; env must point at target DB):
+
+```powershell
+cd C:\path\to\M2N_Hotels\backend
+# Ensure DATABASE_URL or DB_* in environment / .env targets STAGING only
+npm run migrate
+```
+
+Replace `<DB_*_PLACEHOLDER>` and connection values with staging secrets from the
+host secret store — never commit real passwords or hostnames.
+
+### 6.4 Schema verification after migrate
+
+**005 — `room_type_inventory_dates`:**
+
+```sql
+SELECT column_name
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'room_type_inventory_dates'
+ORDER BY ordinal_position;
+```
+
+Expect columns including `allotment`, `stop_sell`, `overbooking_allowance`,
+`source`, and unique `(hotel_id, room_type_id, inventory_date)`.
+
+**006 — `bookings.admin_notes`:**
+
+```sql
+SELECT data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'bookings'
+  AND column_name = 'admin_notes';
+```
+
+Expect `text`, nullable, default NULL.
+
+**007 — notification preferences** (column on `bookings`):
+
+```sql
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'bookings'
+  AND column_name = 'notification_preferences';
+```
+
+**008 — payments / invoices tables:**
+
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name IN ('booking_payments', 'booking_invoices', 'hotel_invoice_sequences')
+ORDER BY table_name;
+```
+
+**009 — tenancy:**
+
+```sql
+SELECT COUNT(*) AS tenant_count FROM tenants;
+SELECT COUNT(*) AS hotels_without_tenant FROM hotels WHERE tenant_id IS NULL;
+```
+
+Expect `hotels_without_tenant = 0` after successful `009`.
+
+### 6.5 Post-deploy smoke matrix
+
+| Area | Check |
+|------|-------|
+| API root | `GET /` returns API metadata |
+| Health | `GET /health` → healthy + DB connected |
+| Public hotels | `GET /api/hotels` returns properties |
+| Admin login | `/admin/login` → JWT; token stored in **browser localStorage** |
+| Tenant isolation | Admin list/detail scoped to membership tenant; cross-tenant IDs → 404 |
+| Onboarding API | `POST /api/admin/onboarding` (public, rate-limited) — staging only with test data |
+| Onboarding UI | `/admin/onboarding` form loads; link from login page |
+| Tenant summary | `GET /api/admin/tenant` (JWT) returns read-only billing fields |
+| Billing UI | `/admin/billing` shows tenant name, plan, subscription status (read-only) |
+| Bookings | List/detail, status, room assign, admin create |
+| CRM / guests | `/admin/guests` search + Guest 360 |
+| Inventory | `/admin/inventory` calendar + day overrides |
+| Payments / invoices | Booking detail Payments & Invoices panels (Phase 14 Lite; manual ledger, no gateway) |
+| Inquiries | Public POST + admin list/detail/status |
+| Front desk | `/admin/front-desk` arrivals / departures / in-house |
+| CORS | Browser calls from `FRONTEND_URL` origin succeed; wrong origin blocked |
+| Media / uploads | Admin upload works; **note:** `backend/uploads/` is local disk — see [§11](#11-deployment-risks) |
+
+Payment gateway / Stripe / Razorpay: **not implemented** — do not expect checkout or live card capture.
+
+### 6.6 Verification commands (`backend/package.json`)
+
+Run from `backend/` with API reachable. Set `TEST_BASE_URL` to the staging API
+origin when verifying a remote environment (default `http://localhost:5001`).
+
+| Script | Scope |
+|--------|-------|
+| `npm run verify:phase15` | Tenant isolation + admin AuthZ (requires `009`) |
+| `npm run verify:phase15-onboarding` | Self-serve onboarding API |
+| `npm run verify:phase15-billing` | `GET /api/admin/tenant` + billing stub |
+| `npm run verify:phase14` | Payments + invoices APIs |
+| `npm run verify:crm` | Guest search + Guest 360 |
+| `npm run verify:front-desk` | Front desk board + status actions |
+| `npm run verify:phase10i` | Persistent inventory dates |
+| `npm run verify:inventory-dates` | Admin inventory date write APIs |
+| `npm run verify:phase10c` | Admin bookings console |
+| `npm run verify:phase10d` | Inventory engine |
+| `npm run verify:phase10f` | Booking emails (optional) |
+| `npm run verify:notification-prefs` | Guest notification preferences |
+| `npm run verify:admin-stay-modify` | Admin stay modification |
+| `npm run verify:guest-stay-modify` | Guest stay modification |
+
+**Staging cutover minimum** (after migrate + API deploy):
+
+```bash
+cd backend
+export TEST_BASE_URL=https://api-staging.example.com   # placeholder
+npm run verify:phase15
+npm run verify:phase15-onboarding
+npm run verify:phase15-billing
+npm run verify:phase14
+npm run verify:crm
+npm run verify:front-desk
+```
+
+PowerShell equivalent:
+
+```powershell
+cd C:\path\to\M2N_Hotels\backend
+$env:TEST_BASE_URL = "https://api-staging.example.com"
+npm run verify:phase15
+npm run verify:phase15-onboarding
+npm run verify:phase15-billing
+```
+
+### 6.7 Compatibility notes
+
+- Migrations `005`–`009` are **additive**. Prefer: migrate DB → deploy API that
+  understands new schema → deploy frontend.
+- Running Phase 15 API against a DB missing `009` will error on tenant-scoped
+  admin routes — apply `009` before or with that API release.
+- `009` backfill is safe for existing single-tenant installs; verify `m2n-hotels`
+  tenant and hotel links after migrate.
+
+### 6.8 If verification fails
+
+1. Stop traffic to the bad release.
+2. Capture error logs and `schema_migrations` contents.
+3. Restore from the **pre-migration backup** if schema/data is inconsistent.
+4. Do **not** casually `DROP COLUMN` / `DROP TABLE` on production without a
+   written restore plan. See [§9](#9-rollback--recovery).
 
 ---
 
@@ -424,6 +634,10 @@ be behind (often through `004` or earlier).
 | 12 | Seed passwords rotated after first admin create | Recommended |
 | 13 | `uploads/` not world-writable; scan/limit uploads as needed | Ongoing |
 | 14 | Hotel photo isolation (slug → folder) preserved on CDN | Required for brand safety |
+| 15 | Tenant isolation: admin JWT scoped via `tenant_memberships` | Implemented (Phase 15 Lite) |
+| 16 | Public onboarding rate-limited (`POST /api/admin/onboarding`) | Implemented |
+| 17 | Admin JWT in browser `localStorage` — XSS risk; use HTTPS only | Known limitation |
+| 18 | No payment gateway secrets in repo; booking payments are manual ledger only | Required |
 
 Details: [`11_SECURITY.md`](11_SECURITY.md).
 
@@ -436,6 +650,7 @@ Concrete checks before calling an environment “ready”:
 | Area | Check |
 |------|-------|
 | Backend health | `GET /health` → healthy + DB connected |
+| API root | `GET /` responds on API origin |
 | Public hotels | `GET /api/hotels` returns both properties |
 | Public rooms | Room types for a known slug load |
 | Guest booking | `/book` stay → rooms → guest → create; confirmation page works |
@@ -445,18 +660,30 @@ Concrete checks before calling an environment “ready”:
 | Inventory day-edit | Upsert/clear override for one room type/day (JWT) |
 | Inquiries | Public POST + admin list/detail/status |
 | `admin_notes` privacy | Admin can set/clear; public create rejects; public lookup omits |
+| Phase 15 tenancy | `tenants` + `tenant_memberships` + `hotels.tenant_id` verified after `009` |
+| Tenant isolation | Admin cannot read another tenant's hotel/booking by ID |
+| Onboarding | `/admin/onboarding` + `POST /api/admin/onboarding` (staging test account) |
+| Billing stub | `/admin/billing` + `GET /api/admin/tenant` (read-only; no gateway) |
+| CRM / guests | `/admin/guests` search + profile |
+| Front desk | `/admin/front-desk` board actions |
+| Payments / invoices | Booking detail ledger + invoice draft/issue (Phase 14 Lite) |
 | Frontend build | `npm run build` with production `NEXT_PUBLIC_*` |
-| CORS | Browser calls from site origin succeed |
+| CORS | Browser calls from `FRONTEND_URL` origin succeed |
 | Email | Console or SMTP path verified without leaking SMTP secrets in tickets |
 | Backup/restore | Recent backup exists; restore drill documented |
-| Migrations | Target `schema_migrations` includes through `006` when that env is cut over |
+| Migrations | Target `schema_migrations` includes through `009` when that env is cut over |
 | Contacts | Placeholder phone/email/address replaced before public launch |
 
-Local smoke helpers (require running API; **local or explicitly targeted**
-`TEST_BASE_URL` only):
+Local / staging smoke helpers (require running API; set `TEST_BASE_URL` for remote):
 
 ```bash
 cd backend
+npm run verify:phase15
+npm run verify:phase15-onboarding
+npm run verify:phase15-billing
+npm run verify:phase14
+npm run verify:crm
+npm run verify:front-desk
 npm run verify:phase10c
 npm run verify:phase10d
 npm run verify:phase10i
@@ -515,18 +742,34 @@ Do not add workflow files until explicitly requested.
 
 ---
 
-## 11. Remaining blockers
+## 11. Deployment risks
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| **`backend/uploads/` local disk** | Media files are lost on ephemeral disks or invisible across API replicas | Use a persistent volume, single instance, or future object storage/CDN before scaling API horizontally |
+| **`NEXT_PUBLIC_*` build-time** | Wrong API URL baked into frontend until rebuild | Set `NEXT_PUBLIC_API_BASE_URL` (or legacy `NEXT_PUBLIC_API_URL`) correctly **before** `npm run build`; redeploy web after API URL changes |
+| **CORS `FRONTEND_URL`** | Browser blocks API calls if origin mismatch | Set backend `FRONTEND_URL` to the **exact** browser origin (scheme + host + port); restart API after change |
+| **JWT in `localStorage`** | Token readable to any same-origin script; XSS exposes admin session | HTTPS only; strict CSP where possible; no third-party scripts on admin pages; future httpOnly cookie auth is not implemented |
+| **Public onboarding** | `POST /api/admin/onboarding` creates tenants without admin login | Rate-limited; monitor abuse on staging; do not disable limiter |
+| **Payment gateway not implemented** | No Stripe/Razorpay/checkout; guest bookings are not prepaid online | Phase 14 Lite is manual ledger + invoice draft only; do not configure gateway env vars — none exist |
+| **Migration `009` required** | Phase 15 API errors without tenancy tables | Migrate through `009` before deploying current `main`; never fake `schema_migrations` rows |
+| **Secrets in git** | Credential leak | Use host secret store; templates only in `.env.example` |
+
+---
+
+## 12. Remaining blockers
 
 Before a real staging/production cutover, resolve:
 
 1. Final **hostnames** for frontend + API (fill staging/production URL table).
 2. Provisioned **Postgres** with backups + SSL.
 3. Platform **secrets** (`JWT_SECRET`, DB URL, SMTP if used).
-4. Operator-run **migrate** through `006` on each non-local DB (checklist §6).
+4. Operator-run **migrate** through **`009`** on each non-local DB (runbook [§6](#6-staging-cutover-runbook-migrations-005009)).
 5. Persistent **uploads** strategy for multi-instance API.
 6. Replace **placeholder contact** details before public launch.
 7. Optional: CI/CD ([§10](#10-future-cicd-recommended-only)).
 8. Optional: object storage / CDN for media (technical debt).
+9. Optional: live SaaS **payment gateway** (Phase 15 full — not in Lite; do not start without approval).
 
 ---
 

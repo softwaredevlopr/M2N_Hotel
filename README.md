@@ -12,7 +12,7 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 ---
 
-## Current status (Phases 1–14 Lite backend)
+## Current status (Phases 1–15 Lite)
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -38,7 +38,8 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 | 12 | PMS Lite (Front Desk board, status actions, room status board) | ✅ |
 | 13 | CRM Lite (derived guest search + Guest 360 + open leads) | ✅ |
 | 14 | Payments & Invoice Lite (manual ledger + invoice APIs + booking-detail UI) | ✅ |
-| 15 | Multi-Property SaaS | ⬜ Upcoming |
+| 15 | Multi-Property SaaS Lite (migration `009`, tenant isolation, onboarding, read-only billing) | ✅ |
+| 15+ | Live payment gateway / subscription management | ⬜ Not in Lite |
 
 Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md)
 
@@ -50,7 +51,9 @@ Full roadmap: [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md) · Status: [`docs/01_PR
 | `/book` | Guest booking flow (Stay → Rooms → Guest → Review → Confirm) |
 | `/booking` | Find a reservation (reference + email/mobile) |
 | `/booking/[bookingNumber]` | Booking confirmation + contact-verified lookup |
-| `/admin/login` → `/admin/*` | Admin console (front desk, guests, bookings, inventory, inquiries, hotels, room types, rooms, media, tariffs) |
+| `/admin/login` | Admin sign-in |
+| `/admin/onboarding` | Self-serve hotel account creation (public) |
+| `/admin/*` | Admin console (billing, front desk, guests, bookings, inventory, inquiries, hotels, room types, rooms, media, tariffs) |
 
 > Bookings are not prepaid via a gateway. Staff may record cash/UPI/card/bank
 > payments on the admin JWT APIs; there is no public checkout or live gateway.
@@ -74,7 +77,8 @@ npm run dev            # http://localhost:5001
 # Frontend (new terminal)
 cd frontend
 npm install
-# optional: NEXT_PUBLIC_API_URL=http://localhost:5001
+# optional: NEXT_PUBLIC_API_BASE_URL=http://localhost:5001
+# legacy alias: NEXT_PUBLIC_API_URL=http://localhost:5001
 npm run dev            # http://localhost:3000
 ```
 

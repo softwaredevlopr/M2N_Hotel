@@ -79,12 +79,12 @@
       and Aurelia. Standard stays `0.00` (₹999 is the 3-hour couple package, not
       nightly). Scripts: `npm run set:base-prices` / `verify:base-prices`.
 - [x] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
-      (architecture, env matrix, 005/006 rollout checklist, security / rollback).
-      Docs only — no staging/production deploy or non-local migrate yet.
+      (architecture, env matrix, staging cutover runbook through migration `009`,
+      Phase 15 smoke, security / rollback). Docs only — no staging/production
+      deploy or non-local migrate yet.
 - [ ] Replace placeholder contact details before launch.
-- [ ] Run `npm run migrate` on every environment for `004_bookings.sql`,
-      `005_room_type_inventory_dates.sql`, `006_booking_admin_notes.sql`, and
-      `007_booking_notification_preferences.sql`.
+- [ ] Run `npm run migrate` on every non-local environment through
+      `009_tenancy_lite.sql` (includes `005`–`008` if still pending).
       Local dev is already migrated. Follow [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.
 
 ---

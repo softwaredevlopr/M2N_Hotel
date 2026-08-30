@@ -9,6 +9,26 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Changed — staging cutover runbook (docs only)
+
+- **What changed.** Updated deployment and setup documentation to match the
+  current repository (`main` through Phase 15 Lite, migrations `001`–`009`).
+  Replaced the outdated `005`/`006`-only rollout section with a full staging
+  cutover runbook: migration coverage through `009`, Phase 15 prerequisites
+  (`tenants`, `tenant_memberships`, `hotels.tenant_id`, onboarding, billing stub),
+  env var matrix, safe deployment order, PowerShell/psql examples, post-deploy
+  smoke matrix, verification scripts from `package.json`, and deployment risks.
+  README Phase 15 status corrected to Lite complete; setup guide references
+  `001`–`009`.
+- **Files modified:** `docs/12_DEPLOYMENT.md`, `docs/06_SETUP_GUIDE.md`,
+  `README.md`, `TODO.md`, `PROJECT_DOCS.md`, `docs/CHANGELOG.md`.
+- **APIs added/changed:** none.
+- **Database changes:** none.
+- **Frontend changes:** none.
+- **Backend changes:** none.
+- **Remaining work:** operator-run staging cutover per updated runbook; placeholder
+  contacts; live payment gateway (out of Lite scope).
+
 ### Added — Phase 15 Lite operator billing stub (API + admin UI) ✅
 
 - **What changed.** Read-only operator billing summary for authenticated admins.

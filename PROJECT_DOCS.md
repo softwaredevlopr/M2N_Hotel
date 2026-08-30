@@ -413,8 +413,8 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
   0 (couple package is not nightly).
 - ⬜ Production contact details (replace placeholders).
-- ⬜ Run `005` / `006` on non-local environments (operator checklist in
-  deployment docs).
+- ⬜ Run `005`–`009` on non-local environments (operator runbook in
+  [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6).
 - ⬜ Full CRM (guest master / merge) or dated follow-up table — only if
   separately approved.
 - ⬜ Phases **14–15** (payments → SaaS).

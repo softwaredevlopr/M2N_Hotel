@@ -1,6 +1,6 @@
 # 06 — Setup Guide
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Status:** Living document · **Last updated:** 2026-08-30  
 > **Related:** [`../README.md`](../README.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) ·
 > [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md)
 
@@ -25,11 +25,14 @@ cd ../frontend && npm install
 
 - Database: `DATABASE_URL` **or** `DB_*` fields
 - `JWT_SECRET`, `JWT_EXPIRES_IN`
+- `NODE_ENV` — set `production` on staging/production API hosts
 - Optional seed admin: `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 - Optional: `FRONTEND_URL` for CORS and booking email deep-links
+- Optional DB SSL/pool: `DB_SSL`, `DB_SSL_REJECT_UNAUTHORIZED`, `DB_POOL_MAX`, etc.
 - Optional email (Phase 10F): `EMAIL_ENABLED`, `EMAIL_PROVIDER` (`auto` /
   `console` / `smtp`), `EMAIL_FROM`, and `SMTP_*`. With no `SMTP_HOST`, messages
   are logged to the server console (no credentials required).
+- Verify scripts only: `TEST_BASE_URL` (defaults to `http://localhost:5001`)
 
 **Frontend** — optional `.env.local` (see `frontend/.env.example`):
 
@@ -42,13 +45,14 @@ cd ../frontend && npm install
 
 ```bash
 cd backend
-npm run migrate      # applies pending 001–008 (alphabetical via schema_migrations)
+npm run migrate      # applies pending 001–009 (alphabetical via schema_migrations)
 npm run seed         # hotels / rooms / media seed (optional)
 npm run seed:admin   # create first admin
 ```
 
-Non-local migrate checklist (005/006): [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md) §6.
-Do not run staging/production migrates from this setup guide alone.
+Non-local migrate / staging cutover (through `009` for Phase 15 API):
+[`12_DEPLOYMENT.md`](12_DEPLOYMENT.md) §6. Do not run staging/production migrates
+from this setup guide alone.
 
 ## 5. Run
 
@@ -67,6 +71,17 @@ cd frontend && npm run dev   # :3000
 | API health | `http://localhost:5001/health` |
 | Public site | `http://localhost:3000` |
 | Admin login | `http://localhost:3000/admin/login` |
+| Onboarding (public) | `http://localhost:3000/admin/onboarding` |
+| Billing stub (JWT) | `http://localhost:3000/admin/billing` |
+
+Phase 15 smoke (API must be running):
+
+```bash
+cd backend
+npm run verify:phase15
+npm run verify:phase15-onboarding
+npm run verify:phase15-billing
+```
 
 ## 7. Troubleshooting
 
