@@ -10,10 +10,23 @@ function logError(message) {
   console.error(`[Seed] ${message}`);
 }
 
-async function upsertHotel(hotel) {
+async function resolveDefaultTenantId() {
+  const result = await query(
+    `SELECT id FROM tenants WHERE slug = 'm2n-hotels' LIMIT 1`
+  );
+  if (result.rows.length === 0) {
+    throw new Error(
+      "Default tenant 'm2n-hotels' not found. Run migrations through 009_tenancy_lite.sql before seeding."
+    );
+  }
+  return result.rows[0].id;
+}
+
+async function upsertHotel(hotel, tenantId) {
   const result = await query(
     `
     INSERT INTO hotels (
+      tenant_id,
       slug,
       name,
       tagline,
@@ -38,7 +51,7 @@ async function upsertHotel(hotel) {
     )
     VALUES (
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-      $15, $16, $17, $18, $19, $20, $21
+      $15, $16, $17, $18, $19, $20, $21, $22
     )
     ON CONFLICT (slug) DO UPDATE SET
       name = EXCLUDED.name,
@@ -64,6 +77,7 @@ async function upsertHotel(hotel) {
     RETURNING id, slug
     `,
     [
+      tenantId,
       hotel.slug,
       hotel.name,
       hotel.tagline,
@@ -818,9 +832,17 @@ async function deactivateRetiredHotels(slugs) {
   }
 }
 
-async function seedProperty({ hotel, amenityIds, amenityLinks, media, roomTypes, rooms }) {
+async function seedProperty({
+  hotel,
+  tenantId,
+  amenityIds,
+  amenityLinks,
+  media,
+  roomTypes,
+  rooms,
+}) {
   log(`--- Seeding property: ${hotel.slug} ---`);
-  const hotelId = await upsertHotel(hotel);
+  const hotelId = await upsertHotel(hotel, tenantId);
   await linkHotelAmenities(hotelId, amenityIds, amenityLinks);
 
   if (Array.isArray(media) && media.length > 0) {
@@ -837,12 +859,16 @@ async function seedProperty({ hotel, amenityIds, amenityLinks, media, roomTypes,
 async function runSeed() {
   log("Starting Phase 1 seed...");
 
+  const tenantId = await resolveDefaultTenantId();
+  log("Default tenant resolved: m2n-hotels");
+
   const amenityIds = await upsertAmenities();
 
   await deactivateRetiredHotels(RETIRED_HOTEL_SLUGS);
 
   const zaarangHotelId = await seedProperty({
     hotel: ZAARANG_HOTEL,
+    tenantId,
     amenityIds,
     amenityLinks: ZAARANG_AMENITY_LINKS,
     media: ZAARANG_MEDIA,
@@ -852,6 +878,7 @@ async function runSeed() {
 
   const aureliaHotelId = await seedProperty({
     hotel: AURELIA_HOTEL,
+    tenantId,
     amenityIds,
     amenityLinks: AURELIA_AMENITY_LINKS,
     media: AURELIA_MEDIA,

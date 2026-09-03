@@ -25,6 +25,39 @@ function requireEnv(name) {
   return String(value).trim();
 }
 
+async function resolveDefaultTenantId() {
+  const result = await query(
+    `SELECT id FROM tenants WHERE slug = 'm2n-hotels' LIMIT 1`
+  );
+  if (result.rows.length === 0) {
+    throw new Error(
+      "Default tenant 'm2n-hotels' not found. Run migrations through 009_tenancy_lite.sql before seeding admin."
+    );
+  }
+  return result.rows[0].id;
+}
+
+async function ensureDefaultTenantMembership(adminUserId) {
+  const tenantId = await resolveDefaultTenantId();
+  const result = await query(
+    `INSERT INTO tenant_memberships (
+       tenant_id, admin_user_id, membership_role, is_active
+     )
+     VALUES ($1, $2, 'owner', TRUE)
+     ON CONFLICT (tenant_id, admin_user_id) DO NOTHING
+     RETURNING id`,
+    [tenantId, adminUserId]
+  );
+
+  if (result.rows.length > 0) {
+    log("Ensured owner membership on default tenant m2n-hotels.");
+  } else {
+    log(
+      "Default tenant membership already present for this admin (left unchanged)."
+    );
+  }
+}
+
 async function seedAdmin() {
   const fullName = requireEnv("ADMIN_NAME");
   const email = normalizeEmail(requireEnv("ADMIN_EMAIL"));
@@ -52,26 +85,36 @@ async function seedAdmin() {
     [email]
   );
 
+  let adminId;
+
   if (existing.rows.length > 0) {
     const row = existing.rows[0];
+    adminId = row.id;
     log(
       `Admin already exists for email "${row.email}" (id=${row.id}, role=${row.role}, active=${row.is_active}). Skipping insert.`
     );
-    return;
+    if (row.is_active === false) {
+      log(
+        `WARNING: Existing admin "${row.email}" is inactive. Membership ensure will still run; account was not reactivated.`
+      );
+    }
+  } else {
+    const passwordHash = await hashPassword(password);
+
+    const result = await query(
+      `INSERT INTO admin_users (full_name, email, password_hash, role, is_active)
+       VALUES ($1, $2, $3, 'super_admin', TRUE)
+       RETURNING id, full_name, email, role, is_active, last_login_at, created_at, updated_at`,
+      [fullName, email, passwordHash]
+    );
+
+    const created = toPublicAdmin(result.rows[0]);
+    adminId = created.id;
+    log(`Created super_admin: ${created.email} (id=${created.id}).`);
+    log("Password was hashed and was not printed.");
   }
 
-  const passwordHash = await hashPassword(password);
-
-  const result = await query(
-    `INSERT INTO admin_users (full_name, email, password_hash, role, is_active)
-     VALUES ($1, $2, $3, 'super_admin', TRUE)
-     RETURNING id, full_name, email, role, is_active, last_login_at, created_at, updated_at`,
-    [fullName, email, passwordHash]
-  );
-
-  const created = toPublicAdmin(result.rows[0]);
-  log(`Created super_admin: ${created.email} (id=${created.id}).`);
-  log("Password was hashed and was not printed.");
+  await ensureDefaultTenantMembership(adminId);
 }
 
 seedAdmin()
