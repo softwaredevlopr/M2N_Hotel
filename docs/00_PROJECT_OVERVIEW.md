@@ -1,110 +1,56 @@
 # 00 — Project Overview
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
-> **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [01 — Status](01_PROJECT_STATUS.md) · [13 — Roadmap](13_ROADMAP.md)
-
----
-
-## Table of Contents
-
-- [1. Summary](#1-summary)
-- [2. Vision](#2-vision)
-- [3. Goals](#3-goals)
-- [4. Scope](#4-scope)
-- [5. Stakeholders](#5-stakeholders)
-- [6. Glossary](#6-glossary)
-- [7. Related Documents](#7-related-documents)
+> **Status:** Living document · **Last updated:** 2026-09-03  
+> **Related:** [01 — Status](01_PROJECT_STATUS.md) · [13 — Roadmap](13_ROADMAP.md) · [`../README.md`](../README.md)
 
 ---
 
 ## 1. Summary
 
-**M2N Hotels** is a multi-property hotel platform: a Next.js public website, an
-Express REST API, PostgreSQL persistence, and a JWT-protected admin console for
-hotels, room types, rooms, and media.
+**M2N Hotels** is a multi-property hotel platform: Next.js public website + guest
+booking UI, Express REST API, PostgreSQL, and a JWT admin console (ops, CRM Lite,
+finance ledger, inventory, Phase 15 Lite tenancy).
 
-**Live hotels**
+**Live hotel brands (seed / public slugs)**
 
 | Hotel | Slug | Photo folder |
 |-------|------|--------------|
 | M2N Hotel : Aurelia Grand | `m2n-hotel-aurelia-grand` | `/Photos/Aurelia-Grand` |
 | Hotel Zaarang Inn | `hotel-zaarang-inn` | `/Photos/Zaarang-Inn` |
 
----
-
 ## 2. Vision
 
-1. **Phases 1–14 Lite (done)** — Public multi-hotel site, booking inquiries,
-   admin CRUD, API-driven pages, rates, inventory, booking engine, PMS Lite
-   Front Desk, CRM Lite derived guest 360, and Phase 14 Lite payment/invoice
-   APIs + booking-detail finance UI (no live gateway).
-2. **Phase 15 Lite (foundation complete)** — tenant isolation, self-serve
-   onboarding, and read-only operator billing stub are implemented. Live SaaS
-   payment gateway / subscription management remains future work (no Stripe/
-   Razorpay in Lite). Full CRM / dated follow-ups only if approved.
-3. **Phase 15 (goal)** — Full multi-tenant SaaS billing with payment gateway
-   integration (deferred beyond Lite).
-
-Everything is **data-driven and slug-scoped**. Hotels never share each other’s
-photos or content.
-
----
+1. **Phases 1–15 Lite (done in code)** — Public multi-hotel site, inquiries,
+   admin CRUD, API-driven pages, rates, inventory, booking engine, PMS Lite Front
+   Desk, CRM Lite, Phase 14 manual payments/invoices, Phase 15 tenant isolation +
+   onboarding + read-only billing stub.
+2. **Staging → production cutover** — operator-run; staging seed is the next
+   operational step when hotels API is empty.
+3. **Later SaaS** — live payment gateway / subscription management, Full CRM,
+   ERP/HRMS/OTA/AI only if separately approved.
 
 ## 3. Goals
 
-- Operate multiple properties from one codebase.
-- Let operators manage hotels, room types, rooms, and media in admin.
-- Accept guest booking inquiries reliably and securely.
-- Evolve toward API-driven public pages (Phase 8) and SaaS (Phase 15).
+- Data-driven, slug-scoped properties; never mix hotel photos.
+- Safe multi-tenant operator boundary without rewriting `hotel_id` child tables.
+- Document reality, not intention ([01 — Status](01_PROJECT_STATUS.md)).
 
----
+## 4. Scope (current)
 
-## 4. Scope
+**In scope / shipped:** see status matrix in [01 — Status](01_PROJECT_STATUS.md).
 
-**In scope (current)**
+**Out of Lite scope:** Stripe/Razorpay checkout, per-hotel ACL, guest user
+accounts, reviews API, SMS/WhatsApp delivery, ERP/HRMS/OTA/AI.
 
-- Public marketing / hotel detail experiences.
-- Inquiry submission.
-- Admin auth + CRUD for hotels, room types, rooms, media, tariffs, bookings,
-  inventory, inquiries, Front Desk, and derived guests.
-- PostgreSQL-backed REST API and booking engine (no payment gateway).
+## 5. Related documents
 
-**Out of scope (until later phases)**
-
-- Housekeeping workflow, folio, payment capture, guest master / Full CRM,
-  live SaaS payment gateway / subscription billing (read-only billing stub is
-  implemented; checkout and plan mutation are not).
-- Changing DB schema without explicit approval.
-
----
-
-## 5. Stakeholders
-
-| Role | Responsibility |
-|------|----------------|
-| Product Owner | Priorities, content/tariff approval, launch readiness |
-| Engineering | Frontend, backend, database, admin modules |
-| Operations | Hotel data accuracy, media uploads, inquiry follow-up |
-
----
-
-## 6. Glossary
-
-| Term | Definition |
-|------|------------|
-| Hotel slug | URL-safe hotel id (e.g. `hotel-zaarang-inn`) |
-| Room type | Category of room (Deluxe, Suite) — `room_types` |
-| Room | Physical inventory unit — `rooms` |
-| Cover / featured media | `hotel_media.is_cover` |
-| Admin JWT | Bearer token from `POST /api/admin/auth/login` |
-
----
-
-## 7. Related Documents
-
-- [01 — Project Status](01_PROJECT_STATUS.md)
-- [02 — Architecture](02_ARCHITECTURE.md)
-- [04 — API](04_API.md)
-- [13 — Roadmap](13_ROADMAP.md)
-- Legacy: [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md)
-- Root: [`../README.md`](../README.md)
+| Doc | Purpose |
+|-----|---------|
+| [01 — Status](01_PROJECT_STATUS.md) | What is done / next |
+| [02 — Architecture](02_ARCHITECTURE.md) | System design |
+| [03 — Database](03_DATABASE.md) | Schema through `009` |
+| [04 — API](04_API.md) | Route inventory |
+| [06 — Setup](06_SETUP_GUIDE.md) | Local setup |
+| [11 — Security](11_SECURITY.md) | Security + debt |
+| [12 — Deployment](12_DEPLOYMENT.md) | Staging/production runbook |
+| [13 — Roadmap](13_ROADMAP.md) | Phases + backlog |

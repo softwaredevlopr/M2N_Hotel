@@ -1,6 +1,6 @@
 # 13 — Roadmap
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
+> **Status:** Living document · **Last updated:** 2026-09-03  
 > **Related:** [01 — Project Status](01_PROJECT_STATUS.md) · [00 — Overview](00_PROJECT_OVERVIEW.md)
 
 ---
@@ -262,8 +262,26 @@ older labels.
 
 ## 5. Backlog
 
-- Admin Inquiries CRUD UI (API list/get/patch already exist).
-- Deployment runbooks ([12 — Deployment](12_DEPLOYMENT.md)) — readiness guide
-  complete; staging/production cutover still operator-run.
-- Production contact details (replace placeholders).
-- Automated tests.
+### Current / next (operational)
+
+- Staging seed + API verification ([12 — Deployment](12_DEPLOYMENT.md) §6.2)
+- Staging frontend configure/build/deploy when approved
+- Production cutover after staging validation
+- Replace placeholder contact details before public launch
+
+### Product backlog (not started or deferred)
+
+- Live SaaS payment gateway / subscription management (out of Phase 15 Lite)
+- Full CRM guest master / merge / dated follow-ups (needs approval)
+- Guest account login (public `/login` is stub only)
+- Reviews API (UI empty state exists)
+- SMS / WhatsApp delivery (prefs stored only)
+- Persist admin uploads (object storage / CDN)
+- Migrate remaining room-card package copy from `lib/tariffs.js` into DB
+- Automated test runner beyond smoke scripts
+- ERP / HRMS / OTA channel manager / AI automation / travel ecosystem (vision)
+
+### Done (do not re-open as “upcoming”)
+
+Phases **1–15 Lite** product foundation as listed in §2–§3 above, including
+tenancy, onboarding, billing stub, and post-`009` seed compatibility.

@@ -1,6 +1,6 @@
 # 05 — Folder Structure
 
-> **Status:** Living document · **Last updated:** 2026-08-19
+> **Status:** Living document · **Last updated:** 2026-09-03
 
 ---
 
@@ -8,7 +8,7 @@
 
 ```
 M2N_Hotels/
-├── README.md                 ← Project entry
+├── README.md                 ← Project entry + docs index
 ├── AGENTS.md                 ← AI / contributor rules
 ├── PROJECT_DOCS.md           ← Legacy master index (preserved)
 ├── TODO.md                   ← Active tasks
@@ -16,8 +16,8 @@ M2N_Hotels/
 │   ├── 00_PROJECT_OVERVIEW.md … 13_ROADMAP.md
 │   ├── CHANGELOG.md
 │   ├── history/              ← ADRs + release notes
-│   └── *.md aliases          ← ROADMAP, ARCHITECTURE, etc.
-├── frontend/                 ← Next.js (:3000)
+│   └── aliases (API_DOCUMENTATION.md, etc.)
+├── frontend/                 ← Next.js 16 (:3000)
 └── backend/                  ← Express API (:5001)
 ```
 
@@ -25,87 +25,48 @@ M2N_Hotels/
 
 ```
 frontend/
-├── public/
-│   └── Photos/
-│       ├── Aurelia-Grand/{Hero,Exterior,Lobby,Reception,Rooms,Bathroom,Banquet}/
-│       └── Zaarang-Inn/{…}/
+├── public/Photos/{Aurelia-Grand,Zaarang-Inn}/…
 └── src/
     ├── app/
-    │   ├── page.js, about/, hotels/[slug]/
-    │   ├── book/                    ← Guest booking flow (Phase 10B)
-    │   ├── booking/                 ← Find reservation (reference + contact)
-    │   ├── booking/[bookingNumber]/ ← Confirmation + guest lookup (noindex)
+    │   ├── page.js, about/, login/ (guest stub)
+    │   ├── hotels/[slug]/
+    │   ├── book/, booking/, booking/[bookingNumber]/
     │   └── admin/
-    │       ├── login/
+    │       ├── login/, onboarding/          ← public admin surfaces
     │       └── (protected)/
-    │           ├── dashboard/
-            │           ├── front-desk/       ← Phase 12 PMS Lite (ops + room board)
-            │           ├── guests/           ← Phase 13 CRM Lite (list + profile)
-            │           ├── bookings/
-    │           │   ├── [id]/
-    │           │   └── new/              ← Phase 10G create form
-    │           ├── inventory/        ← Phase 10E calendar UI
-    │           ├── inquiries/        ← Phase 10H list + [id]
-    │           ├── hotels/
-    │           ├── room-types/
-    │           ├── rooms/
-    │           ├── media/
-    │           └── tariffs/
-    ├── components/           ← Public + admin UI
-    │   ├── booking/          ← BookingFlow + step / summary / confirmation
-    │   └── admin/            ← AdminGuard, BookingCreateForm, InventoryCalendarGrid, FrontDeskRoomBoard, forms, Toast, …
+    │           ├── dashboard/, front-desk/
+    │           ├── bookings/ (+ new, [id] finance panels)
+    │           ├── guests/, guests/profile/
+    │           ├── inventory/, inquiries/
+    │           ├── hotels/, room-types/, rooms/, media/, tariffs/
+    │           └── billing/                 ← read-only Phase 15 stub
+    ├── components/ (public + admin + booking/)
     └── lib/
-        ├── api.js, images.js, media.js, tariffs.js, brand.js, …
-        ├── bookingPricing.js, bookingSession.js
-        ├── adminAuth.js
-        ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js,
-        │   adminTariffs.js, adminBookings.js, adminInventory.js, adminInquiries.js,
-        │   adminGuests.js, adminBookingFinance.js
+        ├── api.js, adminAuth.js, brand.js, …
+        ├── adminHotels.js, adminRoomTypes.js, adminRooms.js, adminMedia.js
+        ├── adminTariffs.js, adminBookings.js, adminBookingFinance.js
+        ├── adminInventory.js, adminInquiries.js, adminGuests.js
+        └── adminTenant.js
+```
 
 ## 3. Backend
 
 ```
 backend/
-├── server.js                 ← Helmet, CORS, rate limits, /uploads static
+├── server.js
 ├── config/db.js
-├── routes/
-│   ├── index.js              ← mounts public + admin routers
-│   ├── hotel.routes.js, room.routes.js, inquiry.routes.js
-│   ├── adminAuth.routes.js, adminHotel.routes.js
-│   ├── adminRoomType.routes.js, adminRoom.routes.js, adminMedia.routes.js
-│   ├── tariff.routes.js, adminTariff.routes.js
-│   ├── booking.routes.js, adminBooking.routes.js
-│   ├── adminInventory.routes.js, adminGuest.routes.js
+├── routes/          ← index + public + admin* routers
 ├── controllers/
-├── services/                 ← booking, inventory, crmGuest, bookingPayment,
-│                                 bookingInvoice, bookingFinanceShared, email,
-│                                 bookingNotification
-│   └── email/                ← provider abstraction + HTML templates (Phase 10F)
-├── middleware/               ← validate, adminAuth, error
+├── middleware/      ← auth, tenancy, validate, error, upload
+├── services/        ← booking, inventory, crmGuest, payments, invoices, email
+├── utils/           ← adminAuth, adminTenancy, bookingConstants, …
 ├── validators/
-├── utils/                    ← apiResponse, mediaCategory, booking* …
-├── uploads/                  ← admin media files (gitignored contents)
-├── migrations/
-│   ├── 001_initial_schema.sql
-│   ├── 002_admin_users.sql
-│   ├── 003_tariff_rates.sql
-│   ├── 004_bookings.sql
-│   ├── 005_room_type_inventory_dates.sql
-│   ├── 006_booking_admin_notes.sql
-│   ├── 007_booking_notification_preferences.sql
-│   └── 008_booking_payments_and_invoices.sql
-└── scripts/
-    ├── seed.js, seedAdmin.js, runMigrations.js
-    ├── verifyCrm.js, verifyPhase14.js
-    ├── verifyFrontDesk.js
+├── migrations/      ← 001 … 009 + README
+├── scripts/         ← migrate, seed, seedAdmin, verify:*
+└── uploads/         ← local admin media (not for multi-instance prod)
 ```
 
-## 4. Hotel image folders (public)
+## 4. Docs map
 
-Categories per hotel: `Hero`, `Exterior`, `Lobby`, `Reception`, `Rooms`,
-`Bathroom`, `Banquet`.
-
-**Rule:** Never mix photos between hotels — slug → folder mapping only.
-See [09 — Business Rules](09_BUSINESS_RULES.md).
-
-Admin uploads live separately under `backend/uploads/hotels/{hotelId}/{Category}/`.
+See [`../README.md`](../README.md) documentation table and
+[`../PROJECT_DOCS.md`](../PROJECT_DOCS.md).

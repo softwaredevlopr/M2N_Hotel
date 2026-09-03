@@ -1,8 +1,9 @@
 # 04 — API Reference
 
-> **Status:** Living document · **Last updated:** 2026-08-29  
+> **Status:** Living document · **Last updated:** 2026-09-03  
 > **Base URL (local):** `http://localhost:5001`  
-> **Frontend env:** `NEXT_PUBLIC_API_URL`
+> **Frontend env:** `NEXT_PUBLIC_API_BASE_URL` (preferred) or legacy
+> `NEXT_PUBLIC_API_URL`
 
 ---
 
@@ -11,7 +12,7 @@
 - [1. Conventions](#1-conventions)
 - [2. Endpoint index](#2-endpoint-index)
 - [3. Public APIs](#3-public-apis)
-- [4. Admin authentication](#4-admin-authentication)
+- [4. Admin authentication](#4-admin-authentication-phase-3--15-onboarding)
 - [5. Admin hotels](#5-admin-hotels)
 - [6. Admin room types](#6-admin-room-types)
 - [7. Admin rooms](#7-admin-rooms)
@@ -27,19 +28,23 @@
 ## 1. Conventions
 
 - JSON responses; success shape typically `{ success: true, … }`.
-- Admin routes require `Authorization: Bearer <access_token>`.
+- Admin routes require `Authorization: Bearer <access_token>` (except public
+  login and onboarding).
 - **Phase 15 Lite tenancy (admin):** after JWT auth, `resolveAdminTenancy`
   loads active `tenant_memberships` into `req.tenancy`. `hotel_admin` users may
   access only hotels whose `hotels.tenant_id` matches a membership.
-  Client-supplied `hotel_id` (query/body/path) is never trusted alone — every
-  hotel-scoped admin handler validates access. Cross-tenant access returns
-  **404** (not 403). `super_admin` retains platform-wide access for support.
-  Per-hotel ACL within a tenant is **not** implemented in Lite (ADR-0042).
+  Client-supplied `hotel_id` is never trusted alone. Cross-tenant access returns
+  **404** (not 403). `super_admin` retains platform-wide access.
+  Per-hotel ACL within a tenant is **not** implemented. Stored
+  `membership_role` (`owner`/`admin`/`staff`) is **not** used for endpoint RBAC
+  in Lite — all active members share the tenant’s hotels.
 - Rate limits: `/api` 300/15min; `POST /api/inquiries` and `POST /api/bookings`
-  20/15min (override with `WRITE_RATE_LIMIT_MAX`); `GET /api/bookings/:number`
+  20/15min (`WRITE_RATE_LIMIT_MAX`); `GET /api/bookings/:number`
   60/15min (`BOOKING_LOOKUP_RATE_LIMIT_MAX`); `POST /api/admin/auth/login` 20/15min;
   `POST /api/admin/onboarding` 10/15min.
 - JSON/urlencoded body size: 100kb (multipart uploads use Multer, max 5MB images).
+- **No** Stripe/Razorpay or SaaS checkout APIs exist. Phase 14 finance is a
+  **manual ledger** only.
 
 ## 2. Endpoint index
 

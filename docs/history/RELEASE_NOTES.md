@@ -12,6 +12,12 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Docs — full project state reconciliation (2026-09-03)
+
+- Status matrix, schema/API/architecture/security/deployment docs aligned to
+  code evidence through Phase 15 Lite + seed `be2351a`.
+- Next operational task: staging data initialization / validation.
+
 ### Phase 15 — seed tenancy compatibility (2026-09-03)
 
 - Commit `be2351a` — `npm run seed` / `seed:admin` compatible after migrations

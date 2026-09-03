@@ -1,9 +1,16 @@
 # M2N Hotels — Project Documentation
 
-> **Last updated:** 2026-08-16  
-> **Purpose:** Master index and long-form reference. For the current roadmap and
+> **Last updated:** 2026-09-03  
+> **Purpose:** Master index and long-form reference. For current roadmap and
 > status, prefer [`README.md`](README.md), [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md),
 > and [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
+
+**Handoff snapshot (evidence-backed):** Phases **1–15 Lite** are complete in
+code (tenancy, onboarding, billing stub, post-`009` seed). Staging DB is
+migrated through `009` and backend is healthy; **staging seed not yet run**.
+**Next task:** staging data initialization / validation. No payment gateway.
+No production cutover yet. Schema caveats: `max_occupancy`, `floor_label`, no
+`guests` table.
 
 ---
 

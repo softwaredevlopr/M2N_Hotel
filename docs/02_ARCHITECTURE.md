@@ -1,183 +1,97 @@
 # 02 — Architecture
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
-> **Related:** [04 — API](04_API.md) · [03 — Database](03_DATABASE.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md)
-
----
-
-## Table of Contents
-
-- [1. Overview](#1-overview)
-- [2. Tech Stack](#2-tech-stack)
-- [3. High-Level Diagram](#3-high-level-diagram)
-- [4. Frontend](#4-frontend)
-- [5. Backend](#5-backend)
-- [6. Data Flow](#6-data-flow)
-- [7. Admin Architecture](#7-admin-architecture)
-- [8. Key Design Decisions](#8-key-design-decisions)
-- [9. Open Questions](#9-open-questions)
+> **Status:** Living document · **Last updated:** 2026-09-03  
+> **Related:** [04 — API](04_API.md) · [03 — Database](03_DATABASE.md) · [01 — Status](01_PROJECT_STATUS.md)
 
 ---
 
 ## 1. Overview
 
 Two-tier application: **Next.js** frontend and **Express** API on **PostgreSQL**.
-Public pages are largely static/filesystem-driven today; admin is API-driven.
-**Phase 8** ✅ — public hotel pages consume existing read APIs (details, media, amenities, room types).
+Public marketing + guest booking UI; JWT admin console. Data-driven and
+**slug-scoped** hotels; Phase 15 Lite adds **tenant** isolation for operators.
 
-## 2. Tech Stack
+## 2. Tech stack
 
 | Layer | Technology | Port |
 |-------|------------|------|
-| Frontend | Next.js (React, App Router) | `3000` |
-| Backend | Node.js + Express | `5001` |
+| Frontend | Next.js **16.2.6** (React **19.2.4**, App Router, Tailwind **4**) | `3000` |
+| Backend | Node.js ≥ 18 + Express (CommonJS) | `5001` |
 | Database | PostgreSQL (`pg` pool) | `5432` |
 | Auth (admin) | JWT (`jsonwebtoken`) + bcryptjs | — |
 | Uploads | Multer → `backend/uploads` served at `/uploads` | — |
 
-Frontend API base: `NEXT_PUBLIC_API_URL` (fallback `http://localhost:5001`).
+Frontend API base: `NEXT_PUBLIC_API_BASE_URL` (preferred) or legacy
+`NEXT_PUBLIC_API_URL` (fallback `http://localhost:5001`). Build-time inlined.
 
-## 3. High-Level Diagram
+## 3. High-level diagram
 
 ```
 ┌─────────────┐     HTTPS/JSON      ┌──────────────────┐
 │   Browser   │ ◄─────────────────► │ Next.js (:3000)  │
-│  (guest /   │                     │  Public pages    │
-│   admin)    │                     │  /admin/* UI     │
-└─────────────┘                     └────────┬─────────┘
-                                             │ NEXT_PUBLIC_API_URL
+│  (guest /   │                     │  Public + /admin │
+│   admin)    │                     └────────┬─────────┘
+└─────────────┘                              │ NEXT_PUBLIC_API_BASE_URL
                                              ▼
                                     ┌──────────────────┐
                                     │ Express (:5001)  │
-                                    │ /api/*  /health  │
+                                    │ /api/* /health   │
                                     │ /uploads/*       │
                                     └────────┬─────────┘
                                              │
                                              ▼
                                     ┌──────────────────┐
                                     │ PostgreSQL       │
-                                    │ (:5432)          │
+                                    │ tenants→hotels   │
                                     └──────────────────┘
 ```
 
-### Public vs admin surfaces
+### Public vs admin
 
 ```
-Public (no JWT)                    Admin (Bearer JWT)
-─────────────────                  ──────────────────
-GET  /api/hotels                   /api/admin/auth/*
-GET  /api/hotels/:slug             /api/admin/hotels
-GET  /api/rooms/types              /api/admin/room-types
-GET  /api/rooms                    /api/admin/rooms
-POST /api/inquiries                /api/admin/media
-                                   /api/admin/guests (Phase 13, JWT)
-                                   /api/admin/bookings/:id/payments|invoices
-                                     (Phase 14 Lite, JWT)
-Photos under frontend/public       uploads under backend/uploads
+Public (no JWT)                         Admin (Bearer JWT + tenancy)
+─────────────────                       ────────────────────────────
+GET  /api/hotels|rooms|tariffs          /api/admin/auth/*
+POST /api/inquiries                     /api/admin/hotels|room-types|rooms|media
+POST/GET booking APIs (contact checks)  /api/admin/bookings (+ payments/invoices)
+POST /api/admin/onboarding (public)     /api/admin/inventory|guests|inquiries
+GET  /health, /                         GET  /api/admin/tenant (billing stub)
+frontend/public/Photos                  backend/uploads (ephemeral on cloud)
 ```
 
 ## 4. Frontend
 
-- Location: `frontend/`
-- Public routes: `/`, `/about`, `/book`, `/booking/[bookingNumber]`,
-  `/hotels/[slug]`, …
-- Admin routes: `/admin/login`, `/admin/dashboard`, `/admin/front-desk`,
-  `/admin/guests`, `/admin/hotels`, `/admin/room-types`, `/admin/rooms`,
-  `/admin/media`, `/admin/tariffs`, …
-- Hotel imagery (public): slug → `public/Photos/<Hotel>/…` via `lib/images.js`.
-  That module reads the filesystem, so it is **server-only**; interactive client
-  components receive already-resolved URLs as props ([ADR-0015](history/DECISIONS.md)).
-- Tariff display: `GET /api/tariffs` + `lib/tariffs.js` fallback for room-card packages
-- Booking flow: `components/booking/*` over `lib/bookingPricing.js` (limits and
-  totals mirrored from the backend) and `lib/bookingSession.js` (tab-scoped
-  contact for the guest lookup)
-- Admin helpers: `lib/adminAuth.js`, `adminHotels.js`, `adminRoomTypes.js`,
-  `adminRooms.js`, `adminMedia.js`, `adminTariffs.js`, `adminGuests.js`
+- App Router under `frontend/src/app/`
+- Admin JWT in **`localStorage`** (`m2n_admin_access_token`, `m2n_admin_profile`)
+- Guest booking contact memory in **sessionStorage** (tab-scoped)
+- Admin shell: `AdminGuard.js`
 
 ## 5. Backend
 
-- Entry: `backend/server.js` (Helmet, CORS, rate limits, static `/uploads`)
-- Routing: `backend/routes/` → controllers → `config/db.js`
-- Middleware: `validate`, `requireAdminAuth`, `error.middleware`
-- Responses: `utils/apiResponse` (`success` / validation errors)
-- Services: `backend/services/` holds multi-step domain logic that needs a
-  transaction or locking, so controllers stay request-shaped. Uses:
-  `booking.service.js` (Phase 10A), `inventory.service.js` (Phase 10D),
-  `crmGuest.service.js` (Phase 13 derived guest 360),
-  `bookingPayment.service.js` / `bookingInvoice.service.js` (Phase 14 Lite),
-  and
-  `email/` + `bookingNotification.service.js` (Phase 10F outbound guest mail).
+- Entry: `server.js` — Helmet, CORS allow-list, rate limits, body 100kb, `/uploads`
+- Layers: routes → controllers → services / `config/db.js`
+- Errors: `notFoundHandler` + `errorHandler` (no stacks in production)
+- Tenancy: `resolveAdminTenancy` → `req.tenancy`; `super_admin` platform bypass;
+  cross-tenant → **404**. `membership_role` stored but not RBAC-gated in Lite.
 
-Public and admin surfaces are split into sibling files per module
-(`booking.routes.js` / `adminBooking.routes.js`), which keeps JWT enforcement at
-the router level.
+## 6. Key design decisions
 
-Suggested growth pattern (as modules expand): routes → controllers → services →
-models.
+- Slug-scoped hotels; never mix Photos folders.
+- Booking availability from rooms + bookings (+ inventory date overrides).
+- CRM Lite without a `guests` table.
+- Phase 14 = manual ledger, **not** a payment gateway.
+- Phase 15 Lite = tenants + memberships + hotel `tenant_id`; no per-hotel ACL.
+- Seed reuses `m2n-hotels` after `009` ([ADR-0043](history/DECISIONS.md)).
 
-## 6. Data Flow
+## 7. Known limitations
 
-**Hotel detail page (today)**
+- Admin JWT XSS surface (`localStorage`)
+- Local upload disk not multi-instance safe
+- No live payment gateway / SaaS subscription billing
+- No guest user accounts (`/login` stub)
+- Tenant `suspended` / `past_due` not hard-gated beyond cancelled membership filter
 
-1. Next.js loads `/hotels/[slug]`.
-2. Fetches `GET /api/hotels/:slug` (hotel + active media + amenities).
-3. Resolves gallery/room images primarily from `Photos/` folders.
-4. Renders tariff/facilities from frontend libs; inquiry posts to API.
+## 8. Open / deferred
 
-**Guest booking (Phase 10B)**
-
-1. `/book` loads hotels, room types, rooms and tariffs server-side, and resolves
-   every image URL before handing the data to the client flow.
-2. The guest picks hotel → room, dates and occupancy → guest details. The stay
-   summary recomputes locally with the server's own pricing formula.
-3. Submit posts to `POST /api/bookings`. A `409` sends the guest back to the
-   stay step with the server's availability message.
-4. On success the booking reference is pushed to `/booking/[bookingNumber]`,
-   which re-reads the reservation from `GET /api/bookings/:bookingNumber` using
-   the contact detail held for the tab.
-
-**Admin mutation**
-
-1. Admin logs in → JWT stored in localStorage.
-2. UI calls `/api/admin/...` with `Authorization: Bearer …`.
-3. Controller validates → SQL via pool → JSON response → toast UI.
-
-## 7. Admin Architecture
-
-| Module | UI | API |
-|--------|----|-----|
-| Auth | `/admin/login` | `/api/admin/auth` |
-| Hotels | `/admin/hotels` | `/api/admin/hotels` |
-| Room types | `/admin/room-types` | `/api/admin/room-types` |
-| Rooms | `/admin/rooms` | `/api/admin/rooms` |
-| Media | `/admin/media` | `/api/admin/media` |
-| Tariffs | `/admin/tariffs` | `/api/admin/tariffs` |
-| Bookings | ✅ Phase 10C/10G | `/api/admin/bookings` + list/detail/create UI |
-| Front Desk | ✅ Phase 12 PMS Lite | `/admin/front-desk` over hotel-scoped stats, list, status actions, room board |
-| Guests | ✅ Phase 13 CRM Lite | `/admin/guests` over derived `GET /api/admin/guests` + profile |
-| Payments / invoices | ✅ Phase 14 Lite | Nested JWT APIs + `/admin/bookings/[id]` panels; no gateway |
-| Inquiries | ✅ Phase 10H | `/api/inquiries` (POST public; admin JWT for rest) + UI |
-| Inventory | ✅ Phase 10D/10E/10I + write APIs | `/api/admin/inventory/*` + `/admin/inventory` UI; date upsert/delete |
-| Guest email notifications | ✅ Phase 10F | Side effects on booking create/status (no new routes) |
-
-Protected by `AdminGuard` (client) + `requireAdminAuth` (server). The shell is
-full viewport width on desktop: 220px sidebar from `lg` up, expanding main
-pane ([ADR-0038](history/DECISIONS.md)).
-
-## 8. Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Separate `frontend/` / `backend/` | Independent deploy & scaling |
-| Slug-based hotel routing | Clean URLs + photo folder mapping |
-| Admin JWT Bearer | Simple SPA admin auth |
-| No casual schema changes | Stability; encode extras in JSONB/URL where needed |
-| Public APIs unchanged when adding admin | Avoid breaking the live site |
-
-See [`history/DECISIONS.md`](history/DECISIONS.md).
-
-## 9. Open Questions
-
-- [x] Caching / ISR strategy for hotel pages (`revalidate: 60` on public routes).
-- [ ] CDN / object storage for uploads in production.
-- [ ] Staging vs production topology.
+Full CRM, ERP, HRMS, OTA/channel manager, AI automation, travel ecosystem —
+roadmap vision only ([13 — Roadmap](13_ROADMAP.md)).

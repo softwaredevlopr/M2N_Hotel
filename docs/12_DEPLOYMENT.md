@@ -427,6 +427,22 @@ When staging already has migrations `001`–`009` and a healthy API but empty ho
 data, the remaining operational step is **confirm staging DB → `npm run seed` →
 `npm run seed:admin` (if needed) → verify `GET /api/hotels`**.
 
+### 6.2.1 Current staging facts (as of 2026-09-03 docs reconciliation)
+
+| Fact | State |
+|------|-------|
+| Staging PostgreSQL | Exists; migrations `001`–`009` applied |
+| Migration runner re-run | Idempotent |
+| Staging backend | Deployed; `/` + `/health` healthy; DB connected |
+| Public hotels | Empty until seed (`count: 0`) |
+| Seed scripts on `main` | Post-`009` compatible (`be2351a`) |
+| Staging seed executed | **Not yet** |
+| Staging frontend cutover | **Not complete** in repo evidence |
+| Production | Do not modify |
+
+Also remember: Render ephemeral `uploads/` risk; frontend API URL is build-time;
+CORS requires exact `FRONTEND_URL`.
+
 ### 6.3 PowerShell / psql examples
 
 Use the PostgreSQL 17 client (adjust path if your install differs):

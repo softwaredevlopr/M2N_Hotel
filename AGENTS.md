@@ -126,9 +126,18 @@ panels on `/admin/bookings/[id]` over the JWT finance APIs (ledger
 record/void/refund, invoice draft/issue/void/reissue). No gateway, no schema
 change.
 
-**Upcoming:** Full CRM (guest master / merge) only if separately approved; no
-dated follow-up table until approved; Phase 15; staging cutover per
-[`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
+**Completed (Phase 15 Lite):** migration `009` tenancy (`tenants`,
+`tenant_memberships`, `hotels.tenant_id`); AuthZ isolation; self-serve
+onboarding API + `/admin/onboarding`; read-only `GET /api/admin/tenant` +
+`/admin/billing`; seed scripts post-`009` compatible (`be2351a`, ADR-0043).
+Verify: `verify:phase15`, `verify:phase15-onboarding`, `verify:phase15-billing`.
+
+**Next operational task:** staging data initialization — confirm staging DB
+target → `npm run seed` → `npm run seed:admin` → verify `GET /api/hotels`
+([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.2).
+
+**Upcoming / deferred:** live SaaS payment gateway; Full CRM (guest master /
+merge) only if separately approved; production cutover after staging validation.
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares
@@ -138,11 +147,12 @@ another hotel's content or photos.
 
 | Layer | Technology | Port |
 |-------|------------|------|
-| Frontend | Next.js (React) | `3000` |
-| Backend | Node.js + Express | `5001` |
-| Database | PostgreSQL | `5432` |
+| Frontend | Next.js 16 (React 19, App Router, Tailwind 4) | `3000` |
+| Backend | Node.js ≥ 18 + Express (CommonJS) | `5001` |
+| Database | PostgreSQL (`pg` pool) | `5432` |
 
-- Frontend → Backend base URL: `NEXT_PUBLIC_API_URL` (default `http://localhost:5001`).
+- Frontend → Backend base URL: `NEXT_PUBLIC_API_BASE_URL` (preferred) or legacy
+  `NEXT_PUBLIC_API_URL` (default `http://localhost:5001`).
 
 See [`docs/02_ARCHITECTURE.md`](docs/02_ARCHITECTURE.md).
 

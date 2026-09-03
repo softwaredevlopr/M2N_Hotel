@@ -11,73 +11,51 @@
 2. [`../README.md`](../README.md)
 3. [01 — Project Status](01_PROJECT_STATUS.md)
 4. [13 — Roadmap](13_ROADMAP.md)
+5. [12 — Deployment](12_DEPLOYMENT.md) (before any staging/prod action)
 
 ## 2. Project facts
 
-- Frontend Next.js `:3000` · Backend Express `:5001` · PostgreSQL.
-- Hotels: Aurelia Grand, Zaarang Inn (slug-scoped).
-- **Phases 1–9 and 10A–10I complete** (public site, admin console, booking
-  engine, inventory calendar, emails, inquiries, persistent inventory dates).
-- Availability uses physical rooms + blocking bookings, plus optional sparse
-  `room_type_inventory_dates` overrides (stop-sell / allotment / overbooking).
-  Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
-  `/admin/inventory`.
-- **Next:** Phase 15 Lite foundation ✅ (tenant isolation, onboarding, read-only
-  billing stub, post-`009` seed compatibility `be2351a`); future SaaS payment
-  gateway out of Lite; Full CRM / dated follow-ups only if approved; operator
-  staging seed + cutover ([12 — Deployment](12_DEPLOYMENT.md)). Staging may
-  already have migrations `001`–`009` with an empty hotel catalog pending
-  `npm run seed`.
-- Guest cancel / modify / notification prefs: contact-verified
-  `POST /api/bookings/:bookingNumber/{cancel,modify,notification-preferences}`.
-- Admin cancel: `POST /api/admin/bookings/:id/cancel`; stay modify via hardened
-  `PATCH /api/admin/bookings/:id`.
-- Prefs: migration `007` `notification_preferences` JSONB; status emails gated;
-  confirm/cancel ungated ([ADR-0034](history/DECISIONS.md)).
-- Bookings carry private `admin_notes` (admin JWT only; never public).
-- CRM Lite guests are a read model over bookings/inquiries (`/admin/guests`);
-  no guests table ([ADR-0039](history/DECISIONS.md)). Open leads reuse inquiry
-  statuses; notes stay on source records ([ADR-0040](history/DECISIONS.md)).
-- Phase 14 Lite finance: hotel-scoped `booking_payments` / `booking_invoices`
-  ([ADR-0041](history/DECISIONS.md)). Admin JWT nested under
-  `/api/admin/bookings/:id/payments` and `/invoices`. Booking-detail UI on
-  `/admin/bookings/[id]`. No gateway.
-- Phase 15 Lite tenancy: migration `009`; `resolveAdminTenancy` +
-  `assertHotelAccess` on hotel-scoped admin APIs ([ADR-0042](history/DECISIONS.md)).
-  Public `POST /api/admin/onboarding` creates tenant + owner + first hotel;
-  admin UI `/admin/onboarding` → `setAdminSession` → `/admin/dashboard`.
-  `GET /api/admin/tenant` + `/admin/billing` read-only billing stub (no gateway).
-  Seed (`npm run seed` / `seed:admin`) is post-`009` compatible: reuses
-  `m2n-hotels`, does not create tenants ([ADR-0043](history/DECISIONS.md)).
-  Smoke: `verify:phase15`, `verify:phase15-onboarding`, `verify:phase15-billing`.
-- Deployment readiness is documented; do not treat docs as an executed deploy.
-- Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.
+- Frontend Next.js **16.2.6** `:3000` · Backend Express `:5001` · PostgreSQL.
+- Hotels: Aurelia Grand, Zaarang Inn (slug-scoped Photos).
+- **Phases 1–15 Lite complete in code** (booking, inventory, CRM Lite, Phase 14
+  ledger, Phase 15 tenancy/onboarding/billing stub, seed post-`009`).
+- Schema caveats: `room_types.max_occupancy`, `rooms.floor_label`, no `guests`
+  table, `hotels.tenant_id` NOT NULL after `009`.
+- Admin JWT in `localStorage`; CORS needs exact `FRONTEND_URL`.
+- **No** payment gateway. **No** inventing columns/endpoints.
 
-## 3. Hard rules
+## 3. Current deployment facts
 
-- Never mix hotel photos; use slug → folder mapping.
-- Do not change DB schema without explicit approval.
-- Do not invent columns, prices, or endpoints — confirm or `TODO`.
+- Staging DB: migrations `001`–`009` applied; backend healthy.
+- Staging hotels empty until seed.
+- **Next task:** STAGING DATA INITIALIZATION — confirm staging DB →
+  `npm run seed` → `npm run seed:admin` → verify `GET /api/hotels`.
+- Do **not** seed/migrate/deploy production without explicit approval.
+
+## 4. Hard rules
+
+- Never mix hotel photos; slug → folder mapping.
+- Do not change DB schema without approval.
+- Do not invent columns, prices, or endpoints.
 - Documentation-only requests must not change application code.
-- Prefer existing patterns (admin CRUD modules, `apiResponse`, validators).
+- Staging before production; confirm DB target before writes.
 
-## 4. Key locations
+## 5. Common commands
+
+```bash
+cd backend && npm run migrate && npm run seed && npm run seed:admin && npm run dev
+cd frontend && npm run dev
+# verifiers (API running): verify:phase15, verify:phase15-onboarding,
+# verify:phase15-billing, verify:phase14, verify:crm, verify:front-desk
+```
+
+## 6. Key locations
 
 | Purpose | Path |
 |---------|------|
 | Public routes | `frontend/src/app/` |
 | Admin UI | `frontend/src/app/admin/` |
-| Admin shell | `frontend/src/components/admin/AdminGuard.js` (full-width desktop) |
-| Admin libs | `frontend/src/lib/admin*.js` |
-| API mount | `backend/routes/index.js` |
-| Schema | `backend/migrations/` |
-
-## 5. Phase cheat sheet
-
-| Phase | Topic |
-|-------|--------|
-| 1–2 | Public site + inquiries |
-| 3 | JWT admin auth |
-| 4–7 | Hotels, room types, rooms, media admin |
-| 8 | Wire public UI to APIs |
-| 9–15 | Rates → inventory → booking → PMS → CRM → payments → SaaS |
+| Admin APIs | `backend/routes/`, `backend/controllers/` |
+| Tenancy | `backend/utils/adminTenancy.js` |
+| Migrations | `backend/migrations/` |
+| Seed | `backend/scripts/seed.js`, `seedAdmin.js` |

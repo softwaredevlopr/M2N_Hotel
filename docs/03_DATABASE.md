@@ -1,8 +1,9 @@
 # 03 — Database
 
-> **Status:** Living document · **Last updated:** 2026-08-19  
-> **Source of truth:** `backend/migrations/001_initial_schema.sql` … `008_booking_payments_and_invoices.sql`  
-> **Rule:** Do not change schema without explicit approval.
+> **Status:** Living document · **Last updated:** 2026-09-03  
+> **Source of truth:** `backend/migrations/001_initial_schema.sql` …
+> `009_tenancy_lite.sql` (+ runtime `schema_migrations` from the migrate runner)  
+> **Rule:** Do not change schema without explicit approval. Do not invent columns.
 
 ---
 
@@ -15,6 +16,7 @@
 - [5. Relationships](#5-relationships)
 - [6. Seed data](#6-seed-data)
 - [7. Encoding without new columns](#7-encoding-without-new-columns)
+- [8. Schema caveats](#8-schema-caveats)
 
 ---
 
@@ -27,9 +29,9 @@ PostgreSQL with connection pooling in `backend/config/db.js`. Prefer
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | Cloud connection string (preferred in prod) |
+| `DATABASE_URL` | Cloud connection string (preferred in prod/staging) |
 | `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | Local alternative |
-| `DB_SSL` | SSL for managed providers |
+| `DB_SSL` / pool timeouts | Managed providers / tuning |
 
 Template: `backend/.env.example`. Never commit real credentials.
 
@@ -45,6 +47,11 @@ Template: `backend/.env.example`. Never commit real credentials.
 | `006_booking_admin_notes.sql` | Private staff notes on bookings |
 | `007_booking_notification_preferences.sql` | Guest channel prefs JSONB (Phase 11) |
 | `008_booking_payments_and_invoices.sql` | Manual payment ledger + invoices (Phase 14 Lite) |
+| `009_tenancy_lite.sql` | `tenants`, `tenant_memberships`, `hotels.tenant_id` (Phase 15 Lite) |
+
+Runtime table **`schema_migrations`** (`filename`, `executed_at`) is created by
+`scripts/runMigrations.js`. Runner skips already-recorded files; each new file
+runs in a transaction.
 
 ```bash
 cd backend
@@ -55,11 +62,16 @@ Shared helper: `set_updated_at()` trigger on mutable tables.
 
 ## 4. Tables
 
+### `schema_migrations`
+
+Tracks applied SQL filenames. Do not manually insert rows without executing SQL.
+
 ### `hotels`
 
 Core property record. Status: `draft` \| `active` \| `inactive` \| `archived`.  
 Notable columns: `slug` (unique), address fields, `check_in_time` / `check_out_time`,
-`currency_code`, `star_rating`, `is_featured`, `metadata` JSONB.
+`currency_code`, `star_rating`, `is_featured`, `metadata` JSONB,
+**`tenant_id` UUID NOT NULL** (migration `009`, FK → `tenants`).
 
 ### `hotel_media`
 
@@ -74,11 +86,15 @@ Global amenity catalog + per-hotel links (`is_highlighted`, `notes`).
 ### `room_types`
 
 Per-hotel categories. Unique `(hotel_id, slug)`. Status draft/active/inactive/archived.  
-`metadata` JSONB — admin **featured** uses `metadata.is_featured`.
+Important columns: **`base_price`**, **`max_occupancy`** (NOT `max_adults` /
+`max_children`), `bed_type`, `room_size_sqft`, `metadata` JSONB
+(`metadata.is_featured` for admin featured).
 
 ### `rooms`
 
 Physical inventory. Unique `(hotel_id, room_number)`.  
+**`floor_label`** `VARCHAR(30)` — free-text label (e.g. `"1st Floor"`), **not**
+an integer `floor` column.  
 Status: `available` \| `occupied` \| `maintenance` \| `blocked` \| `out_of_service`.  
 Trigger enforces `room_type.hotel_id` matches `rooms.hotel_id`.
 
@@ -86,109 +102,6 @@ Trigger enforces `room_type.hotel_id` matches `rooms.hotel_id`.
 
 Guest booking inquiries (Phase 2). Status pipeline: pending → contacted → quoted →
 confirmed / declined / cancelled.
-
-### `tariff_rates` (Phase 9)
-
-Per-hotel (and optional per-room-type) meal-plan rates.
-
-| Column | Notes |
-|--------|--------|
-| `hotel_id` | FK → `hotels` |
-| `room_type_id` | Optional FK → `room_types` (`NULL` = hotel-wide matrix) |
-| `meal_plan` | `no_meal`, `breakfast`, `breakfast_one_meal`, `all_meals` |
-| `occupancy` | `single`, `double` |
-| `price` | Nullable — use with `display_note` when unpublished |
-| `display_note` | Public note (e.g. “Available with room plan”) |
-| `valid_from` / `valid_to` | Optional seasonal window |
-| `status` | `active` \| `inactive` |
-
-Hotel-level disclaimer / policies: `hotels.metadata.tariff_settings` JSON.
-
-### `bookings` (Phase 10A, migration 004)
-
-Direct reservations, slug/`hotel_id`-scoped for multi-property support.
-
-| Column | Notes |
-|--------|--------|
-| `booking_number` | Unique human-readable reference, `M2N-YYYYMMDD-XXXXX` |
-| `hotel_id` | FK → `hotels` `ON DELETE RESTRICT` |
-| `room_type_id` | FK → `room_types` `ON DELETE RESTRICT` |
-| `room_id` | Optional FK → `rooms` `ON DELETE SET NULL` (assigned by admin) |
-| `guest_name` / `guest_email` / `guest_phone` | All required |
-| `check_in_date` / `check_out_date` | `CHECK (check_out_date > check_in_date)` |
-| `adults` / `children` / `number_of_rooms` | `> 0` / `>= 0` / `> 0` |
-| `booking_source` | `website`, `admin`, `phone`, `walk_in`, `ota` |
-| `booking_status` | `pending`, `confirmed`, `checked_in`, `checked_out`, `cancelled`, `no_show` |
-| `payment_status` | `unpaid`, `partial`, `paid`, `refunded` — summary field; Phase 14 ledger writes recompute it transactionally |
-| `special_requests` | Nullable free text |
-| `subtotal` / `tax_amount` / `total_amount` | `NUMERIC(12,2)`, all `>= 0` |
-| `currency` | `CHAR(3)`, defaults to the hotel's `currency_code` |
-| `created_by_admin_id` | Nullable FK → `admin_users` `ON DELETE SET NULL` |
-| `confirmed_at` / `cancelled_at` / `cancellation_reason` | Stamped on status change |
-| `admin_notes` | Nullable private staff notes (migration `006`); never public |
-| `notification_preferences` | JSONB NOT NULL (migration `007`); keys `email_updates`, `sms_opt_in`, `whatsapp_opt_in`; default `{"email_updates":true,"sms_opt_in":false,"whatsapp_opt_in":false}`. Confirm/cancel email is not gated; status/stay emails respect `email_updates`. SMS/WhatsApp are store-only. |
-
-Statuses and sources are `VARCHAR` + `CHECK` constraints, matching the existing
-project convention (no native PostgreSQL enums). Mirrored in
-`backend/utils/bookingConstants.js` — keep both in sync.
-
-**Availability** starts from physical sellable rooms (`available` \| `occupied`)
-minus blocking bookings (`pending` \| `confirmed` \| `checked_in`) on each
-half-open night. Optional sparse overrides live in
-`room_type_inventory_dates` (Phase 10I). See [ADR-0014](history/DECISIONS.md)
-and [ADR-0025](history/DECISIONS.md).
-
-### `room_type_inventory_dates` (Phase 10I, migration 005)
-
-Sparse per-hotel / room-type / night overrides. Missing row = physical − sold
-(Phase 10D behaviour).
-
-| Column | Notes |
-|--------|--------|
-| `id` | UUID PK, `gen_random_uuid()` |
-| `hotel_id` | FK → `hotels(id)` `ON DELETE CASCADE` |
-| `room_type_id` | FK → `room_types(id)` `ON DELETE CASCADE` |
-| `inventory_date` | Night date (half-open stay night) |
-| `allotment` | Nullable `SMALLINT` — `NULL` = use physical; else ≥ 0 |
-| `stop_sell` | `BOOLEAN NOT NULL DEFAULT FALSE` |
-| `overbooking_allowance` | `SMALLINT NOT NULL DEFAULT 0`, ≥ 0 |
-| `notes` | Nullable free text |
-| `source` | `manual` \| `system` \| `ota` \| `channel` (default `manual`) |
-| `external_ref` | Nullable external id (≤ 120) |
-| `created_at` / `updated_at` | Timestamps; `set_updated_at` trigger |
-
-Constraints: `UNIQUE (hotel_id, room_type_id, inventory_date)`. Indexes on
-`(hotel_id, inventory_date)` and `(room_type_id, inventory_date)`.
-
-Night formula: `base = COALESCE(allotment, physical)`;
-`sell_limit = base + overbooking_allowance`;
-`available = stop_sell ? 0 : max(0, sell_limit - sold)`.
-
-### `hotel_invoice_sequences` (Phase 14 Lite, migration 008)
-
-Per-hotel yearly invoice number allocator. PK `(hotel_id, year)`. `last_sequence`
-increments on issue. Hotel code is **not** stored here — derived from
-`hotels.slug` (or `metadata.invoice_prefix`) at issue time.
-
-### `booking_invoices` (Phase 14 Lite, migration 008)
-
-Immutable issued invoice snapshots. Status `draft` \| `issued` \| `void`.
-Unique `(hotel_id, invoice_number)`. Partial unique: one `issued` row per
-`booking_id`. Lifecycle CHECK: draft has no `issued_at`/`voided_at`; issued has
-`issued_at`; void has both. Amounts: `total_amount = subtotal + tax_amount`.
-Optional GSTIN/PAN/HSN/place_of_supply. `replaces_invoice_id` for reissue after
-void. FK hotel/booking `ON DELETE RESTRICT`.
-
-### `booking_payments` (Phase 14 Lite, migration 008)
-
-Append-only ledger. `entry_type` `payment` \| `refund`; `amount > 0`;
-`payment_method` `cash` \| `card` \| `upi` \| `bank_transfer` \| `other`;
-`status` `active` \| `void` (void requires `voided_at`). Optional
-`idempotency_key` unique per hotel when set. Optional
-`external_provider` / `external_transaction_id` for a future gateway (unused).
-Net paid = active payments − active refunds.
-
-See [ADR-0041](history/DECISIONS.md).
 
 ### `admin_users` (migration 002)
 
@@ -199,9 +112,54 @@ See [ADR-0041](history/DECISIONS.md).
 | `role` | `super_admin` \| `hotel_admin` |
 | `is_active` | Soft disable |
 
+### `tenants` / `tenant_memberships` (Phase 15 Lite, migration 009)
+
+**`tenants`:** operator / SaaS account — `name`, unique `slug`, `status`
+(`trial`\|`active`\|`suspended`\|`cancelled`), `billing_email`, `plan_code`,
+`subscription_status` (`trialing`\|`active`\|`past_due`\|`cancelled`),
+`trial_ends_at`, `current_period_end`, `metadata`.
+
+**`tenant_memberships`:** `(tenant_id, admin_user_id)` unique;
+`membership_role` `owner` \| `admin` \| `staff`; `is_active`. Lite AuthZ grants
+access to **all hotels** under the tenant; **`membership_role` is not used for
+endpoint RBAC** today.
+
+Default backfill tenant slug: **`m2n-hotels`**.
+
+### `tariff_rates` (Phase 9)
+
+Per-hotel (and optional per-room-type) meal-plan rates: `meal_plan`, `occupancy`
+(`single`\|`double`), `price`, `display_note`, validity window, `status`.
+
+Hotel-level disclaimer / policies: `hotels.metadata.tariff_settings` JSON.
+
+### `bookings` (Phase 10A, migration 004)
+
+Direct reservations, `hotel_id`-scoped. Key columns: `booking_number`, guest
+fields, stay dates, adults/children/`number_of_rooms`, `booking_source`,
+`booking_status`, `payment_status`, amounts, `created_by_admin_id`,
+`admin_notes` (`006`), `notification_preferences` JSONB (`007`).
+
+**No `guests` table** — CRM Lite derives identity from bookings + inquiries.
+
+**Availability:** physical sellable rooms minus blocking bookings; optional
+sparse overrides in `room_type_inventory_dates`.
+
+### `room_type_inventory_dates` (Phase 10I, migration 005)
+
+Sparse per-hotel / room-type / night overrides (`allotment`, `stop_sell`,
+`overbooking_allowance`, `source`). Unique `(hotel_id, room_type_id, inventory_date)`.
+
+### `hotel_invoice_sequences` / `booking_invoices` / `booking_payments` (Phase 14 Lite, migration 008)
+
+Manual ledger + draft/issue/void invoices. Optional `external_*` columns exist
+for a **future** gateway — **unused**. See [ADR-0041](history/DECISIONS.md).
+
 ## 5. Relationships
 
 ```
+tenants 1──* tenant_memberships *──1 admin_users
+tenants 1──* hotels
 hotels 1──* hotel_media
 hotels 1──* hotel_amenities *──1 amenities
 hotels 1──* room_types 1──* rooms
@@ -212,51 +170,35 @@ hotels 1──* booking_invoices *──1 bookings
 hotels 1──* hotel_invoice_sequences
 hotels 1──* tariff_rates (optional room_type_id)
 hotels 1──* room_type_inventory_dates *──1 room_types
-admin_users (standalone auth)
 ```
+
+Hotel-scoped operational tables keep **`hotel_id`**. Tenant isolation path:
+`row.hotel_id → hotels.tenant_id → tenant_memberships`.
 
 ## 6. Seed data
 
 | Script | Command | Purpose |
 |--------|---------|---------|
 | `scripts/seed.js` | `npm run seed` | Hotels, amenities, media, room types, rooms, tariff matrix |
-| `scripts/seedAdmin.js` | `npm run seed:admin` | First `super_admin` (`ADMIN_*` env) + default tenant membership |
-| `scripts/testBookings.js` | `npm run test:bookings` | Dev smoke test for the booking APIs; deletes every booking it creates |
-| `scripts/verifyPhase14.js` | `npm run verify:phase14` | Payment ledger + invoice API smoke; deletes its self-test booking |
-
-`bookings` is transactional data and is intentionally **not** seeded — reference
-data only.
+| `scripts/seedAdmin.js` | `npm run seed:admin` | First `super_admin` (`ADMIN_*`) + `owner` membership on `m2n-hotels` |
 
 ### Phase 15 tenancy compatibility (commit `be2351a`)
 
-Migrations **`001`–`009` may be fully applied before seeding.** Seed scripts are
-compatible with the post-`009` schema (`hotels.tenant_id` NOT NULL).
+Migrations **`001`–`009` may be fully applied before seeding.**
 
-**`npm run seed` (`seed.js`):**
+**`npm run seed`:**
+- Resolves existing tenant slug `m2n-hotels` (does **not** create tenants).
+- Sets `tenant_id` on hotel **INSERT** only; reruns do **not** overwrite
+  existing hotels’ `tenant_id`.
+- Fails fast if `m2n-hotels` is missing.
 
-- Resolves the existing default tenant `SELECT id FROM tenants WHERE slug =
-  'm2n-hotels' LIMIT 1`.
-- Sets that `tenant_id` on **INSERT** of seeded hotels.
-- On conflict (rerun), **does not** overwrite an existing hotel’s `tenant_id`.
-- **Does not** create tenants.
-- Fails fast if `m2n-hotels` is missing (apply migrations through
-  `009_tenancy_lite.sql` first).
+**`npm run seed:admin`:**
+- Creates/uses configured `super_admin`; skips duplicate email.
+- Ensures `owner` membership on `m2n-hotels` (`ON CONFLICT DO NOTHING`).
+- Does not silently reactivate inactive admins or memberships.
 
-**`npm run seed:admin` (`seedAdmin.js`):**
-
-- Still creates/uses the configured `super_admin` from `ADMIN_NAME` /
-  `ADMIN_EMAIL` / `ADMIN_PASSWORD` (skips duplicate email insert).
-- Ensures an `owner` row in `tenant_memberships` for `m2n-hotels`
-  (`ON CONFLICT DO NOTHING` — existing membership role/`is_active` unchanged).
-- Does **not** silently reactivate inactive admins or inactive memberships
-  (inactive admin → warning log only).
-
-No schema or migration change was required for this compatibility. Any earlier
-workaround of “seed hotels before applying `009`” is **superseded** by
-`be2351a`.
-
-Confirm the DB target (local vs staging vs production) before any write
-operation. Never use production credentials in examples.
+Confirm DB target before writes. Placeholders only in docs — never real secrets.
+See [ADR-0043](history/DECISIONS.md).
 
 ## 7. Encoding without new columns
 
@@ -265,5 +207,13 @@ operation. Never use production credentials in examples.
 | Room type featured | `room_types.metadata.is_featured` |
 | Media category | URL path `/uploads/hotels/{id}/{Category}/…` |
 | Room activate/deactivate | `available` / `out_of_service` |
-| CRM guest 360 | Derived at read time from `bookings` + `inquiries` (no guests table) |
-| Seller GSTIN / invoice prefix | `hotels.metadata.billing.*` / `metadata.invoice_prefix` (no new hotel columns) |
+| CRM guest 360 | Derived from `bookings` + `inquiries` (no guests table) |
+| Seller GSTIN / invoice prefix | `hotels.metadata.billing.*` / `metadata.invoice_prefix` |
+
+## 8. Schema caveats
+
+- Use **`max_occupancy`** on `room_types` — do not invent `max_adults` /
+  `max_children` columns.
+- Use **`floor_label`** on `rooms` — do not invent a `floor` integer column.
+- Do not invent a `guests` table — CRM Lite is derived.
+- Do not mark payment gateway as implemented — ledger only.

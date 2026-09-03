@@ -9,6 +9,22 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Changed — full project documentation reconciliation
+
+- **What changed.** Evidence-based sync of Markdown docs with actual code,
+  migrations `001`–`009`, frontend App Router, and staging facts. Status matrix
+  (COMPLETE / PARTIAL / DEFERRED / NOT STARTED); schema caveats
+  (`max_occupancy`, `floor_label`, no `guests` table); tenancy AuthZ notes;
+  API/env corrections (`NEXT_PUBLIC_API_BASE_URL`); roadmap/TODO cleanup;
+  next task set to staging seed. No application code changes.
+- **Files modified:** `AGENTS.md`, `README.md`, `PROJECT_DOCS.md`, `TODO.md`,
+  `frontend/README.md`, and multiple `docs/*` files (status, architecture,
+  database, API, folders, overview, security, deployment, roadmap, AI context,
+  changelog).
+- **APIs / database / frontend / backend code:** none in this commit.
+- **Remaining work:** staging seed execution; staging frontend; production
+  cutover; deferred gateway / Full CRM.
+
 ### Changed — Phase 15 seed workflow docs sync
 
 - **What changed.** Documented post-`009` seed compatibility (commit `be2351a`):

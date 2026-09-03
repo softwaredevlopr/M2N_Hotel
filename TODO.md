@@ -8,6 +8,11 @@
 
 ## Current focus
 
+- [ ] **STAGING DATA INITIALIZATION / VALIDATION** — confirm staging DB target
+      (not local/production) → `npm run seed` → `npm run seed:admin` → verify
+      `GET /api/hotels`. Migrations `001`–`009` already applied; backend healthy;
+      seed scripts post-`009` compatible (`be2351a`). See
+      [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.2.
 - [x] **Phase 10A–10I** — booking engine, inventory, emails, inquiries,
       admin_notes (see completed sections below / status docs).
 - [x] **Phase 11 — Booking Engine Completion**

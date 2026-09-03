@@ -4,11 +4,16 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 | Layer | Stack | Port |
 |-------|--------|------|
-| Frontend | Next.js (App Router) | `3000` |
-| Backend | Node.js + Express | `5001` |
+| Frontend | Next.js 16 / React 19 / Tailwind 4 (App Router) | `3000` |
+| Backend | Node.js ≥ 18 + Express (CommonJS) | `5001` |
 | Database | PostgreSQL | `5432` |
 
 **Live properties:** Aurelia Grand (`m2n-hotel-aurelia-grand`) · Zaarang Inn (`hotel-zaarang-inn`)
+
+**Next operational task:** staging seed (confirm DB → `npm run seed` →
+`seed:admin` → verify `GET /api/hotels`). Details:
+[`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) ·
+[`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 
 ---
 
