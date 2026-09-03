@@ -1,6 +1,6 @@
 # 06 — Setup Guide
 
-> **Status:** Living document · **Last updated:** 2026-08-30  
+> **Status:** Living document · **Last updated:** 2026-09-03  
 > **Related:** [`../README.md`](../README.md) · [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) ·
 > [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md)
 
@@ -46,13 +46,19 @@ cd ../frontend && npm install
 ```bash
 cd backend
 npm run migrate      # applies pending 001–009 (alphabetical via schema_migrations)
-npm run seed         # hotels / rooms / media seed (optional)
-npm run seed:admin   # create first admin
+npm run seed         # hotels / rooms / media (post-009 compatible; needs m2n-hotels)
+npm run seed:admin   # first super_admin + owner membership on m2n-hotels
 ```
 
-Non-local migrate / staging cutover (through `009` for Phase 15 API):
+Order: **migrate through `009` first**, then seed. Seed scripts (commit
+`be2351a`) attach hotels to the existing default tenant `m2n-hotels` and do not
+create tenants. If `m2n-hotels` is missing, seed fails fast — re-run migrate.
+Rerunning seed does not move an existing hotel’s `tenant_id`. See
+[`03_DATABASE.md`](03_DATABASE.md) §6.
+
+Non-local migrate / staging cutover (through `009`, then seed):
 [`12_DEPLOYMENT.md`](12_DEPLOYMENT.md) §6. Do not run staging/production migrates
-from this setup guide alone.
+or seeds from this setup guide alone. Confirm DB target before writes.
 
 ## 5. Run
 
@@ -88,6 +94,7 @@ npm run verify:phase15-billing
 | Problem | Fix |
 |---------|-----|
 | DB connection refused | Start PostgreSQL; check `DATABASE_URL` / `DB_*` |
-| Admin login fails | Run `seed:admin`; confirm `JWT_SECRET` |
+| Admin login fails | Run `seed:admin`; confirm `JWT_SECRET`; ensure `m2n-hotels` tenant exists (migrate through `009`) |
+| Seed fails: default tenant missing | Run `npm run migrate` through `009`; seed does not create tenants |
 | CORS errors | Ensure frontend origin is allowed; set `FRONTEND_URL` if needed |
 | Upload 401 | Re-login; token required for `/api/admin/media/upload` |

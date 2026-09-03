@@ -1,6 +1,6 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-08-29  
+> **Status:** Living document · **Last updated:** 2026-09-03  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)
 
 ---
@@ -64,14 +64,15 @@
 | Phase 15 — self-serve onboarding API | ✅ |
 | Phase 15 — admin onboarding UI (`/admin/onboarding`) | ✅ |
 | Phase 15 — operator billing stub UI (`/admin/billing`) | ✅ |
+| Phase 15 — seed scripts post-`009` tenancy compatible (`be2351a`) | ✅ |
 | Phase 15 — SaaS payment gateway / subscription management | ⬜ Out of scope (Lite) |
 
 **Roadmap progress:** Phases **1–9** ✅, **10A–10I** ✅ · Phase **11** ✅ ·
 Phase **12** PMS Lite ✅ · Phase **13** CRM Lite (search + 360 + open leads) ✅ ·
 Phase **14** Lite (ledger + invoices + booking-detail UI) ✅ · Phase **15** Lite
-(tenant isolation + self-serve onboarding + operator billing stub) ✅ · Next:
-future SaaS payment integration (out of Lite); Full CRM only if approved;
-staging cutover
+(tenant isolation + self-serve onboarding + operator billing stub + seed
+compatibility) ✅ · Next: staging seed execution (where hotel count is still 0);
+future SaaS payment integration (out of Lite); Full CRM only if approved
 
 ---
 
@@ -337,6 +338,16 @@ staging cutover
   notice that gateway/plan management is future work. No Stripe/Razorpay/checkout.
 - Smoke: `npm run verify:phase15-billing` (22/22). No schema change.
 
+### Phase 15 — seed tenancy compatibility ✅
+
+- Commit `be2351a` — `seed.js` / `seedAdmin.js` work after migrations `001`–`009`.
+- Seed resolves existing default tenant `m2n-hotels`; hotels get `tenant_id` on
+  INSERT only; reruns do not overwrite tenant; seed never creates tenants.
+- `seed:admin` ensures `owner` membership on `m2n-hotels` (`ON CONFLICT DO
+  NOTHING`); does not silently reactivate inactive admins/memberships.
+- No schema/migration change required. Pre-`be2351a` “seed before 009”
+  workaround is superseded.
+
 ### Platform foundations ✅
 
 - PostgreSQL schema (`001_initial_schema.sql`) + seed scripts.
@@ -349,13 +360,22 @@ staging cutover
 
 - Staging cutover remains operator-run per
   [12 — Deployment](12_DEPLOYMENT.md).
+- **Staging operational status (facts as of docs sync):**
+  - PostgreSQL migrations `001`–`009` applied
+  - Staging backend deployed and healthy; DB connection healthy
+  - Public hotels endpoint currently needs / awaits staging seed execution
+    (`GET /api/hotels` empty until seed)
+  - Seed scripts are post-`009` tenancy compatible (`be2351a`)
+  - **Next operational step:** confirm staging DB target → `npm run seed` →
+    `npm run seed:admin` when appropriate → verify hotels API
 
 ---
 
 ## 4. Pending / Next Up
 
-1. Provision staging/production hosts + secrets; non-local migrate
-   `005`/`006`/`007`/`008`/`009`.
+1. Execute staging seed (`npm run seed` / `seed:admin`) against the confirmed
+   staging DB, then smoke `GET /api/hotels` ([12 — Deployment](12_DEPLOYMENT.md)
+   §6.2).
 2. Replace placeholder contact details before public launch.
 3. Future **Phase 15** SaaS payment gateway / subscription management (explicitly
    out of Lite scope — no Stripe/Razorpay/checkout/plan mutation yet).
@@ -379,6 +399,7 @@ staging cutover
 
 | Date | Update |
 |------|--------|
+| 2026-09-03 | Phase 15 seed compatibility (`be2351a`); staging awaits seed execution |
 | 2026-08-29 | Phase 15 operator billing stub (`GET /api/admin/tenant`, `/admin/billing`) |
 | 2026-08-29 | Phase 15 admin onboarding UI (`/admin/onboarding`) + docs sync |
 | 2026-08-26 | Phase 15 self-serve onboarding API (`POST /api/admin/onboarding`) |

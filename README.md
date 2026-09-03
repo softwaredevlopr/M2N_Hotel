@@ -70,8 +70,8 @@ cd backend
 cp .env.example .env   # set DB + JWT_SECRET
 npm install
 npm run migrate
-npm run seed           # optional hotel seed data
-npm run seed:admin     # first admin user
+npm run seed           # optional; post-009 compatible (needs m2n-hotels tenant)
+npm run seed:admin     # first admin + owner membership on m2n-hotels
 npm run dev            # http://localhost:5001
 
 # Frontend (new terminal)

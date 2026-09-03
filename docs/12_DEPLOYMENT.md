@@ -1,9 +1,9 @@
 # 12 — Deployment
 
-> **Status:** Living document · **Last updated:** 2026-08-30  
+> **Status:** Living document · **Last updated:** 2026-09-03  
 > **Scope:** Deployment architecture and readiness for the **current** M2N Hotels
 > stack (through Phase 15 Lite: migrations `001`–`009`, tenant isolation,
-> self-serve onboarding, read-only operator billing).  
+> self-serve onboarding, read-only operator billing, post-`009` seed scripts).  
 > **Hard rule:** This guide does **not** authorize running migrations or deploys
 > against staging/production until an operator explicitly executes those steps.
 
@@ -365,6 +365,12 @@ existing hotels and active admin users to it. New properties can also be created
 via **self-serve onboarding** (`POST /api/admin/onboarding`, public, rate-limited)
 and the admin UI at `/admin/onboarding`.
 
+**Demo / reference hotel seed** (`npm run seed` / `npm run seed:admin`, commit
+`be2351a`) is **compatible after `009`**. Seed resolves existing `m2n-hotels`,
+sets `tenant_id` on hotel INSERT only (reruns do not move tenants), never creates
+tenants, and `seed:admin` ensures an `owner` membership without reactivating
+inactive admins/memberships. See [`03_DATABASE.md`](03_DATABASE.md) §6.
+
 Operators can view a **read-only tenant/billing summary** after login:
 `GET /api/admin/tenant` (JWT) and `/admin/billing` (no payment gateway; Lite stub only).
 
@@ -387,18 +393,39 @@ Execute in this order on the **target staging environment**:
    The runner skips already-recorded files; each new file runs transactionally.
    **Never** manually `INSERT` into `schema_migrations` without executing and
    validating the SQL file.
-6. **Verify schema through `009`** — tables, columns, backfill (§6.4).
-7. **Deploy backend** (API) with staging secrets (`NODE_ENV=production`,
-   `JWT_SECRET`, `DATABASE_URL` or `DB_*`, `FRONTEND_URL`, optional email vars).
-8. **Verify API roots** — `GET /` and `GET /health` on the staging API origin.
-9. **Run Phase 15 verifiers** against staging (§6.6) with
-   `TEST_BASE_URL=https://api-staging.example.com` (placeholder).
-10. **Configure frontend build-time env** — `NEXT_PUBLIC_API_BASE_URL` (or legacy
-    `NEXT_PUBLIC_API_URL`), `NEXT_PUBLIC_SITE_URL`.
-11. **Build and deploy frontend** (`npm run build` then host `next start` or platform deploy).
-12. **Browser smoke tests** — matrix in [§6.5](#65-post-deploy-smoke-matrix).
+6. **Verify schema through `009`** — tables, columns, backfill (§6.4), including
+   default tenant `m2n-hotels`.
+7. **Confirm staging DB target again** before any seed writes.
+8. **Seed reference data** (when the environment needs demo hotels / first admin):
 
-Prefer: **backup → migrate through 009 → deploy API → verify scripts → build/deploy web → smoke**.
+   ```bash
+   cd backend
+   npm run seed
+   npm run seed:admin   # requires ADMIN_NAME / ADMIN_EMAIL / ADMIN_PASSWORD
+   ```
+
+   Safe after full `001`–`009`. Do **not** delay or skip `009` to seed.
+   (Superseded: any pre-`be2351a` advice to seed before `009`.)
+9. **Read-only DB / API verification** — hotel count, `hotels.tenant_id`, admin
+   membership; `GET /` and `GET /health`; `GET /api/hotels` returns seeded
+   properties when seed ran.
+10. **Deploy backend** (API) with staging secrets (`NODE_ENV=production`,
+    `JWT_SECRET`, `DATABASE_URL` or `DB_*`, `FRONTEND_URL`, optional email vars)
+    if not already deployed.
+11. **Verify API roots** — `GET /` and `GET /health` on the staging API origin.
+12. **Run Phase 15 verifiers** against staging (§6.6) with
+    `TEST_BASE_URL=https://api-staging.example.com` (placeholder).
+13. **Configure frontend build-time env** — `NEXT_PUBLIC_API_BASE_URL` (or legacy
+    `NEXT_PUBLIC_API_URL`), `NEXT_PUBLIC_SITE_URL`.
+14. **Build and deploy frontend** (`npm run build` then host `next start` or platform deploy).
+15. **Browser / application smoke tests** — matrix in [§6.5](#65-post-deploy-smoke-matrix).
+
+Prefer: **backup → migrate through 009 → confirm target → seed → verify →
+deploy/verify API → verifiers → build/deploy web → smoke**.
+
+When staging already has migrations `001`–`009` and a healthy API but empty hotel
+data, the remaining operational step is **confirm staging DB → `npm run seed` →
+`npm run seed:admin` (if needed) → verify `GET /api/hotels`**.
 
 ### 6.3 PowerShell / psql examples
 
@@ -599,12 +626,14 @@ npm run verify:phase15-billing
 
 ### 6.7 Compatibility notes
 
-- Migrations `005`–`009` are **additive**. Prefer: migrate DB → deploy API that
-  understands new schema → deploy frontend.
+- Migrations `005`–`009` are **additive**. Prefer: migrate DB → seed (if needed)
+  → deploy API that understands new schema → deploy frontend.
 - Running Phase 15 API against a DB missing `009` will error on tenant-scoped
   admin routes — apply `009` before or with that API release.
 - `009` backfill is safe for existing single-tenant installs; verify `m2n-hotels`
   tenant and hotel links after migrate.
+- Hotel seed after `009` is supported (`be2351a`). Do **not** delay `009` solely
+  to allow seeding.
 
 ### 6.8 If verification fails
 

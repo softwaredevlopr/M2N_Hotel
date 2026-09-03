@@ -9,6 +9,39 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Changed — Phase 15 seed workflow docs sync
+
+- **What changed.** Documented post-`009` seed compatibility (commit `be2351a`):
+  migrate `001`–`009` then `npm run seed` / `seed:admin`; seed attaches hotels to
+  existing `m2n-hotels`; membership ensure; staging runbook seed steps; status
+  handoff that staging awaits seed execution.
+- **Files modified:** `docs/03_DATABASE.md`, `docs/06_SETUP_GUIDE.md`,
+  `docs/12_DEPLOYMENT.md`, `docs/01_PROJECT_STATUS.md`, `docs/08_AI_CONTEXT.md`,
+  `docs/13_ROADMAP.md`, `docs/CHANGELOG.md`, `docs/history/RELEASE_NOTES.md`,
+  `docs/history/DECISIONS.md`, `TODO.md`, `PROJECT_DOCS.md`, `README.md`,
+  `backend/migrations/README.md`.
+- **APIs added/changed:** none.
+- **Database changes:** none.
+- **Frontend changes:** none.
+- **Backend changes:** none (application fix already shipped in `be2351a`).
+- **Remaining work:** operator staging seed execution; placeholder contacts;
+  live payment gateway (out of Lite).
+
+### Fixed — Phase 15 seed scripts tenancy compatibility ✅
+
+- **What changed.** `seed.js` and `seedAdmin.js` work when migrations `001`–`009`
+  are already applied. Seed resolves default tenant `m2n-hotels`, sets
+  `hotels.tenant_id` on INSERT only (reruns do not overwrite), never creates
+  tenants, fails fast if tenant missing. `seed:admin` ensures `owner`
+  membership on `m2n-hotels` without reactivating inactive admins/memberships.
+- **Files modified:** `backend/scripts/seed.js`, `backend/scripts/seedAdmin.js`
+  (commit `be2351a`).
+- **APIs added/changed:** none.
+- **Database changes:** none (no migration/schema change).
+- **Frontend changes:** none.
+- **Backend changes:** seed scripts only.
+- **Remaining work:** run seed against confirmed staging DB.
+
 ### Changed — staging cutover runbook (docs only)
 
 - **What changed.** Updated deployment and setup documentation to match the

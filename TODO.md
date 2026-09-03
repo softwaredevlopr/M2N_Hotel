@@ -80,12 +80,14 @@
       nightly). Scripts: `npm run set:base-prices` / `verify:base-prices`.
 - [x] Deployment docs — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
       (architecture, env matrix, staging cutover runbook through migration `009`,
-      Phase 15 smoke, security / rollback). Docs only — no staging/production
-      deploy or non-local migrate yet.
+      Phase 15 smoke, post-`009` seed sequence, security / rollback).
 - [ ] Replace placeholder contact details before launch.
-- [ ] Run `npm run migrate` on every non-local environment through
-      `009_tenancy_lite.sql` (includes `005`–`008` if still pending).
-      Local dev is already migrated. Follow [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.
+- [x] Staging migrate through `009_tenancy_lite.sql` (applied).
+- [ ] Staging seed — confirm staging DB target, then `npm run seed` /
+      `seed:admin`; verify `GET /api/hotels`. Scripts are post-`009` compatible
+      (`be2351a`). Follow [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.2.
+- [ ] Production migrate through `009` when that environment is provisioned
+      (includes `005`–`008` if still pending).
 
 ---
 
@@ -137,6 +139,10 @@
 - [x] Phase 15 — operator billing stub UI (`GET /api/admin/tenant`,
       `/admin/billing`; read-only; no gateway). Smoke:
       `npm run verify:phase15-billing`.
+- [x] Phase 15 — seed scripts post-`009` tenancy compatible (`be2351a`).
+- [ ] Staging seed execution — confirm staging DB target, then `npm run seed` /
+      `seed:admin`; verify `GET /api/hotels` (migrations `001`–`009` already
+      applied on staging; backend healthy).
 - [ ] Phase 15 — live SaaS payment gateway / subscription management (not in Lite)
 
 ---
@@ -145,6 +151,6 @@
 
 Phases **1–12** complete; Phase **13** CRM Lite (guest search + 360 + open
 leads) shipped — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
-Remaining: Full CRM / dated follow-ups only if approved; future Phase 15 SaaS
-payment integration (out of Lite); non-local migrate `005`–`009`; placeholder
-contacts.
+Remaining: staging seed (post-`009` compatible scripts on `be2351a`); Full CRM /
+dated follow-ups only if approved; future Phase 15 SaaS payment integration
+(out of Lite); placeholder contacts.

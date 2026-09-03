@@ -12,6 +12,14 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Phase 15 — seed tenancy compatibility (2026-09-03)
+
+- Commit `be2351a` — `npm run seed` / `seed:admin` compatible after migrations
+  `001`–`009`. Resolves existing `m2n-hotels`; hotel `tenant_id` on INSERT only;
+  membership `owner` ensure; no schema change.
+- Supersedes any prior workaround of seeding before applying `009`.
+- Staging next step: confirm DB target → seed → verify `GET /api/hotels`.
+
 ### Phase 15 — Lite operator billing stub (2026-08-29)
 
 - `GET /api/admin/tenant` — JWT read-only tenant billing summary (safe fields

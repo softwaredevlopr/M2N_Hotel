@@ -27,6 +27,11 @@ Requires a configured `.env` (`DATABASE_URL` or `DB_*`). See
 [`docs/03_DATABASE.md`](../docs/03_DATABASE.md) and
 [`docs/06_SETUP_GUIDE.md`](../docs/06_SETUP_GUIDE.md).
 
+After migrations through `009`, demo data may be loaded with `npm run seed` and
+`npm run seed:admin` (post-`009` tenancy compatible as of commit `be2351a`).
+Seed reuses existing tenant `m2n-hotels` and does not create tenants. Confirm the
+DB target before any write. Details: [`docs/03_DATABASE.md`](../docs/03_DATABASE.md) §6.
+
 **Do not** edit applied migrations in place for production history — add a new
 numbered file after approval (schema changes require explicit approval per
 `AGENTS.md`).

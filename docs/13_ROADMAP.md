@@ -242,6 +242,8 @@ multi-property operators ([ADR-0042](history/DECISIONS.md)).
   only); smoke `verify:phase15-billing`
 - ✅ Admin UI `/admin/billing` — read-only plan/subscription view; Billing nav
   item; no payment actions
+- ✅ Seed scripts post-`009` compatible (`be2351a`) — attach hotels to existing
+  `m2n-hotels`; `seed:admin` ensures `owner` membership ([ADR-0043](history/DECISIONS.md))
 - ⬜ Live SaaS payment gateway / subscription management (Stripe, Razorpay,
   checkout, plan mutation, cancellation — future; out of Lite)
 - Out of scope for Lite: per-hotel ACL within tenant, ERP

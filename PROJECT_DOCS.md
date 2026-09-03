@@ -177,12 +177,12 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
   / omit. Smoke: `verify:phase10c`.
 
 - ✅ **Deployment documentation** — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
-  readiness guide (architecture, env matrix, 005/006 rollout checklist). No
-  staging/production cutover yet.
+  readiness guide (architecture, env matrix, staging cutover through `009`,
+  post-`009` seed sequence). Staging seed still operator-run.
 
-**Next:** future SaaS payment gateway / subscription management (out of Lite);
-operator non-local migrate (`005`–`009`) + host cutover. Full CRM / dated
-follow-ups only if separately approved.
+**Next:** staging seed execution (confirm target DB → `npm run seed` /
+`seed:admin`); future SaaS payment gateway / subscription management (out of
+Lite); Full CRM / dated follow-ups only if separately approved.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
   `PATCH /api/admin/bookings/:id` stay updates (`applyBookingStayUpdate`:
@@ -262,6 +262,10 @@ follow-ups only if separately approved.
   read-only safe tenant fields; `resolveReadTenantId` tenancy rules). Admin UI
   `/admin/billing` + Billing nav; no Stripe/Razorpay/checkout/plan mutation.
   Smoke: `npm run verify:phase15-billing`. No schema change.
+
+- ✅ **Phase 15 — seed tenancy compatibility** — commit `be2351a`
+  (`seed.js` / `seedAdmin.js`). Migrate `001`–`009` then seed; reuses
+  `m2n-hotels`; no schema change ([ADR-0043](docs/history/DECISIONS.md)).
 
 ---
 
@@ -413,11 +417,12 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
   0 (couple package is not nightly).
 - ⬜ Production contact details (replace placeholders).
-- ⬜ Run `005`–`009` on non-local environments (operator runbook in
+- ✅ Staging migrate through `009`; ⬜ staging seed execution (`be2351a` scripts).
+- ⬜ Production migrate through `009` when provisioned (operator runbook in
   [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6).
 - ⬜ Full CRM (guest master / merge) or dated follow-up table — only if
   separately approved.
-- ⬜ Phases **14–15** (payments → SaaS).
+- ✅ Phases **14–15** Lite (payments + SaaS foundation); ⬜ live gateway.
 
 > Note: Gallery lightbox and admin login are **done** (Phases 1 and 3). Older
 > pending bullets below this section in git history are obsolete.

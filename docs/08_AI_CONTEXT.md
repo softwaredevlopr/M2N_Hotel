@@ -1,6 +1,6 @@
 # 08 — AI Context
 
-> **Status:** Living document · **Last updated:** 2026-08-29  
+> **Status:** Living document · **Last updated:** 2026-09-03  
 > **Purpose:** Minimum reliable context for assistants working in this repo.
 
 ---
@@ -23,10 +23,11 @@
   Admin write APIs: `PUT`/`DELETE /api/admin/inventory/dates`; day-edit UI on
   `/admin/inventory`.
 - **Next:** Phase 15 Lite foundation ✅ (tenant isolation, onboarding, read-only
-  billing stub); future SaaS payment gateway out of Lite; Full CRM / dated
-  follow-ups only if approved; operator staging cutover
-  ([12 — Deployment](12_DEPLOYMENT.md)). Non-local migrate for `005`–`009` still
-  pending.
+  billing stub, post-`009` seed compatibility `be2351a`); future SaaS payment
+  gateway out of Lite; Full CRM / dated follow-ups only if approved; operator
+  staging seed + cutover ([12 — Deployment](12_DEPLOYMENT.md)). Staging may
+  already have migrations `001`–`009` with an empty hotel catalog pending
+  `npm run seed`.
 - Guest cancel / modify / notification prefs: contact-verified
   `POST /api/bookings/:bookingNumber/{cancel,modify,notification-preferences}`.
 - Admin cancel: `POST /api/admin/bookings/:id/cancel`; stay modify via hardened
@@ -46,6 +47,8 @@
   Public `POST /api/admin/onboarding` creates tenant + owner + first hotel;
   admin UI `/admin/onboarding` → `setAdminSession` → `/admin/dashboard`.
   `GET /api/admin/tenant` + `/admin/billing` read-only billing stub (no gateway).
+  Seed (`npm run seed` / `seed:admin`) is post-`009` compatible: reuses
+  `m2n-hotels`, does not create tenants ([ADR-0043](history/DECISIONS.md)).
   Smoke: `verify:phase15`, `verify:phase15-onboarding`, `verify:phase15-billing`.
 - Deployment readiness is documented; do not treat docs as an executed deploy.
 - Tariff matrix: `GET /api/tariffs`; room-card packages may still use `lib/tariffs.js`.

@@ -1555,6 +1555,42 @@ tables (bookings, inventory, CRM Lite, Phase 14 finance).
 - Per-hotel ACL in Lite. Rejected — out of approved scope; all tenant members
   see all tenant hotels in Phase 15 Lite.
 
+### ADR-0043 — Seed scripts compatible with post-009 tenancy (reuse `m2n-hotels`)
+
+**Date:** 2026-09-03
+
+**Status:** Accepted
+
+**Context**
+Migration `009` makes `hotels.tenant_id` NOT NULL and creates default tenant
+`m2n-hotels`. Pre-`be2351a` `seed.js` omitted `tenant_id`, so seeding failed on
+databases that already had `009` applied (e.g. empty staging after migrate).
+Delaying `009` solely to allow seeding was an unsafe/temporary workaround.
+
+**Decision**
+- Keep migrations unchanged; no schema change.
+- `npm run seed` resolves existing `tenants.slug = 'm2n-hotels'`, sets
+  `tenant_id` on hotel INSERT only, never creates tenants, fails fast if missing.
+- Reruns must not overwrite an existing hotel’s `tenant_id`.
+- `npm run seed:admin` continues to create/use `super_admin` and ensures an
+  `owner` `tenant_memberships` row for `m2n-hotels` via
+  `ON CONFLICT DO NOTHING` (no silent reactivation of inactive admins or
+  memberships).
+- Safe operator order: migrate `001`–`009` → confirm DB target → seed →
+  `seed:admin` → verify.
+
+**Consequences**
+- Staging/production can migrate fully through `009` before seeding.
+- Tenant isolation and `hotel_id` child-table architecture remain unchanged.
+- Pre-`be2351a` “seed before 009” guidance is superseded.
+
+**Alternatives considered**
+- Seed before `009` on every empty DB. Rejected — fragile for already-migrated
+  staging and blocks Phase 15 API prerequisites.
+- Create a new tenant from seed. Rejected — diverges from `009` / AuthZ default
+  `m2n-hotels`.
+- Edit migration `009`. Rejected — applied migrations must not be rewritten.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

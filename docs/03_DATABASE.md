@@ -219,13 +219,44 @@ admin_users (standalone auth)
 
 | Script | Command | Purpose |
 |--------|---------|---------|
-| `scripts/seed.js` | `npm run seed` | Hotels, amenities, media, room types, rooms |
-| `scripts/seedAdmin.js` | `npm run seed:admin` | First super admin (`ADMIN_*` env) |
+| `scripts/seed.js` | `npm run seed` | Hotels, amenities, media, room types, rooms, tariff matrix |
+| `scripts/seedAdmin.js` | `npm run seed:admin` | First `super_admin` (`ADMIN_*` env) + default tenant membership |
 | `scripts/testBookings.js` | `npm run test:bookings` | Dev smoke test for the booking APIs; deletes every booking it creates |
 | `scripts/verifyPhase14.js` | `npm run verify:phase14` | Payment ledger + invoice API smoke; deletes its self-test booking |
 
 `bookings` is transactional data and is intentionally **not** seeded — reference
 data only.
+
+### Phase 15 tenancy compatibility (commit `be2351a`)
+
+Migrations **`001`–`009` may be fully applied before seeding.** Seed scripts are
+compatible with the post-`009` schema (`hotels.tenant_id` NOT NULL).
+
+**`npm run seed` (`seed.js`):**
+
+- Resolves the existing default tenant `SELECT id FROM tenants WHERE slug =
+  'm2n-hotels' LIMIT 1`.
+- Sets that `tenant_id` on **INSERT** of seeded hotels.
+- On conflict (rerun), **does not** overwrite an existing hotel’s `tenant_id`.
+- **Does not** create tenants.
+- Fails fast if `m2n-hotels` is missing (apply migrations through
+  `009_tenancy_lite.sql` first).
+
+**`npm run seed:admin` (`seedAdmin.js`):**
+
+- Still creates/uses the configured `super_admin` from `ADMIN_NAME` /
+  `ADMIN_EMAIL` / `ADMIN_PASSWORD` (skips duplicate email insert).
+- Ensures an `owner` row in `tenant_memberships` for `m2n-hotels`
+  (`ON CONFLICT DO NOTHING` — existing membership role/`is_active` unchanged).
+- Does **not** silently reactivate inactive admins or inactive memberships
+  (inactive admin → warning log only).
+
+No schema or migration change was required for this compatibility. Any earlier
+workaround of “seed hotels before applying `009`” is **superseded** by
+`be2351a`.
+
+Confirm the DB target (local vs staging vs production) before any write
+operation. Never use production credentials in examples.
 
 ## 7. Encoding without new columns
 
