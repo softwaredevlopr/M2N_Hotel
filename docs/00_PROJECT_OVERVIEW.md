@@ -24,9 +24,11 @@ finance ledger, inventory, Phase 15 Lite tenancy).
    admin CRUD, API-driven pages, rates, inventory, booking engine, PMS Lite Front
    Desk, CRM Lite, Phase 14 manual payments/invoices, Phase 15 tenant isolation +
    onboarding + read-only billing stub.
-2. **Staging → production cutover** — operator-run; staging migrate, seed, and
-   admin login/tenant smoke are COMPLETE; next is **STAGING FRONTEND SETUP /
-   DEPLOYMENT**, then production after validation.
+2. **Staging → production cutover** — operator-run; staging migrate, seed,
+   admin login/tenant smoke, and staging frontend deploy are COMPLETE
+   (`https://m2n-hotel-staging.vercel.app`). Guest booking Steps 1–3 verified;
+   full booking confirm still PENDING retest after Step 3→4 review fix. Next:
+   **STAGING BOOKING FLOW RETEST**, then production after validation.
 3. **Later SaaS** — live payment gateway / subscription management, Full CRM,
    ERP/HRMS/OTA/AI only if separately approved.
 

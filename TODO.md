@@ -18,9 +18,14 @@
       succeeded (`role=super_admin`, `token_type=Bearer`);
       `GET /api/admin/tenant` succeeded (`slug=m2n-hotels`, `plan=lite`,
       `subscription_status=active`). Do not paste credentials/tokens into docs.
-- [ ] **STAGING FRONTEND SETUP / DEPLOYMENT** — configure staging frontend env,
-      build, and deploy when approved. Not started. See
-      [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
+- [x] **STAGING FRONTEND SETUP / DEPLOYMENT** — deployed at
+      `https://m2n-hotel-staging.vercel.app`; API base + Render
+      `FRONTEND_URL` CORS updated. Home / hotels / booking Steps 1–3 verified.
+- [x] **Guest booking Step 3→4 review crash fix** — preserve `selectedOption`
+      through guest edits; harden `BookingReviewStep` (frontend-only).
+- [ ] **STAGING BOOKING FLOW RETEST** — after Vercel deploys the fix, retest
+      `/book` Step 4 Review + Confirm Booking end-to-end. Do not mark full
+      booking smoke COMPLETE until that retest passes.
 - [x] **Phase 10A–10I** — booking engine, inventory, emails, inquiries,
       admin_notes (see completed sections below / status docs).
 - [x] **Phase 11 — Booking Engine Completion**
@@ -101,7 +106,9 @@
 - [x] Staging admin login smoke — `POST /api/admin/auth/login` then
       `GET /api/admin/tenant` (verified: `super_admin`, `m2n-hotels`, `lite` /
       `active`).
-- [ ] **STAGING FRONTEND SETUP / DEPLOYMENT** — not started.
+- [x] **STAGING FRONTEND SETUP / DEPLOYMENT** —
+      `https://m2n-hotel-staging.vercel.app` + staging API CORS.
+- [ ] **STAGING BOOKING FLOW RETEST** — Step 4 Review + Confirm after fix deploy.
 - [ ] Production migrate through `009` when that environment is provisioned
       (includes `005`–`008` if still pending).
 
@@ -160,7 +167,9 @@
       count=2 (migrations `001`–`009` already applied; backend healthy).
 - [x] Staging admin login smoke — `POST /api/admin/auth/login` →
       `GET /api/admin/tenant` (COMPLETE).
-- [ ] **STAGING FRONTEND SETUP / DEPLOYMENT** — not started.
+- [x] **STAGING FRONTEND SETUP / DEPLOYMENT** —
+      `https://m2n-hotel-staging.vercel.app` (COMPLETE).
+- [ ] **STAGING BOOKING FLOW RETEST** — Review + Confirm (PENDING).
 - [ ] Phase 15 — live SaaS payment gateway / subscription management (not in Lite)
 
 ---
@@ -169,6 +178,6 @@
 
 Phases **1–12** complete; Phase **13** CRM Lite (guest search + 360 + open
 leads) shipped — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
-Remaining: **STAGING FRONTEND SETUP / DEPLOYMENT**; production cutover after
-staging validation; Full CRM / dated follow-ups only if approved; future Phase
-15 SaaS payment integration (out of Lite); placeholder contacts.
+Remaining: **STAGING BOOKING FLOW RETEST** (Step 4 + confirm); production
+cutover after staging validation; Full CRM / dated follow-ups only if approved;
+future Phase 15 SaaS payment integration (out of Lite); placeholder contacts.

@@ -19,6 +19,7 @@ export default function BookingReviewStep({
   values,
   selectedOption,
   tariffSettings = {},
+  onChangeRoom,
 }) {
   const currency = hotel?.currency_code || "INR";
   const nights = nightsBetween(values.checkIn, values.checkOut);
@@ -31,7 +32,12 @@ export default function BookingReviewStep({
     .filter(Boolean)
     .join(", ");
 
+  const hasSelectedOption = Boolean(selectedOption?.room_type_id);
   const onRequest = Boolean(selectedOption?.on_request);
+  const specialRequests =
+    typeof values.specialRequests === "string"
+      ? values.specialRequests.trim()
+      : "";
 
   return (
     <section>
@@ -43,6 +49,27 @@ export default function BookingReviewStep({
         Confirm the details below. No payment is taken online — our team will
         confirm your reservation shortly after you submit.
       </p>
+
+      {!hasSelectedOption ? (
+        <div
+          role="alert"
+          className="mt-8 border border-gold/40 bg-gold/5 p-5 text-sm text-cream-dim"
+        >
+          <p>
+            Your room selection is missing. Please go back to Available Rooms and
+            choose a room before confirming.
+          </p>
+          {typeof onChangeRoom === "function" ? (
+            <button
+              type="button"
+              onClick={onChangeRoom}
+              className="mt-4 text-xs tracking-[0.2em] uppercase text-gold underline-offset-4 hover:underline"
+            >
+              Choose a room
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="border border-ink-line bg-ink-soft p-6">
@@ -69,7 +96,9 @@ export default function BookingReviewStep({
             Rate breakdown
           </h4>
           <dl className="mt-2">
-            {onRequest ? (
+            {!hasSelectedOption ? (
+              <Row label="Payable amount" value="Select a room to see rates" />
+            ) : onRequest ? (
               <Row label="Payable amount" value="On request" />
             ) : (
               <>
@@ -106,8 +135,8 @@ export default function BookingReviewStep({
             <Row label="Full name" value={values.guestName} />
             <Row label="Email" value={values.guestEmail} />
             <Row label="Mobile" value={values.guestPhone} />
-            {values.specialRequests.trim() ? (
-              <Row label="Special requests" value={values.specialRequests} />
+            {specialRequests ? (
+              <Row label="Special requests" value={specialRequests} />
             ) : null}
             <Row
               label="Status emails"

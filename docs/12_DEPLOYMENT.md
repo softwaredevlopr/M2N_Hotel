@@ -442,7 +442,10 @@ data, the remaining operational step is **confirm staging DB → `npm run seed` 
 | Seed scripts on `main` | Post-`009` compatible (`be2351a`) |
 | Staging admin login smoke | **COMPLETE** (`role=super_admin`, `token_type=Bearer`) |
 | Staging `GET /api/admin/tenant` | **COMPLETE** (`slug=m2n-hotels`, `plan=lite`, `subscription_status=active`) |
-| Staging frontend setup/deploy | **NOT STARTED** |
+| Staging frontend origin | `https://m2n-hotel-staging.vercel.app` (**COMPLETE**) |
+| Staging CORS `FRONTEND_URL` | Exact staging frontend origin (**COMPLETE**) |
+| Staging guest booking Steps 1–3 | **COMPLETE** (verified) |
+| Staging guest booking Review + Confirm | **PENDING** retest after Step 3→4 fix deploy |
 | Production | **NOT STARTED** — do not modify |
 
 Also remember: Render ephemeral `uploads/` risk; frontend API URL is build-time;
@@ -484,8 +487,10 @@ Verified on staging after seed:
    `plan=lite`; `subscription_status=active`.
 3. Note: login **updates** `admin_users.last_login_at` only.
 
-**Next operational milestone:** **STAGING FRONTEND SETUP / DEPLOYMENT**
-(NOT STARTED).
+**Next operational milestone:** **STAGING BOOKING FLOW RETEST** (Step 4 Review +
+Confirm) after the guest-booking review-crash fix is live on Vercel. Full
+booking smoke is **not** COMPLETE until that retest passes. Production remains
+**NOT STARTED**.
 
 ### 6.3 PowerShell / psql examples
 

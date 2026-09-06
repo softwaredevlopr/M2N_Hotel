@@ -2,9 +2,9 @@
 
 > **Status:** Living document · **Last updated:** 2026-09-06  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)  
-> **Evidence basis:** application code, migrations `001`–`009`, `package.json`
-> scripts, frontend App Router pages, git `main` through `39424e9`, plus
-> operator-verified staging seed and admin login/tenant smoke.
+> **Evidence basis:** application code, migrations `001`–`009`, staging backend
+> validation, staging frontend at `https://m2n-hotel-staging.vercel.app`, plus
+> guest booking Step 3→4 review fix (preserve room selection).
 
 ---
 
@@ -38,15 +38,16 @@
 | Staging backend deploy + `/health` | **COMPLETE** (verified) |
 | Staging hotel seed + `seed:admin` | **COMPLETE** (verified: `GET /api/hotels` count=2; super_admin + `owner` on `m2n-hotels`) |
 | Staging admin login + tenant smoke | **COMPLETE** (`POST /api/admin/auth/login` → `role=super_admin`, `token_type=Bearer`; `GET /api/admin/tenant` → `slug=m2n-hotels`, `plan=lite`, `subscription_status=active`) |
-| Staging frontend deploy | **NOT STARTED** |
+| Staging frontend deploy | **COMPLETE** (`https://m2n-hotel-staging.vercel.app` → staging API; CORS `FRONTEND_URL` updated) |
+| Staging guest booking smoke | **PARTIAL** — Steps 1–3 verified; Step 3→4 crash fixed in code; Review + Confirm PENDING retest |
 | Production deployment | **NOT STARTED** |
 | Live SaaS payment gateway | **DEFERRED** |
 | Full CRM / ERP / HRMS / OTA / AI | **NOT STARTED** (roadmap vision) |
 
-**Exact next operational task:** **STAGING FRONTEND SETUP / DEPLOYMENT** —
-configure staging frontend env (API base URL + CORS/`FRONTEND_URL`), build, and
-deploy when approved. See [12 — Deployment](12_DEPLOYMENT.md). Do not treat
-staging frontend or production as complete until verified.
+**Exact next operational task:** **STAGING BOOKING FLOW RETEST** — on
+`https://m2n-hotel-staging.vercel.app/book`, after the review-fix deploy,
+complete Step 4 Review and Confirm Booking. Do not mark full booking smoke
+COMPLETE until that passes. Production remains untouched.
 
 ---
 
@@ -83,7 +84,8 @@ Legend: **COMPLETE** · **PARTIAL** · **DEFERRED** · **NOT STARTED**
 | Staging backend | COMPLETE | Healthy + DB connected |
 | Staging seed + `seed:admin` | COMPLETE | Hotels count=2; super_admin + owner membership |
 | Staging admin login + tenant smoke | COMPLETE | Login + `GET /api/admin/tenant` verified |
-| Staging frontend | NOT STARTED | Setup/deploy not started |
+| Staging frontend | COMPLETE | `https://m2n-hotel-staging.vercel.app` |
+| Staging guest booking smoke | PARTIAL | Steps 1–3 OK; Review/Confirm retest PENDING |
 | Production | NOT STARTED | |
 | Multi-property SaaS beyond Lite | PARTIAL | Foundation only |
 | PMS maturity beyond Lite board | DEFERRED | |
@@ -110,7 +112,10 @@ Recorded facts (placeholders only for secrets; API host is public staging URL):
 | Operator Node seed vs Render SSL | Requires `DB_SSL=true` and/or `sslmode=require` (and/or `NODE_ENV=production`) in the seed session — see [12 — Deployment](12_DEPLOYMENT.md) §6.2.2 |
 | Staging admin login smoke | **COMPLETE** (`token_type=Bearer`; do not paste tokens) |
 | Staging `GET /api/admin/tenant` | **COMPLETE** (`slug=m2n-hotels`, `plan=lite`, `subscription_status=active`) |
-| Staging frontend | **NOT STARTED** |
+| Staging frontend origin | `https://m2n-hotel-staging.vercel.app` (**COMPLETE**) |
+| Staging CORS `FRONTEND_URL` | Updated to staging frontend origin (**COMPLETE**) |
+| Staging guest booking Steps 1–3 | **COMPLETE** (verified on staging) |
+| Staging guest booking Step 4+ confirm | **PENDING** retest after review-crash fix deploy |
 | Production | **NOT STARTED** — must not be modified yet |
 
 ---
@@ -167,8 +172,8 @@ Stack: Next.js **16.2.6**, React **19.2.4**, Tailwind **^4**.
 
 ## 6. Pending / next up
 
-1. **STAGING FRONTEND SETUP / DEPLOYMENT** — configure staging web env, build,
-   deploy when approved (not started).
+1. **STAGING BOOKING FLOW RETEST** — `/book` Step 4 Review + Confirm Booking
+   after the preserve-selection fix is live on staging Vercel.
 2. Replace placeholder contact details before public launch.
 3. Production cutover only after staging validation (not started).
 4. Live payment gateway / Full CRM only with separate approval.
@@ -194,6 +199,7 @@ Stack: Next.js **16.2.6**, React **19.2.4**, Tailwind **^4**.
 
 | Date | Update |
 |------|--------|
+| 2026-09-06 | Staging frontend COMPLETE; booking Step 3→4 crash fixed; next = booking retest |
 | 2026-09-06 | Staging admin login + tenant smoke COMPLETE; next = staging frontend |
 | 2026-09-04 | Staging seed + seed:admin verified (hotels=2); next = login smoke |
 | 2026-09-03 | Full docs reconciliation; next task = staging seed |

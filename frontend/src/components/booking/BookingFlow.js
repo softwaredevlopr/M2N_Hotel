@@ -27,6 +27,20 @@ import { PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "./formStyles";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Stay fields that change inventory / occupancy / room pricing must drop the
+// Step 2 selection. Guest contact + preference fields must not — clearing them
+// left selectedOption null and crashed BookingReviewStep on Step 4.
+const AVAILABILITY_AFFECTING_FIELDS = new Set([
+  "hotelSlug",
+  "checkIn",
+  "checkOut",
+  "adults",
+  "children",
+  "rooms",
+  "roomTypeSlug",
+  "roomTypeId",
+]);
+
 function initialState(initialHotelSlug, initialRoomTypeSlug) {
   return {
     hotelSlug: initialHotelSlug || "",
@@ -282,7 +296,9 @@ export default function BookingFlow({
       return next;
     });
     setFormError(null);
-    setSelectedOption(null);
+    if (AVAILABILITY_AFFECTING_FIELDS.has(field)) {
+      setSelectedOption(null);
+    }
   }
 
   function selectHotel(slug) {
@@ -595,6 +611,7 @@ export default function BookingFlow({
                   values={values}
                   selectedOption={selectedOption}
                   tariffSettings={tariffSettings}
+                  onChangeRoom={() => goToStep(2)}
                 />
               )}
             </div>

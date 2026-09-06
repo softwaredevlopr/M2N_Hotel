@@ -9,6 +9,25 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Fixed — guest booking Step 3→4 review crash (2026-09-06)
+
+- **What changed.** Guest Details edits no longer clear the Step 2 room
+  selection (`selectedOption`). `BookingReviewStep` guards missing selection
+  instead of throwing. Staging testing found the crash after frontend deploy.
+- **Files modified:** `frontend/src/components/booking/BookingFlow.js`,
+  `frontend/src/components/booking/BookingReviewStep.js`, plus status docs
+  (`AGENTS.md`, `README.md`, `PROJECT_DOCS.md`, `TODO.md`,
+  `docs/00_PROJECT_OVERVIEW.md`, `docs/01_PROJECT_STATUS.md`,
+  `docs/08_AI_CONTEXT.md`, `docs/12_DEPLOYMENT.md`, `docs/13_ROADMAP.md`,
+  `docs/CHANGELOG.md`, `docs/history/DECISIONS.md`,
+  `docs/history/RELEASE_NOTES.md`)
+- **APIs added/changed:** none
+- **Database changes:** none
+- **Frontend changes:** booking wizard selection preserve + review null-guard
+- **Backend changes:** none
+- **Remaining work:** staging booking Review + Confirm retest; production
+  NOT STARTED; payment gateway deferred
+
 ### Changed — finalize staging backend validation docs (2026-09-06)
 
 - **What changed.** Staging admin login + tenant smoke marked COMPLETE after

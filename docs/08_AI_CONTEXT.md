@@ -31,9 +31,13 @@
   `super_admin` + active `owner` on `m2n-hotels`).
 - Staging admin login + tenant smoke: **COMPLETE** (`token_type=Bearer`;
   tenant `slug=m2n-hotels`, `plan=lite`, `subscription_status=active`).
+- Staging frontend: **COMPLETE** — `https://m2n-hotel-staging.vercel.app`
+  (API base + Render `FRONTEND_URL` CORS).
+- Guest booking on staging: Steps 1–3 **COMPLETE**; Step 4+ confirm **PENDING**
+  retest after review-crash fix (preserve `selectedOption` on guest edits).
 - Operator Node seed against Render: set session `DB_SSL=true` and/or URL
   `sslmode=require` ([ADR-0044](history/DECISIONS.md); [12 §6.2.2](12_DEPLOYMENT.md)).
-- **Next task:** **STAGING FRONTEND SETUP / DEPLOYMENT** (NOT STARTED).
+- **Next task:** **STAGING BOOKING FLOW RETEST** (Review + Confirm).
 - Production: **NOT STARTED**. Do **not** seed/migrate/deploy production without
   explicit approval.
 

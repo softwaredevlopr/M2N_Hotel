@@ -267,7 +267,8 @@ older labels.
 - ✅ Staging seed + API hotel verification (`GET /api/hotels` count=2)
 - ✅ Staging admin login + tenant smoke (`POST /api/admin/auth/login` →
   `GET /api/admin/tenant`)
-- **STAGING FRONTEND SETUP / DEPLOYMENT** (NOT STARTED)
+- ✅ Staging frontend setup/deploy (`https://m2n-hotel-staging.vercel.app`)
+- **STAGING BOOKING FLOW RETEST** — Step 4 Review + Confirm (PARTIAL until retest)
 - Production cutover after staging validation (NOT STARTED)
 - Replace placeholder contact details before public launch
 

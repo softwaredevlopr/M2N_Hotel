@@ -7,10 +7,12 @@
 
 **Handoff snapshot (evidence-backed):** Phases **1–15 Lite** are complete in
 code (tenancy, onboarding, billing stub, post-`009` seed). Staging DB
-`m2n_hotel_staging` is migrated through `009`, backend is healthy, staging seed +
-`seed:admin` are COMPLETE (`GET /api/hotels` count=2), and **staging admin login
-+ tenant smoke are COMPLETE**. **Next task:** **STAGING FRONTEND SETUP /
-DEPLOYMENT** (not started). No payment gateway.
+`m2n_hotel_staging` is migrated through `009`, backend is healthy, seed +
+`seed:admin` COMPLETE, admin login + tenant smoke COMPLETE, staging frontend
+COMPLETE at `https://m2n-hotel-staging.vercel.app`. Guest booking Steps 1–3
+verified; Step 3→4 review crash fixed in frontend (preserve room selection).
+**Next task:** **STAGING BOOKING FLOW RETEST** (Review + Confirm). No payment
+gateway. Production **NOT STARTED**.
 
 No production cutover yet. Schema caveats: `max_occupancy`, `floor_label`, no
 `guests` table.
@@ -189,9 +191,11 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
 - ✅ **Deployment documentation** — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
   readiness guide (architecture, env matrix, staging cutover through `009`,
   post-`009` seed sequence). Staging backend validation COMPLETE (seed + login
-  + tenant smoke); staging frontend still NOT STARTED.
+  + tenant smoke); staging frontend COMPLETE
+  (`https://m2n-hotel-staging.vercel.app`); guest booking Review/Confirm still
+  PENDING retest after Step 3→4 fix.
 
-**Next:** **STAGING FRONTEND SETUP / DEPLOYMENT**; future SaaS payment gateway /
+**Next:** **STAGING BOOKING FLOW RETEST**; future SaaS payment gateway /
 subscription management (out of
 
 Lite); Full CRM / dated follow-ups only if separately approved.
@@ -430,8 +434,8 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
   0 (couple package is not nightly).
 - ⬜ Production contact details (replace placeholders).
 - ✅ Staging migrate through `009`; ✅ staging seed + `seed:admin` (hotels=2);
-  ✅ staging admin login + tenant smoke; ⬜ staging frontend setup/deploy;
-  ⬜ production.
+  ✅ staging admin login + tenant smoke; ✅ staging frontend deploy;
+  ⬜ staging booking Review + Confirm retest; ⬜ production.
 - ⬜ Production migrate through `009` when provisioned (operator runbook in
   [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6).
 - ⬜ Full CRM (guest master / merge) or dated follow-up table — only if

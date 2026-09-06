@@ -135,12 +135,15 @@ Verify: `verify:phase15`, `verify:phase15-onboarding`, `verify:phase15-billing`.
 **Staging (verified):** DB `m2n_hotel_staging`; migrations `001`–`009`; healthy
 API; seed + `seed:admin` complete (`GET /api/hotels` count=2; `super_admin` +
 active `owner` on `m2n-hotels`); admin login + `GET /api/admin/tenant` smoke
-complete (`plan=lite`, `subscription_status=active`). Operator Node seed against
-Render requires session `DB_SSL=true` and/or URL `sslmode=require`
-([ADR-0044](docs/history/DECISIONS.md)).
+complete (`plan=lite`, `subscription_status=active`); staging frontend deployed
+at `https://m2n-hotel-staging.vercel.app` with staging API + CORS
+`FRONTEND_URL` updated. Guest booking Steps 1–3 verified on staging; Step 3→4
+review crash fixed in code (preserve room selection). Full booking confirm
+smoke still PENDING until staging retest after deploy.
 
-**Next operational task:** **STAGING FRONTEND SETUP / DEPLOYMENT**
-([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)). Not started.
+**Next operational task:** **STAGING BOOKING FLOW RETEST** — after Vercel picks
+up the review fix, retest `/book` through Step 4 Review and Confirm Booking.
+([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)).
 
 **Upcoming / deferred:** production cutover after staging validation; live SaaS
 payment gateway; Full CRM (guest master / merge) only if separately approved.

@@ -1625,6 +1625,37 @@ tenant SELECT).
 - Force `sslmode=require` in docs-only `.env.example` examples with real hosts.
   Rejected — no real connection strings in docs.
 
+### ADR-0045 — Preserve availability selection across guest booking steps
+
+**Date:** 2026-09-06
+
+**Status:** Accepted
+
+**Context**
+Staging guest booking crashed when moving Guest Details → Review. `updateValue`
+cleared `selectedOption` on every field change, including guest contact and
+notification preferences. `BookingReviewStep` then dereferenced null pricing
+fields and the App Router `error.js` showed “Page unavailable”.
+
+**Decision**
+- Clear `selectedOption` only for availability-affecting fields (`hotelSlug`,
+  `checkIn`, `checkOut`, `adults`, `children`, `rooms`, `roomTypeSlug`,
+  `roomTypeId`).
+- Keep guest/preference fields from clearing the selection.
+- Defensively guard `BookingReviewStep` when selection is missing (safe message +
+  return to Available Rooms); do not invent pricing.
+
+**Consequences**
+- Step 3 edits no longer wipe Step 2 rates; Review can render.
+- Stay-field edits still invalidate selection as before.
+- Full staging booking confirm remains PENDING until retest after deploy.
+
+**Alternatives considered**
+- Re-fetch availability on every Step 4 mount. Rejected — heavier and
+  unnecessary when selection is still valid.
+- Only harden Review without fixing `updateValue`. Rejected — would hide the
+  root cause and leave Confirm without a room selection.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

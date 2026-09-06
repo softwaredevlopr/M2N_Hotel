@@ -12,6 +12,12 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Fix — preserve room selection through booking review (2026-09-06)
+
+- Guest Details field edits no longer clear Step 2 `selectedOption`.
+- `BookingReviewStep` shows a safe missing-selection state instead of crashing.
+- Staging frontend deploy COMPLETE; full booking confirm smoke PENDING retest.
+
 ### Docs — finalize staging backend validation (2026-09-06)
 
 - Staging admin login + `GET /api/admin/tenant` smoke COMPLETE
