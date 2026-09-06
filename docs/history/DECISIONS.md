@@ -1591,6 +1591,40 @@ Delaying `009` solely to allow seeding was an unsafe/temporary workaround.
   `m2n-hotels`.
 - Edit migration `009`. Rejected — applied migrations must not be rewritten.
 
+### ADR-0044 — Explicit SSL for Node `pg` against managed Postgres (operator seed)
+
+**Date:** 2026-09-04
+
+**Status:** Accepted (operational; no code change yet)
+
+**Context**
+Staging seed against Render Postgres succeeded after the operator set session
+SSL. First `npm run seed` failed with `SSL/TLS required` while `psql` worked.
+`backend/config/db.js` enables SSL for `DATABASE_URL` only when `DB_SSL` is
+truthy, `NODE_ENV=production`, or the URL contains `sslmode=require`; otherwise
+`ssl: false`. Failed SSL seed performs no hotel/admin writes (fails on first
+tenant SELECT).
+
+**Decision**
+- Document the operator requirement: before local/operator migrate/seed against
+  managed staging DB, set session `DB_SSL=true` and/or ensure
+  `DATABASE_URL` includes `sslmode=require` (optional `NODE_ENV=production`).
+- Do not commit secrets. Admin login smoke was later verified COMPLETE
+  (2026-09-06); keep JWTs out of docs.
+- Optional future code harden of SSL defaults for remote URLs requires separate
+  approval (out of this docs sync).
+
+**Consequences**
+- Staging seed can be repeated safely with explicit SSL; Render API hosts that
+  set `NODE_ENV=production` already enable SSL.
+- Operators must not assume `psql` success implies Node `pg` SSL is on.
+
+**Alternatives considered**
+- Always enable SSL when host is not localhost. Deferred — needs approved code
+  change and careful local-dev impact.
+- Force `sslmode=require` in docs-only `.env.example` examples with real hosts.
+  Rejected — no real connection strings in docs.
+
 ---
 
 *Keep this log append-only. When a decision changes, add a new ADR and link it.*

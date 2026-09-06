@@ -132,12 +132,18 @@ onboarding API + `/admin/onboarding`; read-only `GET /api/admin/tenant` +
 `/admin/billing`; seed scripts post-`009` compatible (`be2351a`, ADR-0043).
 Verify: `verify:phase15`, `verify:phase15-onboarding`, `verify:phase15-billing`.
 
-**Next operational task:** staging data initialization — confirm staging DB
-target → `npm run seed` → `npm run seed:admin` → verify `GET /api/hotels`
-([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.2).
+**Staging (verified):** DB `m2n_hotel_staging`; migrations `001`–`009`; healthy
+API; seed + `seed:admin` complete (`GET /api/hotels` count=2; `super_admin` +
+active `owner` on `m2n-hotels`); admin login + `GET /api/admin/tenant` smoke
+complete (`plan=lite`, `subscription_status=active`). Operator Node seed against
+Render requires session `DB_SSL=true` and/or URL `sslmode=require`
+([ADR-0044](docs/history/DECISIONS.md)).
 
-**Upcoming / deferred:** live SaaS payment gateway; Full CRM (guest master /
-merge) only if separately approved; production cutover after staging validation.
+**Next operational task:** **STAGING FRONTEND SETUP / DEPLOYMENT**
+([`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)). Not started.
+
+**Upcoming / deferred:** production cutover after staging validation; live SaaS
+payment gateway; Full CRM (guest master / merge) only if separately approved.
 See [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 Design principle: everything is **data-driven and slug-scoped**. No hotel shares

@@ -1,6 +1,6 @@
 # 12 — Deployment
 
-> **Status:** Living document · **Last updated:** 2026-09-03  
+> **Status:** Living document · **Last updated:** 2026-09-06  
 > **Scope:** Deployment architecture and readiness for the **current** M2N Hotels
 > stack (through Phase 15 Lite: migrations `001`–`009`, tenant isolation,
 > self-serve onboarding, read-only operator billing, post-`009` seed scripts).  
@@ -427,21 +427,65 @@ When staging already has migrations `001`–`009` and a healthy API but empty ho
 data, the remaining operational step is **confirm staging DB → `npm run seed` →
 `npm run seed:admin` (if needed) → verify `GET /api/hotels`**.
 
-### 6.2.1 Current staging facts (as of 2026-09-03 docs reconciliation)
+### 6.2.1 Current staging facts (as of 2026-09-06)
 
 | Fact | State |
 |------|-------|
-| Staging PostgreSQL | Exists; migrations `001`–`009` applied |
+| Staging PostgreSQL DB name | `m2n_hotel_staging` |
+| Migrations | `001`–`009` applied |
 | Migration runner re-run | Idempotent |
 | Staging backend | Deployed; `/` + `/health` healthy; DB connected |
-| Public hotels | Empty until seed (`count: 0`) |
+| Staging API origin | `https://m2n-hotel-staging-api.onrender.com` |
+| Public hotels | **Seeded** — live `GET /api/hotels` **count=2** |
+| Default tenant `m2n-hotels` | Present (verified) |
+| Staging `seed` / `seed:admin` | **COMPLETE** (`super_admin` + active `owner`) |
 | Seed scripts on `main` | Post-`009` compatible (`be2351a`) |
-| Staging seed executed | **Not yet** |
-| Staging frontend cutover | **Not complete** in repo evidence |
-| Production | Do not modify |
+| Staging admin login smoke | **COMPLETE** (`role=super_admin`, `token_type=Bearer`) |
+| Staging `GET /api/admin/tenant` | **COMPLETE** (`slug=m2n-hotels`, `plan=lite`, `subscription_status=active`) |
+| Staging frontend setup/deploy | **NOT STARTED** |
+| Production | **NOT STARTED** — do not modify |
 
 Also remember: Render ephemeral `uploads/` risk; frontend API URL is build-time;
 CORS requires exact `FRONTEND_URL`.
+
+### 6.2.2 Operator Node seed / migrate against Render Postgres (SSL)
+
+`backend/config/db.js` enables SSL for `DATABASE_URL` only when:
+
+- `DB_SSL=true` (or `1`), or
+- `NODE_ENV=production`, or
+- the URL contains `sslmode=require`
+
+Otherwise the pool uses `ssl: false`. **psql** may still connect (libpq often
+prefers TLS) while **`npm run seed`** fails with `SSL/TLS required`.
+
+**Before** local/operator `npm run migrate` / `npm run seed` / `seed:admin`
+against staging:
+
+```powershell
+# Session only — do not commit secrets
+$env:DB_SSL = "true"
+# Prefer also ensuring DATABASE_URL includes sslmode=require
+# Optional: $env:NODE_ENV = "production"
+```
+
+Failed seed that errors on SSL before “Default tenant resolved” performs **no**
+hotel/admin writes (first query is the tenant SELECT).
+
+See [ADR-0044](history/DECISIONS.md).
+
+### 6.2.3 Staging admin login smoke (COMPLETE)
+
+Verified on staging after seed:
+
+1. `POST /api/admin/auth/login` — success; `role=super_admin`;
+   `token_type=Bearer` (do not paste tokens into docs/chat).
+2. `GET /api/admin/tenant` with Bearer JWT — success; `slug=m2n-hotels`;
+   `plan=lite`; `subscription_status=active`.
+3. Note: login **updates** `admin_users.last_login_at` only.
+
+**Next operational milestone:** **STAGING FRONTEND SETUP / DEPLOYMENT**
+(NOT STARTED).
 
 ### 6.3 PowerShell / psql examples
 

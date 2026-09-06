@@ -1,6 +1,6 @@
 # 03 — Database
 
-> **Status:** Living document · **Last updated:** 2026-09-03  
+> **Status:** Living document · **Last updated:** 2026-09-04  
 > **Source of truth:** `backend/migrations/001_initial_schema.sql` …
 > `009_tenancy_lite.sql` (+ runtime `schema_migrations` from the migrate runner)  
 > **Rule:** Do not change schema without explicit approval. Do not invent columns.
@@ -31,7 +31,12 @@ PostgreSQL with connection pooling in `backend/config/db.js`. Prefer
 |----------|---------|
 | `DATABASE_URL` | Cloud connection string (preferred in prod/staging) |
 | `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | Local alternative |
-| `DB_SSL` / pool timeouts | Managed providers / tuning |
+| `DB_SSL` / `DB_SSL_REJECT_UNAUTHORIZED` / pool timeouts | Managed providers / tuning |
+
+`config/db.js` enables SSL for `DATABASE_URL` when `DB_SSL` is truthy,
+`NODE_ENV=production`, or the URL contains `sslmode=require`; otherwise
+`ssl: false`. Managed hosts (e.g. Render) often require TLS — `psql` may
+succeed while Node seed fails without those flags ([ADR-0044](history/DECISIONS.md)).
 
 Template: `backend/.env.example`. Never commit real credentials.
 

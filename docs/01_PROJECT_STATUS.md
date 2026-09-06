@@ -1,9 +1,10 @@
 # 01 — Project Status
 
-> **Status:** Living document · **Last updated:** 2026-09-03  
+> **Status:** Living document · **Last updated:** 2026-09-06  
 > **Related:** [`../PROJECT_DOCS.md`](../PROJECT_DOCS.md) · [13 — Roadmap](13_ROADMAP.md)  
 > **Evidence basis:** application code, migrations `001`–`009`, `package.json`
-> scripts, frontend App Router pages, git `main` through `c7bbbad`.
+> scripts, frontend App Router pages, git `main` through `39424e9`, plus
+> operator-verified staging seed and admin login/tenant smoke.
 
 ---
 
@@ -33,17 +34,19 @@
 | Payments / invoices (manual ledger) | **COMPLETE** (no Stripe/Razorpay) |
 | Phase 15 Lite tenancy + onboarding + billing stub | **COMPLETE** |
 | Seed scripts post-`009` compatible | **COMPLETE** (`be2351a`) |
-| Staging Postgres migrate `001`–`009` | **COMPLETE** (operator-reported) |
-| Staging backend deploy + `/health` | **COMPLETE** (operator-reported) |
-| Staging hotel seed | **NOT STARTED** (`GET /api/hotels` empty until seed) |
-| Staging frontend deploy | **NOT STARTED** / **UNKNOWN** (no repo evidence of completed staging web cutover) |
+| Staging Postgres migrate `001`–`009` | **COMPLETE** (verified) |
+| Staging backend deploy + `/health` | **COMPLETE** (verified) |
+| Staging hotel seed + `seed:admin` | **COMPLETE** (verified: `GET /api/hotels` count=2; super_admin + `owner` on `m2n-hotels`) |
+| Staging admin login + tenant smoke | **COMPLETE** (`POST /api/admin/auth/login` → `role=super_admin`, `token_type=Bearer`; `GET /api/admin/tenant` → `slug=m2n-hotels`, `plan=lite`, `subscription_status=active`) |
+| Staging frontend deploy | **NOT STARTED** |
 | Production deployment | **NOT STARTED** |
 | Live SaaS payment gateway | **DEFERRED** |
 | Full CRM / ERP / HRMS / OTA / AI | **NOT STARTED** (roadmap vision) |
 
-**Exact next operational task:** **STAGING DATA INITIALIZATION / VALIDATION** —
-confirm staging DB target → `npm run seed` → `npm run seed:admin` → verify
-`GET /api/hotels` ([12 — Deployment](12_DEPLOYMENT.md) §6.2).
+**Exact next operational task:** **STAGING FRONTEND SETUP / DEPLOYMENT** —
+configure staging frontend env (API base URL + CORS/`FRONTEND_URL`), build, and
+deploy when approved. See [12 — Deployment](12_DEPLOYMENT.md). Do not treat
+staging frontend or production as complete until verified.
 
 ---
 
@@ -78,8 +81,9 @@ Legend: **COMPLETE** · **PARTIAL** · **DEFERRED** · **NOT STARTED**
 | Tenant picker UI | DEFERRED | Multi-membership needs `tenant_id` query |
 | Staging DB + migrate | COMPLETE | Through `009` |
 | Staging backend | COMPLETE | Healthy + DB connected |
-| Staging seed | NOT STARTED | Hotels count 0 until seed |
-| Staging frontend | NOT STARTED | No completed cutover in repo |
+| Staging seed + `seed:admin` | COMPLETE | Hotels count=2; super_admin + owner membership |
+| Staging admin login + tenant smoke | COMPLETE | Login + `GET /api/admin/tenant` verified |
+| Staging frontend | NOT STARTED | Setup/deploy not started |
 | Production | NOT STARTED | |
 | Multi-property SaaS beyond Lite | PARTIAL | Foundation only |
 | PMS maturity beyond Lite board | DEFERRED | |
@@ -89,18 +93,25 @@ Legend: **COMPLETE** · **PARTIAL** · **DEFERRED** · **NOT STARTED**
 
 ## 3. Staging / deployment facts
 
-Recorded facts (do not invent hosts/URLs):
+Recorded facts (placeholders only for secrets; API host is public staging URL):
 
 | Fact | State |
 |------|-------|
-| Staging PostgreSQL | Exists; migrations `001`–`009` applied |
+| Staging PostgreSQL DB name | `m2n_hotel_staging` (migrations `001`–`009` applied) |
 | Migration re-run | Idempotent (skips recorded files) |
 | Staging backend | Deployed; `/` and `/health` healthy; DB connected |
-| `GET /api/hotels` on staging | Empty until seed (count 0) |
+| Staging API origin | `https://m2n-hotel-staging-api.onrender.com` |
+| `GET /api/hotels` on staging | **count=2** (seeded; verified) |
+| Default tenant `m2n-hotels` | Present (verified) |
+| Staging admin role | `super_admin` (verified) |
+| Tenant membership | `owner` + active (verified) |
 | Seed scripts | Post-`009` compatible on `main` (`be2351a`) |
-| Staging seed executed | **No** (unless operator proves otherwise later) |
-| Staging frontend | Not documented as complete in repo |
-| Production | Must not be modified yet |
+| Staging seed + `seed:admin` | **COMPLETE** (verified) |
+| Operator Node seed vs Render SSL | Requires `DB_SSL=true` and/or `sslmode=require` (and/or `NODE_ENV=production`) in the seed session — see [12 — Deployment](12_DEPLOYMENT.md) §6.2.2 |
+| Staging admin login smoke | **COMPLETE** (`token_type=Bearer`; do not paste tokens) |
+| Staging `GET /api/admin/tenant` | **COMPLETE** (`slug=m2n-hotels`, `plan=lite`, `subscription_status=active`) |
+| Staging frontend | **NOT STARTED** |
+| Production | **NOT STARTED** — must not be modified yet |
 
 ---
 
@@ -156,11 +167,13 @@ Stack: Next.js **16.2.6**, React **19.2.4**, Tailwind **^4**.
 
 ## 6. Pending / next up
 
-1. **Staging seed** — confirm target → `npm run seed` → `seed:admin` → verify hotels.
-2. Staging frontend configure/build/deploy (when approved).
-3. Replace placeholder contact details before public launch.
-4. Production cutover only after staging validation.
-5. Live payment gateway / Full CRM only with separate approval.
+1. **STAGING FRONTEND SETUP / DEPLOYMENT** — configure staging web env, build,
+   deploy when approved (not started).
+2. Replace placeholder contact details before public launch.
+3. Production cutover only after staging validation (not started).
+4. Live payment gateway / Full CRM only with separate approval.
+5. Optional: harden `db.js` SSL defaults for remote `DATABASE_URL` without
+   requiring session `DB_SSL` (code change needs approval).
 
 ---
 
@@ -173,6 +186,7 @@ Stack: Next.js **16.2.6**, React **19.2.4**, Tailwind **^4**.
 | CONTACT | Placeholder phones/emails in seed/UI | Medium | Replace before launch |
 | UPLOADS | `backend/uploads` local disk | Medium | Ephemeral on multi-instance hosts |
 | JWT-XSS | Admin JWT in `localStorage` | Known | HTTPS; future httpOnly cookies not implemented |
+| PG-SSL | Node `pg` disables SSL unless `DB_SSL` / `NODE_ENV=production` / URL `sslmode=require` | Medium | `psql` may still connect; operator seed sessions must set SSL explicitly ([ADR-0044](history/DECISIONS.md)) |
 
 ---
 
@@ -180,6 +194,8 @@ Stack: Next.js **16.2.6**, React **19.2.4**, Tailwind **^4**.
 
 | Date | Update |
 |------|--------|
+| 2026-09-06 | Staging admin login + tenant smoke COMPLETE; next = staging frontend |
+| 2026-09-04 | Staging seed + seed:admin verified (hotels=2); next = login smoke |
 | 2026-09-03 | Full docs reconciliation; next task = staging seed |
 | 2026-09-03 | Seed post-`009` compatibility (`be2351a`) + docs sync (`c7bbbad`) |
 | 2026-08-29 | Phase 15 billing stub + onboarding UI |

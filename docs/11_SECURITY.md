@@ -1,6 +1,6 @@
 # 11 — Security
 
-> **Status:** Living document · **Last updated:** 2026-09-03
+> **Status:** Living document · **Last updated:** 2026-09-04
 
 ---
 
@@ -28,7 +28,11 @@ Security practices and known limitations for the current implementation
 - Templates: `backend/.env.example`, `frontend/.env.example` (placeholders only).
 - Email: `SMTP_PASS` is a secret; prefer `EMAIL_PROVIDER=console` unless real mail
   is required.
-- Never paste production credentials into docs, tickets, or chat logs.
+- Never paste production/staging credentials, JWTs, or `DATABASE_URL` values into
+  docs, tickets, or chat logs.
+- Operator DB sessions against managed Postgres: enable TLS via `DB_SSL` /
+  `sslmode=require` as documented in [12 §6.2.2](12_DEPLOYMENT.md) — still never
+  commit those connection strings.
 
 ## 3. Authentication & Authorization
 
@@ -67,6 +71,7 @@ Security practices and known limitations for the current implementation
 | Local `uploads/` | Data loss / cross-instance miss | Persistent volume or object storage later |
 | No payment gateway secrets | N/A | None configured — ledger only |
 | Tenant `suspended` soft | Limited product gate | Cancelled tenants excluded from membership load |
+| Node `pg` SSL off by default | Accidental cleartext or failed TLS to managed DB | Require `DB_SSL` / `sslmode=require` / `NODE_ENV=production` for remote ([ADR-0044](history/DECISIONS.md)) |
 
 ## 7. Dependencies
 

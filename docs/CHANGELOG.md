@@ -9,6 +9,44 @@ Phase numbers below match [`13_ROADMAP.md`](13_ROADMAP.md) (consolidated 2026-07
 
 ## [Unreleased]
 
+### Changed — finalize staging backend validation docs (2026-09-06)
+
+- **What changed.** Staging admin login + tenant smoke marked COMPLETE after
+  operator verification. Staging DB name `m2n_hotel_staging` recorded. Next
+  operational milestone set to **STAGING FRONTEND SETUP / DEPLOYMENT**
+  (NOT STARTED). Production remains NOT STARTED. No secrets documented. No
+  application code changes.
+- **Files modified:** `AGENTS.md`, `README.md`, `PROJECT_DOCS.md`, `TODO.md`,
+  `docs/00_PROJECT_OVERVIEW.md`, `docs/01_PROJECT_STATUS.md`,
+  `docs/03_DATABASE.md`, `docs/06_SETUP_GUIDE.md`, `docs/08_AI_CONTEXT.md`,
+  `docs/11_SECURITY.md`, `docs/12_DEPLOYMENT.md`, `docs/13_ROADMAP.md`,
+  `docs/CHANGELOG.md`, `docs/history/DECISIONS.md`,
+  `docs/history/RELEASE_NOTES.md`
+- **APIs added/changed:** none
+- **Database changes:** none
+- **Frontend / backend changes:** none
+- **Remaining work:** staging frontend setup/deploy; production after staging
+  validation; deferred gateway / Full CRM
+
+### Changed — staging seed verified + docs sync (2026-09-04)
+
+- **What changed.** Documentation updated after verified staging data init:
+  `npm run seed` + `seed:admin` COMPLETE; live `GET /api/hotels` count=2;
+  default tenant `m2n-hotels`; staging super_admin + `owner` membership.
+  Next task at that time = staging admin login smoke (later COMPLETE 2026-09-06).
+  Documented operator SSL requirement for local Node seed against Render
+  ([ADR-0044](history/DECISIONS.md)). No application code changes.
+- **Files modified:** `AGENTS.md`, `README.md`, `PROJECT_DOCS.md`, `TODO.md`,
+  `docs/01_PROJECT_STATUS.md`, `docs/03_DATABASE.md`, `docs/06_SETUP_GUIDE.md`,
+  `docs/08_AI_CONTEXT.md`, `docs/11_SECURITY.md`, `docs/12_DEPLOYMENT.md`,
+  `docs/13_ROADMAP.md`,   `docs/CHANGELOG.md`, `docs/history/DECISIONS.md`,
+  `docs/history/RELEASE_NOTES.md`, `docs/00_PROJECT_OVERVIEW.md`
+- **APIs added/changed:** none
+- **Database changes:** none (staging seed data only; schema unchanged)
+- **Frontend / backend changes:** none
+- **Remaining work at that time:** staging admin login smoke; staging frontend;
+  production after staging validation
+
 ### Changed — full project documentation reconciliation
 
 - **What changed.** Evidence-based sync of Markdown docs with actual code,

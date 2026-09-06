@@ -12,11 +12,24 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
 
 ## Unreleased
 
+### Docs — finalize staging backend validation (2026-09-06)
+
+- Staging admin login + `GET /api/admin/tenant` smoke COMPLETE
+  (`super_admin`, `m2n-hotels`, `lite` / `active`).
+- Staging DB name `m2n_hotel_staging` recorded (no connection secrets).
+- Next operational task: **STAGING FRONTEND SETUP / DEPLOYMENT** (NOT STARTED).
+
+### Docs — staging seed verified (2026-09-04)
+
+- Staging `seed` + `seed:admin` COMPLETE; `GET /api/hotels` count=2.
+- ADR-0044: operator Node SSL (`DB_SSL` / `sslmode=require`) for managed Postgres.
+- Next operational task at that time: staging admin login smoke (later COMPLETE).
+
 ### Docs — full project state reconciliation (2026-09-03)
 
 - Status matrix, schema/API/architecture/security/deployment docs aligned to
   code evidence through Phase 15 Lite + seed `be2351a`.
-- Next operational task: staging data initialization / validation.
+- Next operational task at that time: staging data initialization / validation.
 
 ### Phase 15 — seed tenancy compatibility (2026-09-03)
 
@@ -24,7 +37,8 @@ Newest first. Phase numbers match the product roadmap (Phases 1–15).
   `001`–`009`. Resolves existing `m2n-hotels`; hotel `tenant_id` on INSERT only;
   membership `owner` ensure; no schema change.
 - Supersedes any prior workaround of seeding before applying `009`.
-- Staging next step: confirm DB target → seed → verify `GET /api/hotels`.
+- Staging next step at ship time: confirm DB target → seed → verify
+  `GET /api/hotels` (later verified COMPLETE 2026-09-04; see Unreleased notes).
 
 ### Phase 15 — Lite operator billing stub (2026-08-29)
 

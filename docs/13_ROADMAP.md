@@ -264,9 +264,11 @@ older labels.
 
 ### Current / next (operational)
 
-- Staging seed + API verification ([12 — Deployment](12_DEPLOYMENT.md) §6.2)
-- Staging frontend configure/build/deploy when approved
-- Production cutover after staging validation
+- ✅ Staging seed + API hotel verification (`GET /api/hotels` count=2)
+- ✅ Staging admin login + tenant smoke (`POST /api/admin/auth/login` →
+  `GET /api/admin/tenant`)
+- **STAGING FRONTEND SETUP / DEPLOYMENT** (NOT STARTED)
+- Production cutover after staging validation (NOT STARTED)
 - Replace placeholder contact details before public launch
 
 ### Product backlog (not started or deferred)
@@ -284,4 +286,6 @@ older labels.
 ### Done (do not re-open as “upcoming”)
 
 Phases **1–15 Lite** product foundation as listed in §2–§3 above, including
-tenancy, onboarding, billing stub, and post-`009` seed compatibility.
+tenancy, onboarding, billing stub, post-`009` seed compatibility, verified
+staging seed (`GET /api/hotels` count=2), and verified staging admin
+login/tenant smoke.

@@ -10,8 +10,10 @@ Multi-property hotel web platform: public marketing site + Express/PostgreSQL AP
 
 **Live properties:** Aurelia Grand (`m2n-hotel-aurelia-grand`) · Zaarang Inn (`hotel-zaarang-inn`)
 
-**Next operational task:** staging seed (confirm DB → `npm run seed` →
-`seed:admin` → verify `GET /api/hotels`). Details:
+**Staging backend validation:** COMPLETE (seed, hotels=2, admin login + tenant
+smoke).  
+**Next operational task:** **STAGING FRONTEND SETUP / DEPLOYMENT**. Details:
+
 [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md) ·
 [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 

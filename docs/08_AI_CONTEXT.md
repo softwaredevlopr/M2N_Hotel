@@ -26,11 +26,16 @@
 
 ## 3. Current deployment facts
 
-- Staging DB: migrations `001`–`009` applied; backend healthy.
-- Staging hotels empty until seed.
-- **Next task:** STAGING DATA INITIALIZATION — confirm staging DB →
-  `npm run seed` → `npm run seed:admin` → verify `GET /api/hotels`.
-- Do **not** seed/migrate/deploy production without explicit approval.
+- Staging DB: `m2n_hotel_staging`; migrations `001`–`009` applied; backend healthy.
+- Staging seed + `seed:admin`: **COMPLETE** (`GET /api/hotels` count=2;
+  `super_admin` + active `owner` on `m2n-hotels`).
+- Staging admin login + tenant smoke: **COMPLETE** (`token_type=Bearer`;
+  tenant `slug=m2n-hotels`, `plan=lite`, `subscription_status=active`).
+- Operator Node seed against Render: set session `DB_SSL=true` and/or URL
+  `sslmode=require` ([ADR-0044](history/DECISIONS.md); [12 §6.2.2](12_DEPLOYMENT.md)).
+- **Next task:** **STAGING FRONTEND SETUP / DEPLOYMENT** (NOT STARTED).
+- Production: **NOT STARTED**. Do **not** seed/migrate/deploy production without
+  explicit approval.
 
 ## 4. Hard rules
 

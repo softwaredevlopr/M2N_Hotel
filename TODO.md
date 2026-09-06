@@ -8,11 +8,19 @@
 
 ## Current focus
 
-- [ ] **STAGING DATA INITIALIZATION / VALIDATION** — confirm staging DB target
-      (not local/production) → `npm run seed` → `npm run seed:admin` → verify
-      `GET /api/hotels`. Migrations `001`–`009` already applied; backend healthy;
-      seed scripts post-`009` compatible (`be2351a`). See
+- [x] **STAGING DATA INITIALIZATION / VALIDATION** — staging DB
+      `m2n_hotel_staging` confirmed; `npm run seed` + `npm run seed:admin`
+      executed; `GET /api/hotels` count=2; `super_admin` + active `owner` on
+      `m2n-hotels`. Operator Node seed needed `DB_SSL=true` / `sslmode=require`
+      ([ADR-0044](docs/history/DECISIONS.md)). See
       [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.2.
+- [x] **STAGING ADMIN LOGIN SMOKE TEST** — `POST /api/admin/auth/login`
+      succeeded (`role=super_admin`, `token_type=Bearer`);
+      `GET /api/admin/tenant` succeeded (`slug=m2n-hotels`, `plan=lite`,
+      `subscription_status=active`). Do not paste credentials/tokens into docs.
+- [ ] **STAGING FRONTEND SETUP / DEPLOYMENT** — configure staging frontend env,
+      build, and deploy when approved. Not started. See
+      [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
 - [x] **Phase 10A–10I** — booking engine, inventory, emails, inquiries,
       admin_notes (see completed sections below / status docs).
 - [x] **Phase 11 — Booking Engine Completion**
@@ -88,9 +96,12 @@
       Phase 15 smoke, post-`009` seed sequence, security / rollback).
 - [ ] Replace placeholder contact details before launch.
 - [x] Staging migrate through `009_tenancy_lite.sql` (applied).
-- [ ] Staging seed — confirm staging DB target, then `npm run seed` /
-      `seed:admin`; verify `GET /api/hotels`. Scripts are post-`009` compatible
-      (`be2351a`). Follow [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6.2.
+- [x] Staging seed — `npm run seed` / `seed:admin`; verified `GET /api/hotels`
+      count=2 (`be2351a`). SSL session note: [ADR-0044](docs/history/DECISIONS.md).
+- [x] Staging admin login smoke — `POST /api/admin/auth/login` then
+      `GET /api/admin/tenant` (verified: `super_admin`, `m2n-hotels`, `lite` /
+      `active`).
+- [ ] **STAGING FRONTEND SETUP / DEPLOYMENT** — not started.
 - [ ] Production migrate through `009` when that environment is provisioned
       (includes `005`–`008` if still pending).
 
@@ -145,9 +156,11 @@
       `/admin/billing`; read-only; no gateway). Smoke:
       `npm run verify:phase15-billing`.
 - [x] Phase 15 — seed scripts post-`009` tenancy compatible (`be2351a`).
-- [ ] Staging seed execution — confirm staging DB target, then `npm run seed` /
-      `seed:admin`; verify `GET /api/hotels` (migrations `001`–`009` already
-      applied on staging; backend healthy).
+- [x] Staging seed execution — `npm run seed` / `seed:admin`; `GET /api/hotels`
+      count=2 (migrations `001`–`009` already applied; backend healthy).
+- [x] Staging admin login smoke — `POST /api/admin/auth/login` →
+      `GET /api/admin/tenant` (COMPLETE).
+- [ ] **STAGING FRONTEND SETUP / DEPLOYMENT** — not started.
 - [ ] Phase 15 — live SaaS payment gateway / subscription management (not in Lite)
 
 ---
@@ -156,6 +169,6 @@
 
 Phases **1–12** complete; Phase **13** CRM Lite (guest search + 360 + open
 leads) shipped — see [`docs/01_PROJECT_STATUS.md`](docs/01_PROJECT_STATUS.md).
-Remaining: staging seed (post-`009` compatible scripts on `be2351a`); Full CRM /
-dated follow-ups only if approved; future Phase 15 SaaS payment integration
-(out of Lite); placeholder contacts.
+Remaining: **STAGING FRONTEND SETUP / DEPLOYMENT**; production cutover after
+staging validation; Full CRM / dated follow-ups only if approved; future Phase
+15 SaaS payment integration (out of Lite); placeholder contacts.

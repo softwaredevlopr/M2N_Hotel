@@ -6,9 +6,12 @@
 > and [`docs/13_ROADMAP.md`](docs/13_ROADMAP.md).
 
 **Handoff snapshot (evidence-backed):** Phases **1–15 Lite** are complete in
-code (tenancy, onboarding, billing stub, post-`009` seed). Staging DB is
-migrated through `009` and backend is healthy; **staging seed not yet run**.
-**Next task:** staging data initialization / validation. No payment gateway.
+code (tenancy, onboarding, billing stub, post-`009` seed). Staging DB
+`m2n_hotel_staging` is migrated through `009`, backend is healthy, staging seed +
+`seed:admin` are COMPLETE (`GET /api/hotels` count=2), and **staging admin login
++ tenant smoke are COMPLETE**. **Next task:** **STAGING FRONTEND SETUP /
+DEPLOYMENT** (not started). No payment gateway.
+
 No production cutover yet. Schema caveats: `max_occupancy`, `floor_label`, no
 `guests` table.
 
@@ -185,10 +188,12 @@ Design principle: har hotel data-driven hai (slug-wise), koi bhi hotel doosre ho
 
 - ✅ **Deployment documentation** — [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md)
   readiness guide (architecture, env matrix, staging cutover through `009`,
-  post-`009` seed sequence). Staging seed still operator-run.
+  post-`009` seed sequence). Staging backend validation COMPLETE (seed + login
+  + tenant smoke); staging frontend still NOT STARTED.
 
-**Next:** staging seed execution (confirm target DB → `npm run seed` /
-`seed:admin`); future SaaS payment gateway / subscription management (out of
+**Next:** **STAGING FRONTEND SETUP / DEPLOYMENT**; future SaaS payment gateway /
+subscription management (out of
+
 Lite); Full CRM / dated follow-ups only if separately approved.
 
 - ✅ **Phase 11 — Admin stay modification** — transactional
@@ -424,7 +429,9 @@ Canonical tracker: [`TODO.md`](TODO.md) · Roadmap: [`docs/13_ROADMAP.md`](docs/
 - ✅ Overnight `base_price` set for Deluxe (1999) / Suite (2999); Standard stays
   0 (couple package is not nightly).
 - ⬜ Production contact details (replace placeholders).
-- ✅ Staging migrate through `009`; ⬜ staging seed execution (`be2351a` scripts).
+- ✅ Staging migrate through `009`; ✅ staging seed + `seed:admin` (hotels=2);
+  ✅ staging admin login + tenant smoke; ⬜ staging frontend setup/deploy;
+  ⬜ production.
 - ⬜ Production migrate through `009` when provisioned (operator runbook in
   [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md) §6).
 - ⬜ Full CRM (guest master / merge) or dated follow-up table — only if
